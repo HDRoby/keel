@@ -1,0 +1,50 @@
+{
+  "name": "keel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "From idea to agent-ready project: brainstorm, intent, spec, plan and handoff for any coding agent.",
+  "bin": {
+    "keel": "bin/keel.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest run",
+    "test:bdd": "bddgen && playwright test",
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run lint && npm run typecheck && npm test && npm run test:bdd",
+    "keel": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.12.0",
+    "better-sqlite3": "^13.2.0",
+    "diff": "^9.0.0",
+    "gray-matter": "^4.0.3",
+    "next": "^16.4.6",
+    "openai": "^7.62.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "simple-git": "^4.1.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/diff": "^6.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.4.6",
+    "playwright-bdd": "^9.2.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^5.1.1"
+  }
+}
