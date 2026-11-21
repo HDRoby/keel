@@ -1,0 +1,13 @@
+// Typed results for module boundaries (TypeScript conventions v3).
+
+export type Result<T, E extends string = string> =
+  | { ok: true; value: T }
+  | { ok: false; error: E; message: string };
+
+export function ok<T>(value: T): Result<T, never> {
+  return { ok: true, value };
+}
+
+export function fail<E extends string>(error: E, message: string): Result<never, E> {
+  return { ok: false, error, message };
+}
