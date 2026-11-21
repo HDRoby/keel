@@ -20,7 +20,15 @@ export default async function ExplorePage({ params, searchParams }: StageProps) 
   const { error } = await searchParams;
   const { store, project, gates, summaries } = await loadStage(id, 'explore');
   const context = loadContext(store, id);
-  if (!context.ok) notFound();
+  if (!context.ok && context.error === 'not-found') notFound();
+  if (!context.ok) {
+    return (
+      <>
+        <Topbar crumb={`${project.title} · ${project.id}`} title="Explore" />
+        <main className="content"><ErrorAlert error={`The brainstorm could not be read: ${context.message}`} /></main>
+      </>
+    );
+  }
   const { session, sections, style } = context.value;
   const intent = readDocument(store, id, 'docs/intent.md');
   const ready = requiredCaptured(sections, session.answers);

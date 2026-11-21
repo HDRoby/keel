@@ -1,5 +1,6 @@
 // Workspace folder, project folders and project metadata (ADR-0007).
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { writeFileAtomic } from './atomic';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import matter from 'gray-matter';
@@ -96,7 +97,7 @@ export async function createProject(
   };
   await initRepo(dir);
   const header = { id: project.id, title: project.title, author: project.author, created: project.created, standards: project.standards };
-  writeFileSync(join(dir, PROJECT_FILE), matter.stringify(`\n# ${project.title}\n`, header));
+  writeFileAtomic(join(dir, PROJECT_FILE), matter.stringify(`\n# ${project.title}\n`, header));
   await commitFiles(dir, [PROJECT_FILE], `${project.id}: Create project`);
   store.index.upsertProject(project);
   return ok(project);
@@ -127,7 +128,7 @@ export async function reserveRequirementIds(store: Store, slug: string, count: n
   const counter = Number.isInteger(parsed.data.next_req) ? (parsed.data.next_req as number) : 1;
   const first = Math.max(counter, inDocs + 1, alsoUsed + 1);
   const ids = Array.from({ length: count }, (_, i) => formatReqId(first + i));
-  writeFileSync(file, matter.stringify(parsed.content, { ...parsed.data, next_req: first + count }));
+  writeFileAtomic(file, matter.stringify(parsed.content, { ...parsed.data, next_req: first + count }));
   await commitFiles(dir, [PROJECT_FILE], `${project.value.id}: reserve ${ids[0]}${count > 1 ? ` to ${ids.at(-1)}` : ''}`);
   return ok(ids);
 }
@@ -141,7 +142,7 @@ export async function setProjectStandards(store: Store, slug: string, standards:
   const dir = projectDir(slug, store.home);
   const file = join(dir, PROJECT_FILE);
   const parsed = matter(readFileSync(file, 'utf8'), {});
-  writeFileSync(file, matter.stringify(parsed.content, { ...parsed.data, standards: unique }));
+  writeFileAtomic(file, matter.stringify(parsed.content, { ...parsed.data, standards: unique }));
   await commitFiles(dir, [PROJECT_FILE], `${project.value.id}: standards ${unique.join(', ') || 'none'}`);
   return readProject(slug, store.home);
 }

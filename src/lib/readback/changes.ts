@@ -3,6 +3,7 @@
 // text as the document's next version, with the commit as the reason; dismissing hides it. Either way that
 // commit is handled for that file and only a later commit to the file shows up again.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { writeFileAtomic } from '../store/atomic';
 import { dirname, join } from 'node:path';
 import matter from 'gray-matter';
 import { z } from 'zod';
@@ -60,7 +61,7 @@ export async function saveReadbackState(store: Store, slug: string, state: Readb
   const parsed = matter(readFileSync(file, 'utf8'), {});
   const previous = readbackState(store, slug);
   const before = JSON.stringify({ pending: previous.pending, handled: previous.handled });
-  writeFileSync(file, matter.stringify(parsed.content, { ...parsed.data, readback: state }));
+  writeFileAtomic(file, matter.stringify(parsed.content, { ...parsed.data, readback: state }));
   if (before !== JSON.stringify({ pending: state.pending, handled: state.handled })) {
     const project = readProject(slug, store.home);
     await commitFiles(dir, [PROJECT_FILE], `${project.ok ? project.value.id : slug}: ${message}`);

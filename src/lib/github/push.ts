@@ -3,6 +3,7 @@
 // code, stay), commits as Keel and pushes. The token is passed to git through the environment for that one
 // command only: it is never written to a git config, a remote URL, a document or a log.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { writeFileAtomic } from '../store/atomic';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import matter from 'gray-matter';
 import { simpleGit } from 'simple-git';
@@ -153,7 +154,7 @@ async function recordPush(store: Store, slug: string, to: Omit<RepositoryRecord,
   const previous = repositoryOf(store, slug);
   const pushes = previous && previous.location === to.location && previous.branch === to.branch ? previous.pushes : [];
   const repository: RepositoryRecord = { ...to, pushes: [...pushes, push] };
-  writeFileSync(file, matter.stringify(parsed.content, { ...parsed.data, repository }));
+  writeFileAtomic(file, matter.stringify(parsed.content, { ...parsed.data, repository }));
   const project = readProject(slug, store.home);
   await commitFiles(dir, [PROJECT_FILE], `${project.ok ? project.value.id : slug}: pushed ${push.plan} to ${to.location} (${push.commit.slice(0, 7)})`);
 }

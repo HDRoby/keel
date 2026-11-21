@@ -1,7 +1,8 @@
 // The handoff package (REQ-006, task T8a): a repository scaffold any coding agent can build from.
 // AGENTS.md, CLAUDE.md, REVIEW.md, docs, tasks, failing acceptance scenarios with step stubs, the agent kit,
 // the standards and CI. Keel's own repository is an example of the output. It never contains application code.
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { writeFileAtomic } from '../store/atomic';
 import { join } from 'node:path';
 import matter from 'gray-matter';
 import { z } from 'zod';
@@ -62,7 +63,7 @@ export async function saveHandoffCommands(store: Store, slug: string, commands: 
   const dir = projectDir(slug, store.home);
   const file = join(dir, PROJECT_FILE);
   const current = matter(readFileSync(file, 'utf8'), {});
-  writeFileSync(file, matter.stringify(current.content, { ...current.data, handoff: parsed.data }));
+  writeFileAtomic(file, matter.stringify(current.content, { ...current.data, handoff: parsed.data }));
   await commitFiles(dir, [PROJECT_FILE], `${project.value.id}: handoff commands`);
   return ok(parsed.data);
 }

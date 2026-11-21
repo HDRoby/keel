@@ -1,5 +1,5 @@
 // The brainstorm of one project, kept as brainstorm.md in its repository (REQ-001, REQ-011).
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import matter from 'gray-matter';
 import { z } from 'zod';
@@ -7,6 +7,7 @@ import type { ChatMessage } from '../providers/types';
 import { fail, ok, type Result } from '../result';
 import type { Store } from '../store/db';
 import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
+import { writeFileAtomic } from '../store/atomic';
 import { commitSquashing } from '../store/git';
 import { createProject, listProjectSlugs, projectDir, reserveRequirementIds } from '../store/workspace';
 import { REQUIREMENTS_SECTION, renderRequirements, requirementCandidates, unassigned } from '../trace/assign';
@@ -313,7 +314,7 @@ export function brainstormCommitMessage(session: Session): string {
 async function save(store: Store, session: Session): Promise<void> {
   const { slug, ...data } = session;
   const dir = projectDir(slug, store.home);
-  writeFileSync(join(dir, BRAINSTORM_FILE), matter.stringify(`\n${readable(session)}`, data));
+  writeFileAtomic(join(dir, BRAINSTORM_FILE), matter.stringify(`\n${readable(session)}`, data));
   await commitSquashing(dir, [BRAINSTORM_FILE], brainstormCommitMessage(session), 'Brainstorm:');
 }
 
