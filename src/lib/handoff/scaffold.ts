@@ -172,13 +172,13 @@ export async function buildHandoff(store: Store, slug: string): Promise<Result<P
   setup.forEach((f) => files.push(text(f.path, f.content)));
   files.push(text('.github/workflows/ci.yml', [
     'name: CI', '', 'on:', '  push:', '  pull_request:', '', 'jobs:', '  verify:', '    runs-on: ubuntu-latest', '    steps:',
-    '      - uses: actions/checkout@v4',
-    ...(/^(npm|npx|pnpm|yarn)\b/.test(commands.install) ? ['      - uses: actions/setup-node@v4', '        with:', '          node-version: 22'] : []),
+    '      - uses: actions/checkout@v7',
+    ...(/^(npm|npx|pnpm|yarn)\b/.test(commands.install) ? ['      - uses: actions/setup-node@v7', '        with:', '          node-version: 22'] : []),
     `      - run: ${commands.install}`,
     ...(setup.length ? ['      - run: npx playwright install --with-deps chromium'] : []),
     `      - run: ${commands.verify}`,
     // Keel reads these results back per requirement (T9): keep them even when the scenarios fail.
-    ...(setup.length ? ['      - name: Keep scenario results for Keel read-back', '        if: always()', '        uses: actions/upload-artifact@v4', '        with:', '          name: bdd-results', '          path: test-results/bdd.json'] : []),
+    ...(setup.length ? ['      - name: Keep scenario results for Keel read-back', '        if: always()', '        uses: actions/upload-artifact@v7', '        with:', '          name: bdd-results', '          path: test-results/bdd.json'] : []),
   ].join('\n')));
   files.push(text('README.md', [
     `# ${title}`, '',
