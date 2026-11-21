@@ -1,10 +1,11 @@
 // Project documents: markdown with YAML front matter, one git commit per save (REQ-002, ADR-0007).
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import matter from 'gray-matter';
 import { z } from 'zod';
 import type { DocumentHeader, DocumentKind, DocumentStatus, KeelDocument } from '../documents/types';
 import { fail, ok, type Result } from '../result';
+import { writeFileAtomic } from './atomic';
 import { commitFiles } from './git';
 import type { Store } from './db';
 import { fromYamlDate, projectDir, readProject, today } from './workspace';
@@ -165,7 +166,7 @@ async function write(store: Store, slug: string, doc: StoredDocument, reason: st
   const dir = projectDir(slug, store.home);
   const file = join(dir, doc.path);
   mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(file, serializeDocument(doc.header, doc.body));
+  writeFileAtomic(file, serializeDocument(doc.header, doc.body));
   const commit = await commitFiles(dir, [doc.path], commitMessage(doc.header, reason));
   store.index.upsertDocument(slug, doc);
   if (newVersion) store.index.addVersion(slug, { id: doc.header.id, version: doc.header.version, commit, date: doc.header.updated, reason: oneLine(reason) });
