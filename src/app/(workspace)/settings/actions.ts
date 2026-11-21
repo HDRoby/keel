@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { formFields } from '@/lib/form-fields';
 import { saveGithubToken } from '@/lib/github/auth';
 import { MODEL_TASK_IDS, PROVIDER_IDS, type ModelChoice } from '@/lib/providers/types';
+import { checkApiKey } from '@/lib/providers/errors';
+import { testConnection } from '@/lib/providers/test-connection';
 import { saveModelChoice, saveProvider } from '@/lib/settings/settings';
 import { serverStore } from '@/lib/store/server-store';
 
@@ -28,8 +30,18 @@ export async function saveProviderAction(form: FormData): Promise<void> {
   const input = providerForm.safeParse(formFields(form));
   if (!input.success) redirect('/settings?error=Check+the+provider+fields');
   const { provider, clearKey, ...update } = input.data;
+  const wrong = update.apiKey ? checkApiKey(provider, update.apiKey) : undefined;
+  if (wrong) redirect(`/settings?error=${encodeURIComponent(wrong)}`);
   saveProvider(serverStore(), provider, { ...update, clearKey: clearKey === 'on' });
   redirect('/settings?saved=provider');
+}
+
+/** Test a provider with one tiny call. */
+export async function testProviderAction(form: FormData): Promise<void> {
+  const input = z.strictObject({ provider: z.enum(PROVIDER_IDS) }).safeParse(formFields(form));
+  if (!input.success) redirect('/settings?error=Invalid+request');
+  const tested = await testConnection(serverStore(), input.data.provider);
+  redirect(tested.ok ? `/settings?tested=${encodeURIComponent(tested.value)}` : `/settings?error=${encodeURIComponent(tested.message)}`);
 }
 
 export async function saveModelAction(form: FormData): Promise<void> {

@@ -1,6 +1,7 @@
 // Brainstorm turn: records the answer (if any), then streams the next question and saves it (REQ-001).
 import { z } from 'zod';
 import { fallbackQuestion, loadContext, pendingQuestion, questionPrompt, recordAnswer, recordQuestion } from '@/lib/brainstorm/session';
+import { describeProviderError } from '@/lib/providers/errors';
 import { providerForTask } from '@/lib/providers/registry';
 import { serverStore } from '@/lib/store/server-store';
 import { SLUG } from '@/lib/store/workspace';
@@ -51,8 +52,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         if (next.done) return finish(controller);
         text += next.value;
         controller.enqueue(encoder.encode(next.value));
-      } catch {
-        await finish(controller, 'The model could not be reached. Check Settings.');
+      } catch (error) {
+        await finish(controller, resolved.ok ? `${describeProviderError(resolved.value.choice.provider, error)}` : 'The model could not be reached. Check Settings.');
       }
     },
   });

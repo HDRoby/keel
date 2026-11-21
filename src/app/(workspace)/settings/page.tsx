@@ -1,5 +1,6 @@
 // Settings (mockup screen "Settings"): provider connections and model per task (REQ-009).
-import { saveGithubAction, saveModelAction, saveProviderAction } from './actions';
+import { saveGithubAction, saveModelAction, saveProviderAction, testProviderAction } from './actions';
+import { SubmitButton } from '@/components/SubmitButton';
 import { hasGithubToken } from '@/lib/github/auth';
 import { ErrorAlert, PageHead, Topbar } from '@/components/Shell';
 import { MODEL_TASKS, PROVIDERS } from '@/lib/providers/types';
@@ -8,8 +9,8 @@ import { serverStore } from '@/lib/store/server-store';
 
 export const dynamic = 'force-dynamic';
 
-export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ error?: string; saved?: string }> }) {
-  const { error, saved } = await searchParams;
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ error?: string; saved?: string; tested?: string }> }) {
+  const { error, saved, tested } = await searchParams;
   const store = serverStore();
   const hasToken = hasGithubToken(store);
   return (
@@ -19,6 +20,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <PageHead title="Settings" />
         <ErrorAlert error={error} />
         {saved && <p role="status" className="notice">Saved.</p>}
+        {tested && <p role="status" className="notice">{tested}</p>}
 
         <section className="card">
           <h2>Model per task</h2>
@@ -44,7 +46,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         {PROVIDERS.map(({ id, label }) => {
           const view = providerView(store, id);
           return (
-            <form key={id} action={saveProviderAction} aria-label={`${label} connection`} className="card stack">
+            <section key={id} className="card stack" aria-label={label}>
+            <form action={saveProviderAction} aria-label={`${label} connection`} className="stack">
               <input type="hidden" name="provider" value={id} />
               <h2 style={{ margin: 0 }}>{label}</h2>
               <label>API key <input name="apiKey" type="password" autoComplete="off" placeholder={view.hasKey ? 'Stored' : 'Not set'} /></label>
@@ -61,6 +64,11 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               )}
               <div><button type="submit" className="primary">Save {label}</button></div>
             </form>
+            <form action={testProviderAction} aria-label={`Test ${label}`}>
+              <input type="hidden" name="provider" value={id} />
+              <SubmitButton label="Test connection" busyLabel="Testing…" />
+            </form>
+            </section>
           );
         })}
 
