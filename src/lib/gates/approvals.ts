@@ -9,9 +9,8 @@ import type { DocumentStatus, Stage } from '../documents/types';
 import { fail, type Result } from '../result';
 import type { Store } from '../store/db';
 import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
-import { fromYamlDate, today } from '../store/workspace';
+import { fromYamlDate, readConfig, today } from '../store/workspace';
 import { readTemplate } from '../templates/library';
-import { repositoryOf } from '../github/push';
 import { readbackState } from '../readback/changes';
 import { renderTemplate } from '../templates/render';
 import { gateFor, type Decision, type ProjectState } from './rules';
@@ -163,9 +162,11 @@ export function stageSummaries(store: Store): Record<Stage, StageSummary> {
     spec: { detail: `${spec ? `spec.md v${spec.version}` : 'No spec.md yet'} · ${decision ? DECISION_WORD[decision] : 'no decision'}`, done: decision === 'go' },
     plan: { detail: docLine('plan.md', plan), done: plan?.status === 'approved' },
     handoff: (() => {
-      if (!repositoryOf(store)?.pushes.length) return { detail: 'Ready to hand off', done: false };
+      // Written once Handoff has put its files in the folder (handoff.files in config.yml, task R7).
+      const handoff = readConfig(store.root)?.handoff as { files?: Record<string, string> } | undefined;
+      if (!handoff?.files || Object.keys(handoff.files).length === 0) return { detail: 'Ready to hand off', done: false };
       const waiting = readbackState(store).pending.length;
-      return { detail: `Pushed · ${waiting === 0 ? 'no changes to review' : `${waiting} change${waiting === 1 ? '' : 's'} to review`}`, done: true };
+      return { detail: `Written to this folder · ${waiting === 0 ? 'no changes to review' : `${waiting} change${waiting === 1 ? '' : 's'} to review`}`, done: true };
     })(),
   };
 }

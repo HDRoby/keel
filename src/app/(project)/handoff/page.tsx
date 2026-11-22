@@ -1,8 +1,7 @@
 // Handoff stage (mockup: handoff.png): the repository scaffold for any coding agent, as a zip (REQ-006).
-import { acceptChangeAction, checkRepositoryAction, dismissChangeAction, pushHandoffAction, saveHandoffCommandsAction, writeHandoffAction } from '../actions';
+import { acceptChangeAction, checkRepositoryAction, dismissChangeAction, pushAction, saveHandoffCommandsAction, writeHandoffAction } from '../actions';
+import { remoteLabel, remoteOf } from '@/lib/store/remote';
 import { SubmitButton } from '@/components/SubmitButton';
-import { hasGithubToken } from '@/lib/github/auth';
-import { repositoryOf } from '@/lib/github/push';
 import { changedContent, keelContent, readbackState, WORKING_TREE } from '@/lib/readback/changes';
 import { CheckOnFocus } from '@/components/CheckOnFocus';
 import { readbackInterval } from '@/lib/readback/schedule';
@@ -46,10 +45,8 @@ export default async function HandoffPage({ searchParams }: StageProps) {
   const page = await loadStage('handoff');
   const planned = page.gate.available ? await planHandoff(page.store) : undefined;
   const commands = handoffCommands(page.store);
-  const repository = repositoryOf(page.store);
-  const lastPush = repository?.pushes.at(-1);
+  const remote = await remoteOf(page.store.root);
   const readback = readbackState(page.store);
-  const allowLocal = process.env.KEEL_ALLOW_LOCAL_REMOTES === '1';
   const interval = readbackInterval();
   // The agent's text is what is in the folder now; Keel's is its last committed version.
   const pending = await Promise.all(readback.pending.map(async (change) => {
@@ -165,26 +162,14 @@ export default async function HandoffPage({ searchParams }: StageProps) {
           )}
         </section>
         <div>
-        <section className="card" aria-labelledby="destination">
-          <div className="row spread">
-            <h2 id="destination">Destination</h2>
-            {lastPush && <span className="badge ok">Pushed</span>}
-          </div>
-          {lastPush && (
-            <p role="status" className="muted">
-              Pushed {lastPush.plan} on {when(lastPush.date)} · commit {lastPush.commit.slice(0, 7)} · {repository?.location} · branch {repository?.branch}
-            </p>
-          )}
-          <form action={pushHandoffAction} aria-label="Push" className="stack">
-            <label>Target <select name="kind" defaultValue={repository?.kind ?? 'github'}>
-              <option value="github">GitHub repository</option>
-              {allowLocal && <option value="local">Local repository (tests)</option>}
-            </select></label>
-            <label>Repository <input name="location" defaultValue={repository?.location ?? ''} placeholder="owner/name" required /></label>
-            <label>Branch <input name="branch" defaultValue={repository?.branch ?? 'main'} required /></label>
-            {!hasGithubToken(page.store) && <p className="muted">Pushing to GitHub needs a token in <a href="/settings">Settings</a>. The repository must exist; an empty one is fine.</p>}
-            <div><SubmitButton primary label={lastPush ? 'Push again' : 'Push'} busyLabel="Pushing…" /></div>
-          </form>
+        <section className="card" aria-labelledby="push">
+          <h2 id="push">Push</h2>
+          {remote ? (
+            <form action={pushAction} aria-label="Push" className="stack">
+              <p className="muted">Runs <code>git push origin HEAD</code> with your own git credentials. Keel never pushes on its own.</p>
+              <div><SubmitButton primary label={`Push to origin (${remoteLabel(remote)})`} busyLabel="Pushing…" /></div>
+            </form>
+          ) : <p>No remote. Push from your terminal when you are ready.</p>}
         </section>
 
         {readbackCard}

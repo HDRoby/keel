@@ -9,20 +9,22 @@ These change requests come from the owner's review of the Keel mockup on 2026-11
 | 3 | [CR-0006](CR-0006/CR-0006.md) | Spec: edit acceptance scenarios, at least one per requirement | R11 |
 | 4 | [CR-0007](CR-0007/CR-0007.md) | Spec: design as decisions with options proposed by the assistant | R12 |
 | 5 | [CR-0008](CR-0008/CR-0008.md) | Every screen looks like the mockup: UI guide, shared components, guard rails | R13 |
+| 6 | [CR-0009](CR-0009/CR-0009.md) | Clickable mock made elsewhere from the spec (prompt pack), attached back as a versioned mock set; gate setting | R14 |
 
 Each folder has the change request, task files, scenarios and a `PROMPT.md` to paste into the coding agent.
 
-## Requirement IDs after all five
+## Requirement IDs after all six
 
 | ID | Requirement | Changed by |
 | --- | --- | --- |
 | REQ-001 | Template sections with live assistant comments | CR-0005 |
 | REQ-002 | intent.md assembled from the sections; IDs at draft time; edits after approval become a change request | CR-0005 |
 | REQ-004 | At least one scenario per requirement, edited in the Spec | CR-0006 |
-| REQ-005 | Plan needs Go, a scenario per requirement and every design topic decided | CR-0006, CR-0007 |
+| REQ-005 | Plan needs Go, a scenario per requirement, every design topic decided, and (if set) a current clickable mock | CR-0006, CR-0007, CR-0009 |
 | REQ-006 | Handoff writes into the folder; push optional | CR-0004 |
 | REQ-007 | Read-back from local git, including uncommitted edits | CR-0004 |
 | REQ-009 | Keys in the user config folder | CR-0004 |
+| REQ-010 | Clickable mock prompt and versioned mock sets | CR-0009 |
 | REQ-012 | One project per folder with `.keel/` | CR-0004 (new) |
 | REQ-013 | Design as decisions with options | CR-0007 (new) |
 | REQ-014 | Reserved for CR-0003 (change requests across stages, Next) | — |

@@ -7,13 +7,11 @@ import { formFields } from '@/lib/form-fields';
 import { readStandard } from '@/lib/standards/library';
 import { projectState, recordDecision, review } from '@/lib/gates/approvals';
 import { gateFor } from '@/lib/gates/rules';
-import { buildHandoff, commandsSchema, saveHandoffCommands } from '@/lib/handoff/scaffold';
+import { commandsSchema, saveHandoffCommands } from '@/lib/handoff/scaffold';
 import { writeHandoff, type ConflictChoice } from '@/lib/handoff/write';
-import { githubToken } from '@/lib/github/auth';
-import { pushHandoff } from '@/lib/github/push';
-import { acceptChange, dismissChange, readbackState } from '@/lib/readback/changes';
+import { acceptChange, dismissChange } from '@/lib/readback/changes';
 import { checkFolder } from '@/lib/readback/check';
-import { kindFromPath, readDocument } from '@/lib/store/documents';
+import { kindFromPath } from '@/lib/store/documents';
 import { attachMock, linkMock, removeMock, replaceMock, MAX_MOCK_BYTES, MOCK_ID, REQ_ID } from '@/lib/mocks/references';
 import { requirementIds } from '@/lib/trace/index';
 import { generatePlan, regeneratePlan } from '@/lib/generate/plan';
@@ -22,6 +20,7 @@ import { generateSpec, regenerateSpec } from '@/lib/generate/spec';
 import { providerWriter } from '@/lib/generate/writer';
 import type { Result } from '@/lib/result';
 import { serverStore } from '@/lib/store/server-store';
+import { push } from '@/lib/store/remote';
 import { commitBlocker } from '@/lib/store/git';
 import { setProjectStandards } from '@/lib/store/workspace';
 import { VERSIONED_REF } from '@/lib/templates/library';
@@ -290,30 +289,13 @@ export async function saveHandoffCommandsAction(form: FormData): Promise<void> {
   redirect(withError(at('handoff'), await saveHandoffCommands(store, commands)));
 }
 
-const pushForm = z.strictObject({
-  kind: z.enum(['github', 'local']),
-  location: z.string().trim().min(1).max(500),
-  branch: z.string().trim().min(1).max(100),
-});
-
-/** Push the handoff package to the repository, as one Keel commit. */
-export async function pushHandoffAction(form: FormData): Promise<void> {
+/** Optional push (task R8): `git push origin HEAD` with the user's own git credentials. Never automatic. */
+export async function pushAction(): Promise<void> {
   await guard('handoff');
-  const input = pushForm.safeParse(formFields(form));
-  if (!input.success) redirect('/?error=Invalid+request');
-  const { kind, location, branch } = input.data;
-  const store = serverStore();
-  const page = at('handoff');
-  // A push writes Keel's docs and tasks over the repository; review the agent's changes first so none is lost.
-  const waiting = readbackState(store).pending.length;
-  if (waiting > 0) redirect(`${page}?error=${encodeURIComponent(`Accept or dismiss the ${waiting} read-back change${waiting === 1 ? '' : 's'} before pushing again`)}`);
-  const built = await buildHandoff(store);
-  if (!built.ok) redirect(withError(page, built));
-  const plan = readDocument(store, 'docs/plan.md');
-  const planRef = plan.ok ? `${plan.value.header.id}@${plan.value.header.version}` : 'plan';
-  const target = kind === 'github' ? { kind, repo: location, branch } : { kind, path: location, branch };
-  const pushed = await pushHandoff(store, target, built.value, planRef, { token: githubToken(store) });
-  redirect(pushed.ok && pushed.value.unchanged ? `${page}?notice=${encodeURIComponent('Nothing new to push: the repository already has this package.')}` : withError(page, pushed));
+  const pushed = await push(serverStore().root);
+  redirect(pushed.ok
+    ? `${at('handoff')}?notice=${encodeURIComponent(`Pushed ${pushed.value.branch} to origin (${pushed.value.remote}).`)}`
+    : withError(at('handoff'), pushed));
 }
 
 const readbackForm = z.strictObject({ path: z.string().max(300).refine((p) => Boolean(kindFromPath(p)), 'Not a document path').optional() });

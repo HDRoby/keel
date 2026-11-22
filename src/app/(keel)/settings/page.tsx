@@ -102,10 +102,11 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         })}
 
         <form action={saveGithubAction} aria-label="GitHub connection" className="card stack">
-          <h2 style={{ margin: 0 }}>GitHub</h2>
+          <h2 style={{ margin: 0 }}>GitHub (CI results)</h2>
           <p className="muted">
-            Used to push the handoff and read the coding agent&apos;s changes back. Create a fine-grained personal access token with
-            access to the one repository and the permissions <strong>Contents: read and write</strong> and <strong>Actions: read</strong> (for the scenario results from CI), nothing more.
+            Optional, only to show the acceptance scenario results from CI on the Handoff page. Pushing uses your own git
+            credentials, not this token. Create a fine-grained personal access token with access to the one repository and
+            the permission <strong>Actions: read</strong>, nothing more.
           </p>
           <label>Token <input name="token" type="password" autoComplete="off" placeholder={hasToken ? 'Stored' : 'github_pat_…'} /></label>
           {hasToken && <label><input type="checkbox" name="clear" /> Remove stored token</label>}

@@ -26,7 +26,6 @@ export default defineConfig({
       KEEL_USER_DIR: join(tmpdir(), 'keel-bdd-user'),
       KEEL_PROVIDER: 'fake',
       // Read-back scenarios check on demand.
-      KEEL_ALLOW_LOCAL_REMOTES: '1',
       KEEL_READBACK_SECONDS: '0',
     },
   },

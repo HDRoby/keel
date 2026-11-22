@@ -1,5 +1,6 @@
-// The GitHub token for pushing the handoff (REQ-006, T8b). A fine-grained personal access token with
-// Contents read and write on the one repository is enough (least privilege). Stored encrypted, never shown.
+// The optional GitHub token, only for reading CI results on the Handoff page (task R8; read-back in R6).
+// A fine-grained personal access token with Actions: read on the one repository is enough (least privilege).
+// Pushing uses the user's own git credentials. Stored encrypted in the user config folder, never shown.
 import { fail, ok, type Result } from '../result';
 import { decryptSecret, encryptSecret, workspaceKey } from '../settings/secrets';
 import { setUserSetting, userSetting } from '../settings/user-dir';

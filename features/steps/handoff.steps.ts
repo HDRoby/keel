@@ -1,12 +1,15 @@
 // Handoff into the project folder (REQ-006). Writing: R7. Pushing to the folder's remote: R8.
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 import { scanForSecrets } from '../../src/lib/handoff/secrets-scan';
 import { featureSteps, stepExpression } from '../../src/lib/handoff/stubs';
+import { writeHandoff } from '../../src/lib/handoff/write';
 import { saveProvider } from '../../src/lib/settings/settings';
-import { BDD_PROJECT, git, pending, projectWithApprovedPlan, stagePath } from './support';
+import { BDD_PROJECT, git, projectWithApprovedPlan, stagePath } from './support';
 
 const { Given, When, Then } = createBdd();
 
@@ -95,18 +98,31 @@ Then('writing the handoff leaves my AGENTS.md unchanged until I choose', async (
   await expect(page.getByRole('table', { name: 'Handoff files' }).getByRole('row', { name: 'REVIEW.md', exact: true })).toContainText('Unchanged');
 });
 
-Given('an initialised folder with a handoff written', async ({ $testInfo }) => {
-  pending($testInfo, 'R8');
+// The folder's own remote: a local bare repository stands in for it (plan: test strategy).
+let remote = '';
+
+Given('an initialised folder with a handoff written', async () => {
+  await projectWithApprovedPlan(async (store) => {
+    const written = await writeHandoff(store);
+    expect(written.ok).toBe(true);
+  });
 });
 
-Given('the folder has a remote called origin', async ({ $testInfo }) => {
-  pending($testInfo, 'R8');
+Given('the folder has a remote called origin', async () => {
+  remote = join(mkdtempSync(join(tmpdir(), 'keel-origin-')), 'origin.git');
+  execFileSync('git', ['init', '-q', '--bare', '--initial-branch=main', remote]);
+  git('remote', 'add', 'origin', remote);
 });
 
-When('I push from the Handoff page', async ({ $testInfo }) => {
-  pending($testInfo, 'R8');
+When('I push from the Handoff page', async ({ page }) => {
+  await page.goto(stagePath('handoff'));
+  await page.getByRole('button', { name: `Push to origin (${remote})` }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Pushed main to origin' })).toBeVisible();
 });
 
-Then('the remote has the Keel commits', async ({ $testInfo }) => {
-  pending($testInfo, 'R8');
+Then('the remote has the Keel commits', async () => {
+  const log = execFileSync('git', ['log', '--format=%an|%s', 'main'], { cwd: remote, encoding: 'utf8' }).trim().split('\n');
+  expect(log[0]).toBe('Keel|Keel: Handoff for plan v1');
+  expect(log).toContain('Keel|Keel: Initialise project');
+  expect(log.every((l) => l.startsWith('Keel|Keel: '))).toBe(true);
 });

@@ -22,6 +22,14 @@ export function legacyHome(env: Env = process.env): string {
   return env.KEEL_HOME?.trim() || join(homedir(), '.keel');
 }
 
+/**
+ * Whether to move Keel v0.1 settings into the user folder: for the real user folder only. A run with
+ * KEEL_USER_DIR (tests, a second profile) does not pick up ~/.keel unless KEEL_HOME names it.
+ */
+export function migratesLegacy(env: Env = process.env): boolean {
+  return !env.KEEL_USER_DIR?.trim() || Boolean(env.KEEL_HOME?.trim());
+}
+
 /** Creates the folder, owner only. */
 export function ensureUserDir(dir: string): string {
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true, mode: 0o700 });

@@ -3,7 +3,7 @@
 import { existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { migrateLegacySettings } from '../settings/migrate';
-import { legacyHome, userDir } from '../settings/user-dir';
+import { legacyHome, migratesLegacy, userDir } from '../settings/user-dir';
 import { INDEX_FILE, openIndex, type Index, type Store } from './db';
 import { rebuildIndex } from './reindex';
 import { isInitialised, projectRoot, type Env } from './workspace';
@@ -34,14 +34,11 @@ function indexFor(held: Held): Index {
   return held.index;
 }
 
-/**
- * Moves Keel v0.1 settings once per process, for the real user folder only: a run with KEEL_USER_DIR
- * (tests, a second profile) does not pick up ~/.keel unless KEEL_HOME names it.
- */
+/** Moves Keel v0.1 settings once per process, when the user folder is the real one (migratesLegacy). */
 function migrateOnce(env: Env): void {
   if (holder.keelMigrated) return;
   holder.keelMigrated = true;
-  if (env.KEEL_USER_DIR?.trim() && !env.KEEL_HOME?.trim()) return;
+  if (!migratesLegacy(env)) return;
   try {
     migrateLegacySettings(userDir(env), legacyHome(env));
   } catch (error) {

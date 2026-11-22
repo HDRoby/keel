@@ -128,7 +128,7 @@ For each screen, compare with `docs/mocks/<screen>.png` and the source in `docs/
 | Project setup | `/setup` | `SetupKeel.dc.html` | Same cards as Initialise, saves to `.keel/config.yml` |
 | Explore | `/explore` | `NewIdea.dc.html` (early), `Explore.dc.html` (later) | SectionFields with Comments, StatusLine, ProgressLine, Requirements ListRows, no chat panel |
 | Intent | `/intent` | `Intent.dc.html` | Assembled-from-Explore note, Tabs (Preview, Markdown, Mock references), Approval, Version history |
-| Spec | `/spec` | `Spec.dc.html` | Tabs: Requirements, Design (decision OptionCards), Acceptance scenarios (ScenarioCards by requirement), Flagged concerns, Mock references; Feasibility and Decision |
+| Spec | `/spec` | `Spec.dc.html` | Tabs: Requirements, Design (decision OptionCards), Acceptance scenarios (ScenarioCards by requirement), Flagged concerns, Clickable mock (prompt pack, drop area, mock sets); Feasibility and Decision |
 | Plan | `/plan` | `Plan.dc.html` | Versions, diff, impact, tasks |
 | Handoff | `/handoff` | `Handoff.dc.html` | FileTree with states, "Write to folder", conflict Notice, optional Push, Read-back card |
 | Changes | `/changes` | `Changes.dc.html` | As in the mock (CR-0003, Next) |
