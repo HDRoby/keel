@@ -6,7 +6,7 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 3
+version: 4
 template: standard-intent@3
 brainstorm_style: challenger@1
 mocks:
@@ -32,6 +32,7 @@ A web app where anyone with an idea brainstorms with an LLM, then produces a ver
 - REQ-005 Each stage unlocks only when the previous one is approved
 - REQ-006 Hand off a repository scaffold any coding agent can build from
 - REQ-012 One project per folder, with its config and libraries in a .keel folder
+- REQ-014 Change requests across stages, listed and tracked on a Changes page
 
 ## Affected users and systems
 
@@ -47,9 +48,10 @@ Proposers (engineers, product managers, anyone with an idea), coding agents, git
 ## Open questions
 
 - Public name: "Keel" is already used by other developer tools. Fine as a codename.
-- How should a change upstream affect later documents? (Answered later by CR-0003, which is in Next on the roadmap.)
+- How should a change upstream affect later documents? (Answered by CR-0003: change requests across stages.)
 
 ## Version history
 
+- v4: change requests across stages (CR-0003).
 - v3: one project per folder, in the code repository (CR-0004).
 - v2: approved intent for Keel v0.1.

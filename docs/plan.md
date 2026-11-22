@@ -6,9 +6,9 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 8
+version: 9
 template: implementation-plan@2
-from_spec: SPC-0001@8
+from_spec: SPC-0001@9
 ---
 
 # Plan: Keel v0.1
@@ -52,8 +52,17 @@ One project per folder, in the code repository, with a `.keel/` folder (CR-0004,
 | --- | --- | --- | --- |
 | R10 | Sections with live comments | REQ-001, REQ-002 | brainstorm |
 
+## Rework for CR-0003
+
+Runs after CR-0005 (R10); CR-0006 builds on it.
+
+| Task | Title | Requirements | Scenarios |
+| --- | --- | --- | --- |
+| R18 | Change requests across stages, and the Changes page | REQ-014, REQ-005, REQ-008 | change-requests |
+
 ## Version history
 
+- v9: task R18 for CR-0003; runs after CR-0005 (R10).
 - v8: task R10 for CR-0005.
 - v7: rework tasks R1 to R9 for CR-0004.
 - v6: UI pass between T7 and T8a (owner request): app shell, stage bar, Projects, Start, Explore, Intent, Spec and Plan follow the layouts in docs/mocks/, in the neutral design the mocks README asks for (system font, one accent colour). Documents are rendered from markdown.

@@ -2,9 +2,9 @@
   "project": "PRJ-0001",
   "generated": "2026-11-20",
   "from": {
-    "intent": "INT-0001@3",
-    "spec": "SPC-0001@8",
-    "plan": "PLN-0001@8"
+    "intent": "INT-0001@4",
+    "spec": "SPC-0001@9",
+    "plan": "PLN-0001@9"
   },
   "requirements": {
     "REQ-001": {
@@ -54,11 +54,14 @@
     },
     "REQ-005": {
       "tasks": [
+        "R18",
         "T6"
       ],
       "scenarios": [
         "features/brainstorm.feature › A suggestion counts only once I accept it",
         "features/brainstorm.feature › Editing an approved intent creates a change request",
+        "features/change-requests.feature › Changing an approved intent raises a change request",
+        "features/change-requests.feature › Approved changes mark later documents out of date",
         "features/stage-gating.feature › Spec is locked until the intent is approved",
         "features/stage-gating.feature › Approving the intent unlocks the spec"
       ]
@@ -94,6 +97,17 @@
         "features/project-folder.feature › Initialising a folder that already has Keel documents adopts them"
       ]
     },
+    "REQ-014": {
+      "tasks": [
+        "R18"
+      ],
+      "scenarios": [
+        "features/change-requests.feature › Hand-written change requests are listed with their status",
+        "features/change-requests.feature › Changing an approved intent raises a change request",
+        "features/change-requests.feature › Impact is listed by requirement",
+        "features/change-requests.feature › Approved changes mark later documents out of date"
+      ]
+    },
     "REQ-007": {
       "tasks": [
         "R6",
@@ -107,6 +121,7 @@
     },
     "REQ-008": {
       "tasks": [
+        "R18",
         "R5",
         "T7"
       ],
@@ -160,6 +175,17 @@
       ],
       "features": [
         "features/brainstorm.feature"
+      ]
+    },
+    "R18": {
+      "title": "Change requests across stages, and the Changes page",
+      "requirements": [
+        "REQ-014",
+        "REQ-005",
+        "REQ-008"
+      ],
+      "features": [
+        "features/change-requests.feature"
       ]
     },
     "R2": {
@@ -398,6 +424,36 @@
       "feature": "features/brainstorm.feature",
       "scenario": "Editing an approved intent creates a change request",
       "requirement": "REQ-005"
+    },
+    {
+      "feature": "features/change-requests.feature",
+      "scenario": "Hand-written change requests are listed with their status",
+      "requirement": "REQ-014"
+    },
+    {
+      "feature": "features/change-requests.feature",
+      "scenario": "Changing an approved intent raises a change request",
+      "requirement": "REQ-014"
+    },
+    {
+      "feature": "features/change-requests.feature",
+      "scenario": "Changing an approved intent raises a change request",
+      "requirement": "REQ-005"
+    },
+    {
+      "feature": "features/change-requests.feature",
+      "scenario": "Impact is listed by requirement",
+      "requirement": "REQ-014"
+    },
+    {
+      "feature": "features/change-requests.feature",
+      "scenario": "Approved changes mark later documents out of date",
+      "requirement": "REQ-005"
+    },
+    {
+      "feature": "features/change-requests.feature",
+      "scenario": "Approved changes mark later documents out of date",
+      "requirement": "REQ-014"
     },
     {
       "feature": "features/handoff.feature",
