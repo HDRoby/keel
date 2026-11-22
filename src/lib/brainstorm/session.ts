@@ -51,14 +51,6 @@ export interface Context {
   templateContent: string;
 }
 
-/** Turns a title into a free project slug: "Readme helper" → "readme-helper", then "readme-helper-2". */
-export function slugFor(title: string, taken: string[]): string {
-  const base = title.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'idea';
-  let slug = base;
-  for (let n = 2; taken.includes(slug); n += 1) slug = `${base}-${n}`;
-  return slug;
-}
-
 export interface NewIdea {
   title: string;
   idea: string;
@@ -87,7 +79,7 @@ export async function startIdea(store: Store, input: NewIdea): Promise<Result<Se
   };
   const project = await initialiseProject(store, {
     title: session.title, description: session.idea, author: input.author,
-    templates: { intent: input.template, ...input.templates }, style: input.style, standards: input.standards ?? [],
+    templates: Object.fromEntries(Object.entries({ intent: input.template, ...input.templates }).filter(([, v]) => v)), style: input.style, standards: input.standards ?? [],
     files: [{ path: BRAINSTORM_FILE, content: sessionFile(session) }],
   });
   if (!project.ok) return fail('invalid-input', project.message);

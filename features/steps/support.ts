@@ -11,7 +11,7 @@ import { generatePlan } from '../../src/lib/generate/plan';
 import { generateSpec } from '../../src/lib/generate/spec';
 import { openIndex, type Store } from '../../src/lib/store/db';
 import { createDocument, parseDocument } from '../../src/lib/store/documents';
-import { initialiseProject, readProject } from '../../src/lib/store/workspace';
+import { initialiseProject } from '../../src/lib/store/workspace';
 
 /** The folders the dev server uses (playwright.config.ts). */
 export const BDD_PROJECT = join(tmpdir(), 'keel-bdd-project');
@@ -42,23 +42,22 @@ export function bddStore(): Store {
   return { root: BDD_PROJECT, user: BDD_USER, index: openIndex(BDD_PROJECT) };
 }
 
-/** The address of a stage page. */
+/** The address of a stage page: one project per folder, so no project in the URL. */
 export function stagePath(stage: string): string {
-  const project = readProject(BDD_PROJECT);
-  return `/projects/${project.ok ? project.value.id : 'PRJ-0001'}/${stage}`;
+  return `/${stage}`;
 }
 
 /** The screen that initialises a folder. */
-export const INITIALISE_PATH = '/start';
+export const INITIALISE_PATH = '/';
 
 export async function startIdea(page: Page, options: { template?: string; style?: string; title?: string } = {}): Promise<void> {
   await page.goto(INITIALISE_PATH);
   await page.getByLabel('Title').fill(options.title ?? 'Readme helper');
-  await page.getByLabel('The idea in a sentence or two').fill('Help newcomers run any repository.');
+  await page.getByLabel('Description').fill('Help newcomers run any repository.');
   await page.getByLabel('Your name').fill('Ada Lovelace');
   await page.getByRole('radiogroup', { name: 'Intent template' }).getByRole('radio', { name: options.template ?? 'Standard intent v3', exact: true }).check();
   await page.getByRole('radiogroup', { name: 'Brainstorm style' }).getByRole('radio', { name: options.style ?? 'Challenger', exact: true }).check();
-  await page.getByRole('button', { name: 'Start brainstorm' }).click();
+  await page.getByRole('button', { name: 'Initialise and start brainstorm' }).click();
   await page.waitForURL(/\/explore$/);
   await expect(chatEntries(page)).toHaveCount(1);
 }

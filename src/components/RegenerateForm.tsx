@@ -1,6 +1,6 @@
 // Regenerate a draft spec or plan (owner decision, T6). Approved documents are not regenerated.
 import type { ReactNode } from 'react';
-import { regenerateAction } from '@/app/projects/actions';
+import { regenerateAction } from '@/app/(project)/actions';
 import { SubmitButton } from '@/components/SubmitButton';
 
 export function RegenerateForm({ document, children }: { document: 'spec' | 'plan'; children: ReactNode }) {

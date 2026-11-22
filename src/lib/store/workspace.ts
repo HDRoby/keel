@@ -116,7 +116,7 @@ export function readConfig(root: string): Record<string, unknown> | undefined {
 export function writeConfig(root: string, data: Record<string, unknown>): void {
   mkdirSync(keelDir(root), { recursive: true });
   const clean = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined));
-  writeFileAtomic(join(root, CONFIG_FILE), yaml.dump(clean, { lineWidth: 120, noRefs: true }));
+  writeFileAtomic(join(root, CONFIG_FILE), yaml.dump(clean, { lineWidth: 120, noRefs: true, skipInvalid: true }));
 }
 
 /** Reads the project from .keel/config.yml. */

@@ -1,16 +1,15 @@
 // Mock references for the intent or spec (REQ-010): attach links or files and link them to requirements.
-import { attachMockAction, linkMockAction, removeMockAction, replaceMockAction } from '@/app/projects/actions';
+import { attachMockAction, linkMockAction, removeMockAction, replaceMockAction } from '@/app/(project)/actions';
 import type { MockDocument, MockReference } from '@/lib/mocks/references';
 import { MockFileInput } from './MockFileInput';
 
 interface Props {
-  slug: string;
   document: MockDocument;
   references: MockReference[];
   requirements: string[];   // REQ IDs the project has
 }
 
-export function MockReferences({ slug, document, references, requirements }: Props) {
+export function MockReferences({ document, references, requirements }: Props) {
   const mine = references.filter((r) => r.document === document);
   return (
     <section aria-labelledby="mocks" className="card">
@@ -22,7 +21,7 @@ export function MockReferences({ slug, document, references, requirements }: Pro
             <li key={r.id} aria-label={r.id}>
               {r.kind === 'image' && (
                 // eslint-disable-next-line @next/next/no-img-element -- a local, checked file; next/image adds nothing here
-                <img src={`/api/projects/${slug}/mocks/${r.id}`} alt={r.title} width={160} className="mock-thumb" />
+                <img src={`/api/mocks/${r.id}`} alt={r.title} width={160} className="mock-thumb" />
               )}
               <strong>{r.id}</strong> · {r.title} ({r.kind}{r.kind === 'link' ? `: ${r.source}` : `, .keel/mocks/${r.source}`}) · shows {r.requirements.join(', ') || 'no requirement yet'}
               <form action={linkMockAction} aria-label={`Requirements for ${r.id}`} style={{ margin: '4px 0 12px' }}>

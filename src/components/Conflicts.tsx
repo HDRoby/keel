@@ -1,5 +1,5 @@
 // Conflicts a regeneration raised, side by side, with a choice for each (owner decision, T6).
-import { resolveConflictsAction } from '@/app/projects/actions';
+import { resolveConflictsAction } from '@/app/(project)/actions';
 import type { Conflict } from '@/lib/generate/merge';
 
 const box = { whiteSpace: 'pre-wrap' as const, border: '1px solid #ddd', borderRadius: 6, padding: 8, margin: 0, fontSize: 13, overflowX: 'auto' as const };

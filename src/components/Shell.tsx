@@ -1,34 +1,44 @@
-// App shell (mockups in docs/mocks/): sidebar with the workspace, and the open project's stages.
+// App shell (mockups in docs/mocks/): the project and its folder at the top of the sidebar, then the
+// Project, Library and Settings groups. One project per folder (CR-0004): no project list.
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { Bulb, Folder } from './Icons';
+import { Book, Bulb, Gear } from './Icons';
 import { NavLink } from './NavLink';
 
 export interface ShellProject {
-  id: string;
   title: string;
+  id: string;
 }
 
-export function Shell({ project, children }: { project?: ShellProject; children: ReactNode }) {
+const PROJECT_LINKS: [string, string][] = [
+  ['/setup', 'Project setup'], ['/explore', 'Explore'], ['/intent', 'Intent'], ['/spec', 'Spec'], ['/plan', 'Plan'],
+  ['/handoff', 'Handoff'], ['/roadmap', 'Roadmap'], ['/changes', 'Changes'], ['/trace', 'Traceability'],
+];
+
+export function Shell({ project, folder, children }: { project?: ShellProject; folder: string; children: ReactNode }) {
   return (
     <div className="shell">
       <aside className="sidebar">
         <Link href="/" className="brand">Keel</Link>
-        <nav aria-label="Workspace" className="nav-group">
-          <div className="nav-heading"><Folder /> Workspace</div>
-                    <NavLink href="/templates">Templates</NavLink>
-          <NavLink href="/styles">Brainstorm styles</NavLink>
-          <NavLink href="/settings">Settings</NavLink>
+        <div className="project-head" aria-label="This folder">
+          <strong>{project ? project.title : 'Not initialised'}</strong>
+          <span className="folder-path" title={folder}>{folder}</span>
+        </div>
+        <nav aria-label="Project" className="nav-group">
+          <div className="nav-heading"><Bulb /> Project</div>
+          {project
+            ? PROJECT_LINKS.map(([href, label]) => <NavLink key={href} href={href}>{label}</NavLink>)
+            : <NavLink href="/" exact>Initialise</NavLink>}
         </nav>
-        {project && (
-          <nav aria-label="Project" className="nav-group">
-            <div className="nav-heading"><Bulb /> {project.title}</div>
-            {[
-              ['setup', 'Project setup'], ['explore', 'Explore'], ['intent', 'Intent'], ['spec', 'Spec'],
-              ['plan', 'Plan'], ['handoff', 'Handoff'], ['trace', 'Traceability'],
-            ].map(([path, label]) => <NavLink key={path} href={`/projects/${project.id}/${path}`}>{label}</NavLink>)}
-          </nav>
-        )}
+        <nav aria-label="Library" className="nav-group">
+          <div className="nav-heading"><Book /> Library</div>
+          <NavLink href="/templates">Templates</NavLink>
+          <NavLink href="/styles">Brainstorm styles</NavLink>
+          <NavLink href="/standards">Standards</NavLink>
+        </nav>
+        <nav aria-label="Settings" className="nav-group nav-bottom">
+          <NavLink href="/settings"><Gear /> Settings</NavLink>
+        </nav>
       </aside>
       <div>{children}</div>
     </div>
@@ -61,4 +71,13 @@ export function PageHead({ title, meta, description, actions }: { title: string;
 /** Error text from a form action, shown inside the page. */
 export function ErrorAlert({ error }: { error?: string }) {
   return error ? <p role="alert" className="alert">{error}</p> : null;
+}
+
+/** Shown on library pages before the folder has .keel/. */
+export function NotInitialised({ what }: { what: string }) {
+  return (
+    <section className="card">
+      <p>This folder is not initialised yet. Keel copies the {what} into <code>.keel/</code> when you <Link href="/">initialise it</Link>.</p>
+    </section>
+  );
 }

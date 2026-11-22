@@ -58,12 +58,16 @@ When('I open Keel on it', async ({ page }) => {
   await page.goto('/');
 });
 
-Then('I see the Initialise screen with the folder path', async ({ $testInfo }) => {
-  pending($testInfo, 'R4');
+Then('I see the Initialise screen with the folder path', async ({ page }) => {
+  await expect(page.getByRole('heading', { level: 1, name: 'Initialise this folder' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Folder', exact: true })).toContainText(BDD_PROJECT);
+  await expect(page.getByRole('table', { name: 'Paths Keel creates' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Initialise and start brainstorm' })).toBeVisible();
 });
 
-Then('there is no Projects page', async ({ $testInfo }) => {
-  pending($testInfo, 'R4');
+Then('there is no Projects page', async ({ page }) => {
+  await expect(page.getByRole('link', { name: 'Projects', exact: true })).toHaveCount(0);
+  expect((await page.request.get('/projects')).status()).toBe(404);
 });
 
 Given('a folder initialised by Keel with an approved intent', async () => {
