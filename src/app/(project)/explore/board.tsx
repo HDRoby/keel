@@ -4,7 +4,21 @@
 // pause following a meaningful change, on Enter in a reply line, and once on opening if something changed.
 // One review at a time, at most one every interval; typing cancels the review in flight.
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Icon } from '@/components/Icons';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Comment, COMMENT_LABEL, type CommentKind } from '@/components/ui/Comment';
+import { fieldStyles } from '@/components/ui/Field';
+import { LinkButton } from '@/components/ui/LinkButton';
+import { ListRow, ListRows } from '@/components/ui/ListRows';
+import { Notice } from '@/components/ui/Notice';
+import { ProgressLine } from '@/components/ui/ProgressLine';
+import { SectionField } from '@/components/ui/SectionField';
+import { StatusLine } from '@/components/ui/StatusLine';
+import { Tag } from '@/components/ui/Tag';
+import css from './board.module.css';
 import { draftIntentAction, saveChangeRequestAction } from '../actions';
 import type { SectionAction } from '@/lib/brainstorm/session';
 import { meaningfulChange, snapshot, waitBeforeReview } from '@/lib/brainstorm/scheduler';
@@ -12,24 +26,24 @@ import type { ExploreView, SectionView } from '@/lib/brainstorm/view';
 
 type Row = NonNullable<SectionView['rows']>[number];
 
-const KIND: Record<string, { label: string; tone: string }> = {
-  challenge: { label: 'Challenge', tone: 'challenge' },
-  link: { label: 'Links sections', tone: 'link' },
-  suggest: { label: 'Suggestion', tone: 'suggest' },
-  ask: { label: 'Question', tone: 'suggest' },
-  ok: { label: 'Looks good', tone: 'ok' },
-};
+const KIND: Record<string, CommentKind> = { challenge: 'challenge', link: 'link', suggest: 'suggest', ask: 'question', ok: 'ok' };
+
+
 
 interface Props {
   initial: ExploreView;
   timing: { pauseSeconds: number; intervalSeconds: number };
   approved: boolean;          // the intent is approved: edits are saved as a change request
   drafted: boolean;           // intent.md exists (draft)
+  header: { title: string; meta: ReactNode; description?: ReactNode };
+  children?: ReactNode;       // between the header and the board: the stage bar
+  before?: ReactNode;         // above the board, in its column: notices
+  after?: ReactNode;          // under the board: the model line
 }
 
 const counts = (s: SectionView) => (s.rows ? s.rows.some((r) => r.origin !== 'suggested' && r.text.trim()) : s.origin !== 'suggested' && s.value.trim() !== '');
 
-export function ExploreBoard({ initial, timing, approved, drafted }: Props) {
+export function ExploreBoard({ initial, timing, approved, drafted, header, children, before, after }: Props) {
   const [view, setView] = useState<ExploreView>(initial);
   const [focus, setFocus] = useState<string | undefined>();
   const [status, setStatus] = useState<'idle' | 'reviewing'>('idle');
@@ -191,114 +205,110 @@ export function ExploreBoard({ initial, timing, approved, drafted }: Props) {
   const newComments = view.sections.filter((s) => s.key !== focus && s.commentAt && s.commentAt !== seen[s.key]).length;
   const when = view.reviewedAt ? new Date(view.reviewedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : undefined;
 
-  return (
-    <section className="card explore" aria-labelledby="explore-title">
-      <div className="row spread top">
-        <div>
-          <h2 id="explore-title" className="tight">Your idea, section by section</h2>
-          <p className="muted">Write in any order. When you leave a section or pause for a few seconds, the assistant reads the whole list and comments on each section, linking sections where they affect each other. Reply under a comment and press Enter.</p>
-        </div>
-        <div className="explore-progress">
-          <strong>{filled} of {required} required filled</strong>
-          <div className="bar" aria-hidden="true"><span style={{ width: `${required ? (filled / required) * 100 : 0}%` }} /></div>
-          <span className="muted">{canDraft ? (approved ? 'Save your edits as a change request' : 'You can draft the intent now') : 'Fill in the required sections to draft the intent'}</span>
-          {approved ? (
-            <form action={async () => { await save(); await saveChangeRequestAction(); }}>
-              <button type="submit" className="primary">Save as change request</button>
-            </form>
-          ) : (
-            <form action={async () => { await save(); await draftIntentAction(); }}>
-              <button type="submit" className="primary" disabled={!canDraft}>{drafted ? 'Draft intent.md again' : 'Draft intent.md'}</button>
-            </form>
-          )}
-        </div>
-      </div>
-      <p className="review-status" role="status" aria-label="Review status">
-        <span className={`dot ${status}`} aria-hidden="true" />
-        {status === 'reviewing' ? 'Reviewing all sections…'
-          : when ? `Assistant reviewed all sections at ${when}${newComments ? ` · ${newComments} new comment${newComments === 1 ? '' : 's'} on other sections` : ''}`
-          : 'Not reviewed yet'}
-      </p>
-      {error && <p role="alert" className="alert">{error}</p>}
+  const draftButton = approved ? (
+    <form action={async () => { await save(); await saveChangeRequestAction(); }}>
+      <Button type="submit" variant="primary" icon={<Icon name="forum" size={18} />}>Save as change request</Button>
+    </form>
+  ) : (
+    <form action={async () => { await save(); await draftIntentAction(); }}>
+      <Button type="submit" variant="primary" disabled={!canDraft} icon={<Icon name="description" size={18} />}>{drafted ? 'Draft intent.md again' : 'Draft intent.md'}</Button>
+    </form>
+  );
 
-      {view.sections.map((s) => {
-        const focused = focus === s.key;
-        const fresh = !focused && s.commentAt && s.commentAt !== seen[s.key];
-        const comment = s.comment && !s.comment.dismissed ? s.comment : undefined;
-        const kind = comment ? KIND[comment.kind] ?? { label: comment.kind, tone: 'suggest' } : undefined;
-        return (
-          <section key={s.key} aria-label={s.key} className={`section-card${focused ? ' focused' : ''}`}
-            // Only typing fields open the section: a button press must not move the layout under the pointer.
-            onFocus={(e) => { if (!focused && (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement)) enter(s.key); }}
-            // Leaving reviews, but the section stays open until another one is typed in: collapsing it here would move
-            // the page under the pointer and lose the click that caused the blur.
-            onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) leave(s.key); }}>
-            <div className="row spread">
-              <h3 className="tight">{counts(s) ? <span className="filled" aria-label="filled">✓</span> : <span className="empty" aria-hidden="true">○</span>} {s.key} <span className="muted small">{s.required ? 'Required' : 'Optional'}</span></h3>
-              {fresh && <span className="tag new">New comment</span>}
+  return (
+    <>
+      {/* The primary action sits in the page header (docs/ui-guide.md › Page header). */}
+      <PageHeader {...header} setupLink actions={draftButton} />
+      {children}
+      <div className={css.column}>
+      {before}
+      <Card label="Your idea" padding="long">
+        <div className={css.board}>
+          <div className={css.head}>
+            <div className={css.lead}>
+              <h2 className={css.title}>Your idea, section by section</h2>
+              <p className={css.muted}>Write in any order. When you leave a section or pause for a few seconds, the assistant reads the whole list and comments on each section, linking sections where they affect each other. Reply under a comment and press Enter.</p>
             </div>
-            {comment && kind && (
-              <div className={`comment ${kind.tone}`} role="note" aria-label={`Comment on ${s.key}`}>
-                <div className="row spread top">
-                  <p className="tight"><strong className="kind">{kind.label}</strong> {focused ? comment.text : <span className="preview">{comment.text}</span>}
-                    {comment.linkTo && <span className="muted"> · {comment.linkTo}</span>}</p>
-                  {!focused && <button type="button" className="link" onClick={() => enter(s.key)}>Show</button>}
-                </div>
-                {focused && (
-                  <>
-                    {comment.rewrite !== undefined && !comment.applied && (
-                      <div className="offer">
-                        <p className="tight muted">Offered text</p>
-                        <blockquote>{comment.rewrite}</blockquote>
-                        <div className="row">
-                          <button type="button" onClick={() => void act({ op: 'apply', key: s.key })}>Apply</button>
-                          <button type="button" className="link" onClick={() => void act({ op: 'dismiss', key: s.key })}>Dismiss</button>
+            <ProgressLine value={filled} total={required} label={`${filled} of ${required} required filled`}
+              note={canDraft ? (approved ? 'Save your edits as a change request' : 'You can draft the intent now') : 'Fill in the required sections to draft the intent'} />
+          </div>
+          <StatusLine label="Review status" tone={status === 'reviewing' ? 'busy' : when ? 'ok' : 'muted'}
+            legend={<><span className={css.key} data-kind="challenge">Challenge</span><span className={css.key} data-kind="link">Links sections</span><span className={css.key} data-kind="suggest">Suggestion</span><span className={css.key} data-kind="ok">Looks good</span></>}>
+            {status === 'reviewing' ? 'Reviewing all sections…'
+              : when ? `Assistant reviewed all sections at ${when}${newComments ? ` · ${newComments} new comment${newComments === 1 ? '' : 's'} on other sections` : ''}`
+              : 'Not reviewed yet'}
+          </StatusLine>
+          {error && <Notice kind="danger" title="The assistant could not review">{error}</Notice>}
+
+          {view.sections.map((s) => {
+            const focused = focus === s.key;
+            const fresh = !focused && s.commentAt && s.commentAt !== seen[s.key];
+            const comment = s.comment && !s.comment.dismissed ? s.comment : undefined;
+            const kind = comment ? KIND[comment.kind] ?? 'suggest' : undefined;
+            const overline = comment ? `${COMMENT_LABEL[kind ?? 'suggest']}${comment.linkTo ? ` · ${comment.linkTo}` : ''}` : '';
+            return (
+              <div key={s.key} className={css.section}
+                // Only typing fields open the section: a button press must not move the layout under the pointer.
+                onFocus={(e) => { if (!focused && (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement)) enter(s.key); }}
+                // Leaving reviews, but the section stays open until another one is typed in: collapsing it here would move
+                // the page under the pointer and lose the click that caused the blur.
+                onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) leave(s.key); }}>
+                <SectionField label={s.key} filled={counts(s)} required={s.required} active={focused}
+                  extra={fresh ? <Tag tone="link">New comment</Tag> : undefined}
+                  comment={comment && kind ? (
+                    <Comment kind={kind} label={`Comment on ${s.key}`} overline={overline}
+                      collapsed={focused ? undefined : <><span className={css.preview}>{comment.text}</span><LinkButton onClick={() => enter(s.key)}>Show</LinkButton></>}
+                      proposed={comment.rewrite !== undefined && !comment.applied ? <><span className={css.small}>Offered text</span><blockquote className={css.quote}>{comment.rewrite}</blockquote></> : undefined}
+                      proposedActions={<><LinkButton onClick={() => void act({ op: 'apply', key: s.key })}>Apply</LinkButton><LinkButton tone="muted" onClick={() => void act({ op: 'dismiss', key: s.key })}>Dismiss</LinkButton></>}
+                      thread={s.thread.length > 0 ? (
+                        <ol className={css.thread} aria-label={`Thread on ${s.key}`}>
+                          {s.thread.map((t, i) => (
+                            <li key={i} className={t.from === 'user' ? css.mine : css.theirs}>
+                              <p className={css.flat}>{t.text}</p>
+                              {t.rewrite !== undefined && !t.applied && <LinkButton onClick={() => void act({ op: 'apply', key: s.key, thread: i })}>Apply</LinkButton>}
+                              {t.applied && <p className={css.applied}>Applied. You can still edit it below.</p>}
+                            </li>
+                          ))}
+                        </ol>
+                      ) : undefined}
+                      reply={<input aria-label={`Reply on ${s.key}`} placeholder="Reply to the assistant and press Enter" value={replies[s.key] ?? ''}
+                        onChange={(e) => setReplies((r) => ({ ...r, [s.key]: e.target.value }))}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void reply(s.key); } }} />}
+                      actions={comment.applied || (comment.addRow && !comment.applied) ? (
+                        <>
+                          {comment.applied && <span className={css.applied}>Applied. You can still edit it below.</span>}
+                          {comment.addRow && !comment.applied && <><span>{comment.addRow}</span><Button small variant="secondary" onClick={() => void act({ op: 'add-row', key: s.key })}>Add as requirement</Button></>}
+                        </>
+                      ) : undefined}>
+                      {comment.text}
+                    </Comment>
+                  ) : undefined}>
+                  {s.rows ? (
+                    <RowsEditor section={s} onChange={(rows) => setRows(s.key, rows)}
+                      onAccept={(row) => void act({ op: 'accept', key: s.key, row })} onClear={(row) => void act({ op: 'clear', key: s.key, row })} />
+                  ) : (
+                    <>
+                      <textarea aria-label={s.key} rows={3} value={s.value} placeholder={s.guidance}
+                        className={s.origin === 'suggested' ? `suggested ${fieldStyles.suggested}` : undefined} onChange={(e) => edit(s.key, { value: e.target.value, origin: 'user' })} />
+                      {s.origin === 'suggested' && s.value && (
+                        <div className={css.suggestion}>
+                          <span>Suggested by the assistant. It counts once you accept it.</span>
+                          <LinkButton onClick={() => void act({ op: 'accept', key: s.key })}>Accept</LinkButton>
+                          <LinkButton tone="muted" onClick={() => void act({ op: 'clear', key: s.key })}>Clear</LinkButton>
                         </div>
-                      </div>
-                    )}
-                    {comment.applied && <p className="muted small">Applied. You can still edit it below.</p>}
-                    {comment.addRow && !comment.applied && (
-                      <div className="row"><span>{comment.addRow}</span><button type="button" onClick={() => void act({ op: 'add-row', key: s.key })}>Add as requirement</button></div>
-                    )}
-                    {s.thread.length > 0 && (
-                      <ol className="thread" aria-label={`Thread on ${s.key}`}>
-                        {s.thread.map((t, i) => (
-                          <li key={i} className={t.from}>
-                            <p className="tight">{t.text}</p>
-                            {t.rewrite !== undefined && !t.applied && <button type="button" onClick={() => void act({ op: 'apply', key: s.key, thread: i })}>Apply</button>}
-                            {t.applied && <p className="muted small">Applied. You can still edit it below.</p>}
-                          </li>
-                        ))}
-                      </ol>
-                    )}
-                    <input aria-label={`Reply on ${s.key}`} placeholder="Reply to the assistant and press Enter" value={replies[s.key] ?? ''}
-                      onChange={(e) => setReplies((r) => ({ ...r, [s.key]: e.target.value }))}
-                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void reply(s.key); } }} />
-                  </>
-                )}
+                      )}
+                    </>
+                  )}
+                </SectionField>
               </div>
-            )}
-            {s.rows ? (
-              <RowsEditor section={s} onChange={(rows) => setRows(s.key, rows)}
-                onAccept={(row) => void act({ op: 'accept', key: s.key, row })} onClear={(row) => void act({ op: 'clear', key: s.key, row })} />
-            ) : (
-              <>
-                <textarea aria-label={s.key} rows={3} value={s.value} placeholder={s.guidance}
-                  className={s.origin === 'suggested' ? 'suggested' : undefined} onChange={(e) => edit(s.key, { value: e.target.value, origin: 'user' })} />
-                {s.origin === 'suggested' && s.value && (
-                  <div className="row small">
-                    <span className="muted">Suggested by the assistant. It counts once you accept it.</span>
-                    <button type="button" onClick={() => void act({ op: 'accept', key: s.key })}>Accept</button>
-                    <button type="button" className="link" onClick={() => void act({ op: 'clear', key: s.key })}>Clear</button>
-                  </div>
-                )}
-              </>
-            )}
-          </section>
-        );
-      })}
-      <p className="muted small">The assistant never rewrites your text on its own. It fills only empty sections, as suggestions you accept or clear, and offers rewrites you can apply. Draft intent.md puts these sections into the template as they are, with no model call.</p>
-    </section>
+            );
+          })}
+          <p className={css.note}>The assistant never rewrites your text on its own. It fills only empty sections, as suggestions you accept or clear, and offers rewrites you can apply. Draft intent.md puts these sections into the template as they are, with no model call.</p>
+        </div>
+      </Card>
+      {after}
+      </div>
+    </>
   );
 }
 
@@ -309,30 +319,22 @@ function RowsEditor({ section, onChange, onAccept, onClear }: { section: Section
   const remove = (i: number) => onChange(rows.filter((_, j) => j !== i));
   const withIds = rows.filter((r) => r.id).length;
   return (
-    <div className="rows">
-      <ol className="plain-list" aria-label={`${section.key} rows`}>
-        {rows.map((r, i) => (
-          <li key={r.id ?? `row-${i}`} className="req-row" aria-label={`Row ${i + 1}`}>
-            <code className="req-id">{r.id ?? (r.origin === 'suggested' ? 'suggested' : 'new')}</code>
-            <input aria-label={`${section.key} row ${i + 1}`} value={r.text} className={r.origin === 'suggested' ? 'suggested' : undefined} onChange={(e) => set(i, e.target.value)} />
-            {r.origin === 'suggested' ? (
-              <>
-                <button type="button" onClick={() => onAccept(i)}>Accept</button>
-                <button type="button" className="link" onClick={() => onClear(i)}>Clear</button>
-              </>
-            ) : (
-              <>
-                <button type="button" className="icon" aria-label={`Move row ${i + 1} up`} disabled={i === 0} onClick={() => up(i)}>↑</button>
-                <button type="button" className="icon" aria-label={`Remove row ${i + 1}`} onClick={() => remove(i)}>×</button>
-              </>
-            )}
-          </li>
-        ))}
-      </ol>
-      <p className="row small">
-        <button type="button" className="link" onClick={() => onChange([...rows, { text: '', origin: 'user' }])}>+ Add requirement</button>
-        <span className="muted">{withIds ? `${withIds} with IDs from the last draft. New rows get the next IDs when you draft. IDs are never reused.` : 'IDs are given when you draft the intent.'}</span>
-      </p>
-    </div>
+    <ListRows label={`${section.key} rows`}
+      add={<div className={css.suggestion}><LinkButton onClick={() => onChange([...rows, { text: '', origin: 'user' }])}>+ Add requirement</LinkButton>
+        <span>{withIds ? `${withIds} with IDs from the last draft. New rows get the next IDs when you draft. IDs are never reused.` : 'IDs are given when you draft the intent.'}</span></div>}>
+      {rows.map((r, i) => (
+        <ListRow key={r.id ?? `row-${i}`} label={`Row ${i + 1}`} id={r.id ?? (r.origin === 'suggested' ? 'suggested' : 'new')} pending={!r.id}
+          actions={r.origin === 'suggested' ? (
+            <><LinkButton onClick={() => onAccept(i)}>Accept</LinkButton><LinkButton tone="muted" onClick={() => onClear(i)}>Clear</LinkButton></>
+          ) : (
+            <>
+              <Button variant="text" small aria-label={`Move row ${i + 1} up`} disabled={i === 0} onClick={() => up(i)}><Icon name="arrow_upward" size={18} /></Button>
+              <Button variant="text" small aria-label={`Remove row ${i + 1}`} onClick={() => remove(i)}><Icon name="close" size={18} /></Button>
+            </>
+          )}>
+          <input aria-label={`${section.key} row ${i + 1}`} value={r.text} className={r.origin === 'suggested' ? `suggested ${fieldStyles.suggested}` : undefined} onChange={(e) => set(i, e.target.value)} />
+        </ListRow>
+      ))}
+    </ListRows>
   );
 }

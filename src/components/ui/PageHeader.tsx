@@ -17,9 +17,11 @@ export function PageHeader({ title, meta, description, setupLink, actions }: Pag
   return (
     <div className={styles.header}>
       <div className={styles.left}>
-        <h1 className={styles.title}>{title}</h1>
-        {meta && <p className={styles.meta}>{meta}</p>}
-        {setupLink && <Link href="/setup" className={styles.setup}><Icon name="edit" size={16} /> Project setup</Link>}
+        <div className={styles.titleRow}>
+          <h1 className={styles.title}>{title}</h1>
+          {meta && <span className={styles.meta}>{meta}</span>}
+          {setupLink && <Link href="/setup" className={styles.setup}><Icon name="edit" size={16} /> Project setup</Link>}
+        </div>
         {description && <p className={styles.description}>{description}</p>}
       </div>
       {actions && <div className={styles.actions}>{actions}</div>}

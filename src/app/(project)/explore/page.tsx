@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ExploreBoard } from './board';
-import { Pencil } from '@/components/Icons';
+import css from './explore.module.css';
+import { Icon } from '@/components/Icons';
+import { Notice } from '@/components/ui/Notice';
 import { StageBar } from '@/components/ui/StageBar';
-import { ErrorAlert, PageHead, Topbar } from '@/components/Shell';
+import { ErrorAlert, Topbar } from '@/components/Shell';
 import { loadContext, templateLabel } from '@/lib/brainstorm/session';
 import { exploreView } from '@/lib/brainstorm/view';
 import { PROVIDERS } from '@/lib/providers/types';
@@ -40,27 +42,30 @@ export default async function ExplorePage({ searchParams }: StageProps) {
     <>
       <Topbar title="Explore" />
       <main className="content">
-        <PageHead title={state.title}
-          meta={<>{project.id} · created {project.created} · <Link href="/setup"><Pencil /> Project setup</Link></>}
-          description={state.idea || undefined} />
-        <StageBar gates={gates} current="explore" summaries={summaries} />
-        <ErrorAlert error={error} />
-        {intent.ok && (
-          <p role="status" className="muted">intent.md drafted: {intent.value.header.id} v{intent.value.header.version}, status {intent.value.header.status}.</p>
-        )}
-        {saved && <p role="status" className="notice">Saved as change request {saved}. intent.md stays as approved.</p>}
-        {approved && intent.ok && (
-          <section className="card notice-card" aria-label="Intent approved">
-            <h2 className="tight">Intent v{intent.value.header.version} is approved</h2>
-            <p>You can still edit the sections. Your changes are saved as a change request, so the spec and plan see what changed by requirement ID.</p>
-            <p className="tight"><Link href="/intent">Open intent.md</Link>{pending && <> · Waiting for approval: <Link href={`/changes/${pending.id}`}>{pending.id}</Link></>}</p>
-          </section>
-        )}
-        <p className="muted">Template: {templateLabel(state.template)} · Style: {style.name} v{style.version}</p>
-        <ExploreBoard initial={exploreView(context.value)} timing={timing} approved={approved} drafted={intent.ok} />
-        <p className="muted">
-          Using {PROVIDERS.find((p) => p.id === model.provider)?.label ?? model.provider} · {model.model} · reviews when you leave a section or pause for {timing.pauseSeconds} seconds · <Link href="/settings">Change in Settings</Link>
-        </p>
+        <ExploreBoard initial={exploreView(context.value)} timing={timing} approved={approved} drafted={intent.ok}
+          header={{ title: state.title, meta: <>{project.id} · created {project.created}</>, description: state.idea || undefined }}
+          before={<>
+            <ErrorAlert error={error} />
+            {intent.ok && !approved && (
+              <Notice kind="success" role="status" title={`intent.md drafted: ${intent.value.header.id} v${intent.value.header.version}, status ${intent.value.header.status}.`}>
+                Review and approve it on the <Link href="/intent">Intent</Link> stage. Drafting again replaces the draft.
+              </Notice>
+            )}
+            {intent.ok && approved && <p role="status" className={css.hidden}>intent.md drafted: {intent.value.header.id} v{intent.value.header.version}, status {intent.value.header.status}.</p>}
+            {saved && <Notice kind="success" role="status" title={`Saved as change request ${saved}.`}>intent.md stays as approved.</Notice>}
+            {approved && intent.ok && (
+              <Notice kind="info" role="region" label="Intent approved" title={`Intent v${intent.value.header.version} is approved`}>
+                <p>You can still edit the sections. Your changes are saved as a change request, so the spec and plan see what changed by requirement ID.</p>
+                <p><Link href="/intent">Open intent.md</Link>{pending && <> · Waiting for approval: <Link href={`/changes/${pending.id}`}>{pending.id}</Link></>}</p>
+              </Notice>
+            )}
+            <p className={css.meta}>Template: {templateLabel(state.template)} · Style: {style.name} v{style.version}</p>
+          </>}
+          after={<p className={css.meta}>
+            <Icon name="tune" size={16} /> Using {PROVIDERS.find((p) => p.id === model.provider)?.label ?? model.provider} · {model.model} · reviews when you leave a section or pause for {timing.pauseSeconds} seconds · <Link href="/settings">Change in Settings</Link>
+          </p>}>
+          <StageBar gates={gates} current="explore" summaries={summaries} />
+        </ExploreBoard>
       </main>
     </>
   );

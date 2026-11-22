@@ -13,9 +13,9 @@ export function ListRows({ label, add, children }: { label?: string; add?: React
   );
 }
 
-export function ListRow({ id, pending, actions, className, children }: { id: ReactNode; pending?: boolean; actions?: ReactNode; className?: string; children: ReactNode }) {
+export function ListRow({ id, label, pending, actions, className, children }: { id: ReactNode; label?: string; pending?: boolean; actions?: ReactNode; className?: string; children: ReactNode }) {
   return (
-    <div role="listitem" className={cx(styles.row, className)}>
+    <div role="listitem" aria-label={label} className={cx(styles.row, className)}>
       <span className={cx(styles.id, pending && styles.pending)}>{id}</span>
       <div className={styles.input}>{children}</div>
       {actions && <span className={styles.actions}>{actions}</span>}
