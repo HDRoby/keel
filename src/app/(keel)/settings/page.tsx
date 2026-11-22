@@ -36,7 +36,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 <tr><th scope="row">Folder</th><td><code>{store.root}</code></td></tr>
                 <tr><th scope="row">Document folders</th><td><code>{project.value.paths.docs}/</code>, <code>{project.value.paths.tasks}/</code>, <code>{project.value.paths.features}/</code></td></tr>
                 <tr><th scope="row">Commit mode</th><td>{project.value.commit === 'auto' ? 'auto: Keel commits its own files' : 'off'}</td></tr>
-                <tr><th scope="row">Read-back</th><td>every {readbackInterval()} minutes, and on Check now</td></tr>
+                <tr><th scope="row">Read-back</th><td>{readbackInterval() === 0 ? 'automatic checks off' : `every ${readbackInterval()} seconds`}, when the Handoff page gets focus, and on Check now (<code>KEEL_READBACK_SECONDS</code>)</td></tr>
               </tbody>
             </table>
           ) : <p>This folder is not initialised yet.</p>}

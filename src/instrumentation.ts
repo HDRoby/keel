@@ -1,4 +1,4 @@
-// Runs once when the Keel server starts: begins the read-back schedule (REQ-007, ADR-0008).
+// Runs once when the Keel server starts: begins the read-back schedule (REQ-007, ADR-0012).
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return;
   const { startReadbackSchedule } = await import('./lib/readback/schedule');

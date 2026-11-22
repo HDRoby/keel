@@ -11,7 +11,7 @@ import { buildHandoff, commandsSchema, saveHandoffCommands } from '@/lib/handoff
 import { githubToken } from '@/lib/github/auth';
 import { pushHandoff } from '@/lib/github/push';
 import { acceptChange, dismissChange, readbackState } from '@/lib/readback/changes';
-import { checkRepository } from '@/lib/readback/poll';
+import { checkFolder } from '@/lib/readback/check';
 import { kindFromPath, readDocument } from '@/lib/store/documents';
 import { attachMock, linkMock, removeMock, replaceMock, MAX_MOCK_BYTES, MOCK_ID, REQ_ID } from '@/lib/mocks/references';
 import { requirementIds } from '@/lib/trace/index';
@@ -299,7 +299,7 @@ const readbackForm = z.strictObject({ path: z.string().max(300).refine((p) => Bo
 export async function checkRepositoryAction(form: FormData): Promise<void> {
   const input = readbackForm.safeParse(formFields(form));
   if (!input.success) redirect('/?error=Invalid+request');
-  redirect(withError(at('handoff'), await checkRepository(serverStore())));
+  redirect(withError(at('handoff'), await checkFolder(serverStore())));
 }
 
 /** Accept a read-back change as the document's next version. */

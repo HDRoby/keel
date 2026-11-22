@@ -25,9 +25,9 @@ export default defineConfig({
       KEEL_PROJECT_DIR: join(tmpdir(), 'keel-bdd-project'),
       KEEL_USER_DIR: join(tmpdir(), 'keel-bdd-user'),
       KEEL_PROVIDER: 'fake',
-      // Read-back scenarios push to a local bare repository and check on demand.
+      // Read-back scenarios check on demand.
       KEEL_ALLOW_LOCAL_REMOTES: '1',
-      KEEL_READBACK_MINUTES: '0',
+      KEEL_READBACK_SECONDS: '0',
     },
   },
 });

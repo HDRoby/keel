@@ -3,9 +3,10 @@ import { acceptChangeAction, checkRepositoryAction, dismissChangeAction, pushHan
 import { SubmitButton } from '@/components/SubmitButton';
 import { hasGithubToken } from '@/lib/github/auth';
 import { repositoryOf } from '@/lib/github/push';
-import { changedContent, readbackState } from '@/lib/readback/changes';
+import { changedContent, keelContent, readbackState, WORKING_TREE } from '@/lib/readback/changes';
+import { CheckOnFocus } from '@/components/CheckOnFocus';
 import { readbackInterval } from '@/lib/readback/schedule';
-import { parseDocument, readDocument } from '@/lib/store/documents';
+import { parseDocument } from '@/lib/store/documents';
 import { compactChanges, lineChanges } from '@/lib/versions/diff';
 import { ErrorAlert } from '@/components/Shell';
 import { StageLayout } from '@/components/StageBar';
@@ -43,34 +44,41 @@ export default async function HandoffPage({ searchParams }: StageProps) {
   const readback = readbackState(page.store);
   const allowLocal = process.env.KEEL_ALLOW_LOCAL_REMOTES === '1';
   const interval = readbackInterval();
+  // The agent's text is what is in the folder now; Keel's is its last committed version.
   const pending = await Promise.all(readback.pending.map(async (change) => {
-    const theirs = await changedContent(page.store, change);
-    const parsed = theirs === undefined ? undefined : parseDocument(theirs);
-    const mine = readDocument(page.store, change.path);
-    const after = parsed?.ok ? parsed.value.body : (theirs ?? '');
-    return { change, mine, lines: compactChanges(lineChanges(mine.ok ? mine.value.body : '', after), 1) };
+    const theirs = changedContent(page.store, change);
+    const known = await keelContent(page.store, change.path);
+    const body = (text: string | undefined) => {
+      if (text === undefined) return '';
+      const parsed = parseDocument(text);
+      return parsed.ok ? parsed.value.body : text;
+    };
+    const keel = known === undefined ? undefined : parseDocument(known);
+    return { change, version: keel?.ok ? keel.value.header.version : undefined, lines: compactChanges(lineChanges(body(known), body(theirs)), 1) };
   }));
 
   // Shown also while Handoff is locked (for example after accepting a change put the plan back to draft),
   // so the remaining changes can still be reviewed.
-  const readbackCard = lastPush ? (
+  const readbackCard = (
         <section className="card" aria-labelledby="readback">
           <div className="row spread">
-            <h2 id="readback">Read-back from repository</h2>
+            <h2 id="readback">Read-back from this folder</h2>
             <form action={checkRepositoryAction}>
               <SubmitButton label="Check now" busyLabel="Checking…" />
             </form>
           </div>
           <p className="muted">
-            {readback.checked ? `Checked ${when(readback.checked)}` : 'Not checked yet'} · watching docs/ and tasks/ · {interval === 0 ? 'automatic checks are off' : `every ${interval} minute${interval === 1 ? '' : 's'} while Keel runs`}
+            {readback.checked ? `Checked ${when(readback.checked)}` : 'Not checked yet'} · the coding agent&apos;s commits and uncommitted edits to docs/, tasks/ and features/ · {interval === 0 ? 'automatic checks are off' : `every ${interval} second${interval === 1 ? '' : 's'} while Keel runs`} and when you come back to this page
           </p>
           {pending.length === 0 ? <p>No changes from the coding agent.</p> : (
             <ul aria-label="Pending changes" className="plain-list">
-              {pending.map(({ change, mine, lines }) => (
+              {pending.map(({ change, version, lines }) => (
                 <li key={change.path} aria-label={change.path}>
-                  <div className="row spread"><code>{change.path}</code><span className="badge warn">Pending</span></div>
+                  <div className="row spread"><code>{change.path}</code><span className="row">{change.commit === WORKING_TREE && <span className="badge">Uncommitted</span>}<span className="badge warn">Pending</span></span></div>
                   <p style={{ margin: '6px 0' }}>{change.messages.join('; ')}</p>
-                  <p className="muted">Commit {change.commit.slice(0, 7)} · {when(change.date)} · by {change.author}</p>
+                  <p className="muted">{change.commit === WORKING_TREE
+                    ? `Not committed yet${change.committed ? ` · on top of commit ${change.committed.slice(0, 7)}` : ''}`
+                    : `Commit ${change.commit.slice(0, 7)} · ${when(change.date)} · by ${change.author}`}</p>
                   <ol className="changes" aria-label={`Changes to ${change.path}`}>
                     {lines.map((l, i) => l === 'gap' ? <li key={i} className="gap">…</li> : (
                       <li key={i} data-change={l.kind}>{l.kind === 'added' ? '+ ' : l.kind === 'removed' ? '− ' : '  '}{l.text}</li>
@@ -80,12 +88,12 @@ export default async function HandoffPage({ searchParams }: StageProps) {
                     <form action={acceptChangeAction}>
                       <input type="hidden" name="path" value={change.path} />
                       <button type="submit" className="primary">
-                        {mine.ok ? `Accept as ${change.path.split('/').pop()?.replace('.md', '')} v${mine.value.header.version + 1}` : `Accept ${change.path}`}
+                        {version !== undefined ? `Accept as ${change.path.split('/').pop()?.replace('.md', '')} v${version + 1}` : `Accept ${change.path}`}
                       </button>
                     </form>
                     <form action={dismissChangeAction}>
                       <input type="hidden" name="path" value={change.path} />
-                      <button type="submit">Dismiss</button>
+                      <button type="submit" title="Puts Keel's last version back">Dismiss</button>
                     </form>
                   </div>
                 </li>
@@ -105,8 +113,9 @@ export default async function HandoffPage({ searchParams }: StageProps) {
               </>
             ) : <p className="muted">{readback.ciNote ?? 'No CI results yet.'}</p>}
           </div>
+          <CheckOnFocus pending={pending.length} />
         </section>
-  ) : null;
+  );
 
   return (
     <StageLayout page={page} error={error} locked={readbackCard}
