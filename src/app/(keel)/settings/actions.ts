@@ -9,6 +9,7 @@ import { checkApiKey } from '@/lib/providers/errors';
 import { testConnection } from '@/lib/providers/test-connection';
 import { saveAuthor, saveExploreTiming, saveModelChoice, saveProvider } from '@/lib/settings/settings';
 import { serverStore } from '@/lib/store/server-store';
+import { updateConfig } from '@/lib/store/workspace';
 
 const optionalText = z.string().trim().max(500).optional();
 const providerForm = z.strictObject({
@@ -77,5 +78,13 @@ export async function saveExploreTimingAction(form: FormData): Promise<void> {
   const input = z.strictObject({ pauseSeconds: z.coerce.number(), intervalSeconds: z.coerce.number() }).safeParse(formFields(form));
   if (!input.success) redirect('/settings?error=Invalid+request');
   const saved = saveExploreTiming(serverStore(), input.data);
+  redirect(saved.ok ? '/settings?saved=1' : `/settings?error=${encodeURIComponent(saved.message)}`);
+}
+
+/** This project: "Clickable mock before the plan" (REQ-005, CR-0009), saved in .keel/config.yml as a Keel commit. */
+export async function saveMockGateAction(form: FormData): Promise<void> {
+  const input = z.strictObject({ mockGate: z.enum(['recommended', 'required', 'off']) }).safeParse(formFields(form));
+  if (!input.success) redirect('/settings?error=Invalid+request');
+  const saved = await updateConfig(serverStore(), { mock_gate: input.data.mockGate }, `Keel: Clickable mock before the plan: ${input.data.mockGate}`);
   redirect(saved.ok ? '/settings?saved=1' : `/settings?error=${encodeURIComponent(saved.message)}`);
 }

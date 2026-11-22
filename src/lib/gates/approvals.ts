@@ -8,6 +8,8 @@ import { progress } from '../brainstorm/review';
 import { outOfDate } from '../changes/stale';
 import { uncovered } from '../scenarios/store';
 import { undecided } from '../decisions/design';
+import { formHasUi, mockStatus } from '../mocks/sets';
+import { readProject } from '../store/workspace';
 import type { DocumentStatus, Stage } from '../documents/types';
 import { fail, type Result } from '../result';
 import type { Store } from '../store/db';
@@ -125,6 +127,7 @@ export function projectState(store: Store): ProjectState {
     return doc.ok ? doc.value.header.status : undefined;
   };
   const context = loadContext(store);
+  const project = readProject(store.root);
   return {
     requiredCaptured: context.ok && requiredFilled(context.value),
     intent: status(APPROVABLE.intent),
@@ -133,6 +136,7 @@ export function projectState(store: Store): ProjectState {
     decisions: decisionsOf(store.root),
     uncovered: uncovered(store.root),
     undecided: undecided(store.root),
+    mock: { gate: project.ok ? project.value.mockGate : 'recommended', ui: formHasUi(store.root), status: mockStatus(store) },
   };
 }
 

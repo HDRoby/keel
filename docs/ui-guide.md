@@ -122,7 +122,7 @@ Build each once in `src/components/ui/` and use it everywhere.
 
 ## Screen checklist
 
-For each screen, compare with `docs/mocks/<screen>.png` and the source in `docs/mocks/source/<Screen>.dc.html`.
+For each screen, compare with `docs/mocks/set-1/<screen>.png` and the source in `docs/mocks/set-1/source/<Screen>.dc.html`.
 
 | Screen | Route | Mock source | Must have |
 | --- | --- | --- | --- |

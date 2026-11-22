@@ -1,4 +1,5 @@
 // Mock references for the intent or spec (REQ-010): attach links or files and link them to requirements.
+import type React from 'react';
 import { attachMockAction, linkMockAction, removeMockAction, replaceMockAction } from '@/app/(project)/actions';
 import type { MockDocument, MockReference } from '@/lib/mocks/references';
 import { Icon } from './Icons';
@@ -10,17 +11,26 @@ import { Tag } from './ui/Tag';
 import styles from './MockReferences.module.css';
 
 interface Props {
+  bare?: boolean;           // inside another card (the Spec's Clickable mock tab): a section titled "Other references"
   document: MockDocument;
   references: MockReference[];
   requirements: string[];   // REQ IDs the project has
 }
 
+/** A card of its own, or a section inside another card. */
+function Frame({ bare, count, children }: { bare?: boolean; count: React.ReactNode; children: React.ReactNode }) {
+  return bare
+    ? <section aria-labelledby="mocks" className={styles.stack}><div className={styles.head}><h3 id="mocks" className={styles.title3}>Other references</h3>{count}</div>{children}</section>
+    : <Card title={<span id="mocks">Mock references</span>} actions={count}>{children}</Card>;
+}
+
 const KIND_ICON: Record<string, string> = { link: 'link', image: 'image', pdf: 'picture_as_pdf', html: 'code' };
 
-export function MockReferences({ document, references, requirements }: Props) {
+export function MockReferences({ bare, document, references, requirements }: Props) {
   const mine = references.filter((r) => r.document === document);
+  const count = <Tag tone="accent"><Icon name="attach_file" size={16} /> {mine.length} reference{mine.length === 1 ? '' : 's'}</Tag>;
   return (
-    <Card title={<span id="mocks">Mock references</span>} actions={<Tag tone="accent"><Icon name="attach_file" size={16} /> {mine.length} reference{mine.length === 1 ? '' : 's'}</Tag>}>
+    <Frame bare={bare} count={count}>
       <div className={styles.stack}>
         <p className={styles.muted}>Links or files made elsewhere (PNG, JPG, PDF or HTML up to 10 MB), saved under <code>.keel/mocks/</code>. Keel does not generate mocks.</p>
         {mine.length === 0 ? <p className={styles.muted}>None yet.</p> : (
@@ -77,6 +87,6 @@ export function MockReferences({ document, references, requirements }: Props) {
           <div><Button type="submit">Attach</Button></div>
         </form>
       </div>
-    </Card>
+    </Frame>
   );
 }

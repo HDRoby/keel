@@ -96,7 +96,7 @@ The Spec has five tabs.
 - **Design**: one card per decision topic (Form, Language and framework, Storage, Model access, Testing, and any topic a requirement needs). The assistant proposes two or three options, each with an advantage, a drawback, the requirements it serves and whether it fits your standards and constraints; one is **Recommended**. Pick one or write your own, edit the reason, press **Decide**. Each choice becomes a decision record in `docs/decisions/`. **Change** reopens it (a change request once the spec is approved). If the folder already has code, **Keep current** is offered first.
 - **Acceptance scenarios**: grouped by requirement. **Edit** a scenario (name, Given / When / Then steps), **+ Add scenario**, or **Suggest a failure case**. Every requirement needs at least one. The Gherkin tab shows the `.feature` text.
 - **Flagged concerns**: what the feasibility review found, with the standard or rule behind each one.
-- **Clickable mock (coming: CR-0009)**: Keel writes a prompt from the spec for an external model to build a clickable prototype. Refine it there, export the screens (PNG and HTML) with the names the prompt asks for, and drop them back in. Keel matches each file to a screen and its requirements and keeps the set tied to this spec version.
+- **Clickable mock**: Keel writes a prompt from the spec for an external model to build a clickable prototype. Refine it there, export the screens (PNG and HTML) with the names the prompt asks for, and drop them back in. Keel matches each file to a screen and its requirements and keeps the set tied to this spec version.
 
 Then the **feasibility review** (architecture fit, integration, security, effort, risk, build or buy) and the **decision**: **Go**, **Park** or **No-go**, with the reason.
 
@@ -187,7 +187,7 @@ Two parts:
 - **Folders**: where documents, tasks and scenarios go (default `docs`, `tasks`, `features`).
 - **Commits**: commit Keel's files automatically, or write them and commit yourself.
 - **Read-back**: how often to check the folder.
-- **Clickable mock before the plan** (coming: CR-0009): Recommended, Required or Off.
+- **Clickable mock before the plan**: Recommended, Required or Off.
 - **Code map for planning changes** and **Keep changes/README.md up to date** (coming: CR-0013).
 
 ## 14. Where Keel keeps things

@@ -1,6 +1,6 @@
 // Settings (mock source Settings.dc.html): two sections. You, on this computer: name, review timing, models, providers
 // and keys, kept in the user config folder (REQ-009, ADR-0011). This project: what .keel/config.yml says.
-import { saveAuthorAction, saveExploreTimingAction, saveGithubAction, saveModelAction, saveProviderAction, testProviderAction } from './actions';
+import { saveAuthorAction, saveExploreTimingAction, saveGithubAction, saveMockGateAction, saveModelAction, saveProviderAction, testProviderAction } from './actions';
 import { SubmitButton } from '@/components/SubmitButton';
 import { hasGithubToken } from '@/lib/github/auth';
 import { ErrorAlert, Topbar } from '@/components/Shell';
@@ -144,6 +144,20 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             ]} />
           ) : <p className={css.hint}>This folder is not initialised yet.</p>}
         </Card>
+        {project.ok && (
+          <Card title="Clickable mock before the plan" meta="Applies only when the Form decision has a UI (a web, desktop or mobile app).">
+            <form action={saveMockGateAction} aria-label="Clickable mock before the plan" className={css.inlineForm}>
+              <Field label="Clickable mock before the plan">
+                <select name="mockGate" defaultValue={project.value.mockGate}>
+                  <option value="recommended">Recommended: warn if missing or out of date</option>
+                  <option value="required">Required: Generate plan stays locked</option>
+                  <option value="off">Off</option>
+                </select>
+              </Field>
+              <Button type="submit" small>Save</Button>
+            </form>
+          </Card>
+        )}
       </main>
     </>
   );

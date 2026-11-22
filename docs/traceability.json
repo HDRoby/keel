@@ -3,8 +3,8 @@
   "generated": "2026-11-20",
   "from": {
     "intent": "INT-0001@4",
-    "spec": "SPC-0001@11",
-    "plan": "PLN-0001@12"
+    "spec": "SPC-0001@12",
+    "plan": "PLN-0001@13"
   },
   "requirements": {
     "REQ-001": {
@@ -60,6 +60,7 @@
       "tasks": [
         "R11",
         "R12",
+        "R14",
         "R18",
         "T6"
       ],
@@ -69,6 +70,7 @@
         "features/change-requests.feature › Changing an approved intent raises a change request",
         "features/change-requests.feature › Approved changes mark later documents out of date",
         "features/design-decisions.feature › The plan needs every topic decided",
+        "features/mock-references.feature › A required mock set locks the plan",
         "features/scenarios.feature › The plan needs a scenario for every requirement",
         "features/stage-gating.feature › Spec is locked until the intent is approved",
         "features/stage-gating.feature › Approving the intent unlocks the spec"
@@ -149,10 +151,14 @@
     },
     "REQ-010": {
       "tasks": [
+        "R14",
         "T7"
       ],
       "scenarios": [
-        "features/mock-references.feature › A mock reference is linked to requirements"
+        "features/mock-references.feature › Keel builds a prompt for an external model from the spec",
+        "features/mock-references.feature › Attached files are matched to screens by name",
+        "features/mock-references.feature › A mock set goes out of date when the spec changes",
+        "features/mock-references.feature › A required mock set locks the plan"
       ]
     },
     "REQ-011": {
@@ -221,6 +227,16 @@
       "title": "Every screen looks like the mockup",
       "requirements": [],
       "features": []
+    },
+    "R14": {
+      "title": "Clickable mock prompt and mock sets",
+      "requirements": [
+        "REQ-010",
+        "REQ-005"
+      ],
+      "features": [
+        "features/mock-references.feature"
+      ]
     },
     "R18": {
       "title": "Change requests across stages, and the Changes page",
@@ -552,7 +568,27 @@
     },
     {
       "feature": "features/mock-references.feature",
-      "scenario": "A mock reference is linked to requirements",
+      "scenario": "Keel builds a prompt for an external model from the spec",
+      "requirement": "REQ-010"
+    },
+    {
+      "feature": "features/mock-references.feature",
+      "scenario": "Attached files are matched to screens by name",
+      "requirement": "REQ-010"
+    },
+    {
+      "feature": "features/mock-references.feature",
+      "scenario": "A mock set goes out of date when the spec changes",
+      "requirement": "REQ-010"
+    },
+    {
+      "feature": "features/mock-references.feature",
+      "scenario": "A required mock set locks the plan",
+      "requirement": "REQ-005"
+    },
+    {
+      "feature": "features/mock-references.feature",
+      "scenario": "A required mock set locks the plan",
       "requirement": "REQ-010"
     },
     {

@@ -25,7 +25,7 @@ async function withDraftIntent(): Promise<{ store: TestStore }> {
 describe('projectState', () => {
   it('reads the brainstorm, document statuses and decisions', async () => {
     const { store } = await withDraftIntent();
-    expect(projectState(store)).toEqual({ requiredCaptured: true, intent: 'draft', spec: undefined, plan: undefined, decisions: [], uncovered: [], undecided: [] });
+    expect(projectState(store)).toEqual({ requiredCaptured: true, intent: 'draft', spec: undefined, plan: undefined, decisions: [], uncovered: [], undecided: [], mock: { gate: 'recommended', ui: false, status: 'missing' } });
   });
 });
 

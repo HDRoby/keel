@@ -33,7 +33,7 @@ const USER = join(tmpdir(), 'keel-ui-user');
 
 const ROUTES_EMPTY: [string, string][] = [['initialise', '/']];
 const ROUTES_SAMPLE: [string, string][] = [
-  ['setup', '/setup'], ['explore', '/explore'], ['intent', '/intent'], ['spec', '/spec'], ['spec-design', '/spec?tab=design'], ['spec-scenarios', '/spec?tab=scenarios'], ['plan', '/plan'], ['handoff', '/handoff'],
+  ['setup', '/setup'], ['explore', '/explore'], ['intent', '/intent'], ['spec', '/spec'], ['spec-design', '/spec?tab=design'], ['spec-scenarios', '/spec?tab=scenarios'], ['spec-mock', '/spec?tab=mock'], ['plan', '/plan'], ['handoff', '/handoff'],
   ['roadmap', '/roadmap'], ['changes', '/changes'], ['change', '/changes/CR-0001'], ['templates', '/templates'], ['styles', '/styles'],
   ['standards', '/standards'], ['settings', '/settings'], ['trace', '/trace'], ['versions', '/versions?doc=intent'], ['gallery', '/dev/ui'], ['not-found', '/no-such-page'],
 ];

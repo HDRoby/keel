@@ -11,3 +11,4 @@
 .link { display: flex; gap: 8px 12px; flex-wrap: wrap; align-items: center; }
 .check { display: inline-flex; align-items: center; gap: 4px; font: var(--text-regular-1); }
 .summary { cursor: pointer; font: var(--text-medium-1); color: var(--accent); margin-bottom: 8px; }
+.title3 { margin: 0; flex: 1; font: var(--text-medium-3); color: var(--text-strong); }

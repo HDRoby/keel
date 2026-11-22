@@ -3,7 +3,9 @@ import { generatePlanAction } from '../actions';
 import { Conflicts } from '@/components/Conflicts';
 import { DocumentReview } from '@/components/DocumentReview';
 import { RegenerateForm } from '@/components/RegenerateForm';
+import Link from 'next/link';
 import { Icon } from '@/components/Icons';
+import { Notice } from '@/components/ui/Notice';
 import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DataTable } from '@/components/ui/DataTable';
@@ -12,6 +14,8 @@ import { StageLayout } from '@/components/ui/StageBar';
 import { Tag } from '@/components/ui/Tag';
 import css from '../spec/spec.module.css';
 import { SubmitButton } from '@/components/SubmitButton';
+import { projectState } from '@/lib/gates/approvals';
+import { mockCheck } from '@/lib/gates/rules';
 import { conflictsOf } from '@/lib/generate/resolve';
 import { readDocument } from '@/lib/store/documents';
 import { buildTrace } from '@/lib/trace/index';
@@ -25,12 +29,18 @@ export default async function PlanPage({ searchParams }: StageProps) {
   const { store, reviewer } = page;
   const plan = readDocument(store, 'docs/plan.md');
   const trace = buildTrace(store.root);
+  const mock = mockCheck(projectState(store));
   const tasks = Object.values(trace.tasks).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
 
   return (
     <StageLayout page={page} error={error}
       meta={plan.ok ? `${page.project.id} · plan.md · ${plan.value.header.id}${plan.value.header.from_spec ? ` · from ${String(plan.value.header.from_spec).replace('@', ' v')}` : ''}` : undefined}
       actions={page.gates.find((g) => g.stage === 'handoff')?.available ? <ButtonLink href="/handoff" variant="primary"><Icon name="rocket_launch" size={18} /> Prepare handoff</ButtonLink> : undefined}>
+      {mock === 'warn' && (
+        <Notice kind="warning" title="No current clickable mock">
+          This project has a UI, and Clickable mock before the plan is Recommended. Make one from the spec&apos;s <Link href="/spec?tab=mock#mock">Clickable mock</Link> tab, or change the setting in <Link href="/settings">Settings</Link>.
+        </Notice>
+      )}
       {plan.ok ? (
         <div className={css.panel}>
           <DocumentReview home={store.root} document="plan" doc={plan.value} reviewer={reviewer} collapsed

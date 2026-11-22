@@ -2,11 +2,19 @@
 project: PRJ-0001
 ---
 
-# Mock references
+# Mock sets
 
-These show intent; the spec decides. Compare UI work with them. Exported from the Keel clickable mockup on 2026-11-22, after the owner's review that produced CR-0004 to CR-0008. Interactive screens are shown in their starting state.
+Each mock set is the exported screens of a clickable mock, made from one spec version. The current set shows intent; the spec decides. When the spec gets a new version, a set made from an earlier one is out of date until a new set replaces it. Older sets stay here as history.
 
-| File | Screen | Shows |
+| Set | Made from | Exported | Screens | Status |
+| --- | --- | --- | --- | --- |
+| [set-1](set-1/) | spec v11 | 2026-11-22 | 17 PNG, screen sources in `set-1/source/` | Current |
+
+## Set 1
+
+Exported from the Keel clickable mockup on 2026-11-22, after the owner's review that produced CR-0004 to CR-0008. Interactive screens are shown in their starting state. The screen sources (`set-1/source/*.dc.html`) have the exact structure, sizes and copy: read them first. `docs/ui-guide.md` has the tokens, components and a checklist per screen.
+
+| File | Screen | Requirements |
 | --- | --- | --- |
 | [Keel clickable mockup](https://claude.ai/artifact/2c9B2cJWe7LErc2QAAAMvP) | Live canvas (private to the owner) | All screens |
 | `1 · Open Keel on a folder (npx keel).png` | Opening Keel on a folder from the terminal | REQ-012 |
@@ -25,9 +33,6 @@ These show intent; the spec decides. Compare UI work with them. Exported from th
 | `7c · Standards (conventions and guidelines).png` | Standards | REQ-012 |
 | `8 · Settings (you on this computer · this project).png` | Settings, split into this computer and this project | REQ-009, REQ-012 |
 | `Component · Stage bar.png` | Stage bar component | REQ-005 |
+| `1b · Initialise new, Keel, existing and existing-with-AI folders.png` | Initialise for the four opening cases (CR-0010) | REQ-012 |
 
-Explore follows the fill-in-first layout in the clickable mockup (CR-0005). The Spec's Acceptance scenarios tab follows the clickable mockup (CR-0006). The Spec's Design tab follows the clickable mockup (CR-0007). The Projects and Start screens are replaced by Initialise (CR-0004). The earlier PNGs were outdated and have been removed; git history keeps them.
-
-Keel uses the mockup's layout, sizes and colours with the system font and no company branding. `docs/ui-guide.md` has the tokens, components and a checklist per screen. The screen sources are in `docs/mocks/source/`.
-
-The PNGs exported on 2026-11-22 are current, except `1b · Initialise this folder (.keel).png`, which predates the four opening cases of CR-0010; the source `Start.dc.html` is current.
+Keel uses the mockup's layout, sizes and colours with the system font and no company branding. `1b · Initialise this folder (.keel).png` predates the four opening cases of CR-0010; the source `set-1/source/Start.dc.html` is current.
