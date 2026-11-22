@@ -3,8 +3,8 @@
   "generated": "2026-11-20",
   "from": {
     "intent": "INT-0001@4",
-    "spec": "SPC-0001@15",
-    "plan": "PLN-0001@16"
+    "spec": "SPC-0001@16",
+    "plan": "PLN-0001@17"
   },
   "requirements": {
     "REQ-001": {
@@ -36,10 +36,12 @@
     },
     "REQ-003": {
       "tasks": [
+        "R19",
         "T1",
         "T2"
       ],
       "scenarios": [
+        "features/change-packages.feature › Change templates are chosen in Settings",
         "features/templates.feature › A template used by a project cannot be removed"
       ]
     },
@@ -121,7 +123,8 @@
     },
     "REQ-014": {
       "tasks": [
-        "R18"
+        "R18",
+        "R19"
       ],
       "scenarios": [
         "features/change-requests.feature › Hand-written change requests are listed with their status",
@@ -200,6 +203,18 @@
         "features/design-decisions.feature › Deciding writes a decision record",
         "features/design-decisions.feature › Changing a decision in a draft spec rewrites its record",
         "features/design-decisions.feature › The plan needs every topic decided"
+      ]
+    },
+    "REQ-015": {
+      "tasks": [
+        "R19"
+      ],
+      "scenarios": [
+        "features/change-packages.feature › Change templates are chosen in Settings",
+        "features/change-packages.feature › Planning a change writes new tasks with likely files",
+        "features/change-packages.feature › The package follows the templates",
+        "features/change-packages.feature › The changes index is kept up to date",
+        "features/change-packages.feature › Two requests claiming the same new requirement are flagged"
       ]
     }
   },
@@ -299,6 +314,17 @@
       ],
       "features": [
         "features/change-requests.feature"
+      ]
+    },
+    "R19": {
+      "title": "Change packages as complete as hand-written ones",
+      "requirements": [
+        "REQ-015",
+        "REQ-003",
+        "REQ-014"
+      ],
+      "features": [
+        "features/change-packages.feature"
       ]
     },
     "R2": {
@@ -537,6 +563,36 @@
       "feature": "features/brainstorm.feature",
       "scenario": "Editing an approved intent creates a change request",
       "requirement": "REQ-005"
+    },
+    {
+      "feature": "features/change-packages.feature",
+      "scenario": "Change templates are chosen in Settings",
+      "requirement": "REQ-003"
+    },
+    {
+      "feature": "features/change-packages.feature",
+      "scenario": "Change templates are chosen in Settings",
+      "requirement": "REQ-015"
+    },
+    {
+      "feature": "features/change-packages.feature",
+      "scenario": "Planning a change writes new tasks with likely files",
+      "requirement": "REQ-015"
+    },
+    {
+      "feature": "features/change-packages.feature",
+      "scenario": "The package follows the templates",
+      "requirement": "REQ-015"
+    },
+    {
+      "feature": "features/change-packages.feature",
+      "scenario": "The changes index is kept up to date",
+      "requirement": "REQ-015"
+    },
+    {
+      "feature": "features/change-packages.feature",
+      "scenario": "Two requests claiming the same new requirement are flagged",
+      "requirement": "REQ-015"
     },
     {
       "feature": "features/change-requests.feature",

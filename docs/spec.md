@@ -6,7 +6,7 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 15
+version: 16
 template: requirements-and-design-spec@2
 from_intent: INT-0001@4
 standards:
@@ -26,7 +26,7 @@ decision: go (docs/decisions/0001-go.md)
 | --- | --- | --- |
 | REQ-001 | Template-driven brainstorm. Explore shows the intent template's sections for the user to fill in. An LLM reviews all sections whenever the user leaves a section, pauses, or replies to a comment, and writes a comment on each section: challenges, cross-references between sections, suggestions or questions. It only fills empty sections as suggestions and offers rewrites the user applies; it never changes the user's text on its own. Requirements is one of the sections, with one row per requirement. | Intent |
 | REQ-002 | `intent.md` with metadata: ID, project, author, created, updated, status, version, template, brainstorm style. intent.md is assembled from the Explore sections with no model call. Requirement IDs are given when the intent is drafted and never change. Once the intent is approved, edits in Explore are saved as a change request. | Intent |
-| REQ-003 | Versioned, editable templates for intent, spec, plan, roadmap, decision records, agent instructions and the agent kit. A template used by any project cannot be removed. | Intent |
+| REQ-003 | Versioned, editable templates for intent, spec, plan, roadmap, decision records, agent instructions and the agent kit. A template used by any project cannot be removed. Templates for the change request, the prompt for the coding agent, the task and the changes index, chosen in Settings and Project setup. | Intent |
 | REQ-004 | Stable requirement IDs traced from intent to spec, plan tasks and acceptance scenarios. Every requirement has at least one acceptance scenario tagged `@REQ-xxx`; scenarios are edited in the Spec, grouped by requirement. | Intent |
 | REQ-005 | Stage gating: Intent needs the required template sections; Spec needs an approved intent; Plan needs a Go decision, at least one accepted scenario per requirement (the locked message names the requirements without one) and every design topic decided; Handoff needs an approved plan and a latest decision of Go. When the Form decision has a UI, Generate plan warns (Recommended) or stays locked (Required) without a current mock set, as set in the project settings. Locked stages say why. An approved document is not reopened by a review; it changes only through a change request, and the later documents it affects are marked out of date until the request is applied. While a startup check fails, Keel is in setup mode: only Startup check, Settings (and Project setup for config problems) are available. | Intent |
 | REQ-006 | Handoff writes the agent files into the project folder (AGENTS.md, CLAUDE.md, REVIEW.md, agent kit, standards as skills, failing acceptance scenarios, CI). It never overwrites a file Keel did not write without asking. Zip download is optional. Push to the folder's existing git remote is optional. Handoff merges with agent files that were in the folder when Keel initialised it (a marked Keel block in AGENTS.md, a pointer line in CLAUDE.md) and never replaces them. | Intent |
@@ -37,7 +37,8 @@ decision: go (docs/decisions/0001-go.md)
 | REQ-011 | Brainstorm styles as versioned skill files (Challenger, Coach, Cost and value, Market, Engineering-first), chosen at the start. | Spec |
 | REQ-012 | Keel works on one project per folder. `npx keel [path]` opens the folder; a folder without `.keel/` opens on the Initialise screen, where the user sets title, description, templates, brainstorm style and standards. All project config and libraries are in `.keel/`, committed with the project. Opening a folder without `.keel/` starts with a local scan and a recommended path for four cases (new, already Keel, existing project, existing project with its own AI setup). For existing projects Keel can draft a baseline (intent, "as built" requirements, current stack as decisions) from files the user chooses to share, and proposes rules from existing agent files as a project standard. Opening a Keel folder checks the config version, pending changes and missing files. At startup Keel validates `.keel/config.yml` (schema, format, referenced library versions) and never opens the project with an invalid config. | Intent |
 | REQ-013 | The spec's design is a set of decision topics. For each, the assistant proposes options from the requirements, constraints, standards and existing code, with one recommended; the user picks one or writes their own. Each choice is saved as a decision record and can be changed later (directly while the spec is a draft, through a change request after approval). | CR-0007 |
-| REQ-014 | Change requests across stages. A change to an approved document becomes a change request in `changes/CR-NNNN/`: diff, size, approval for significant changes, impact on later documents by requirement ID with Update / Still valid / Later, and a change package for the coding agent. The Changes page lists every request in `changes/`, including ones written by hand, with a status computed from its header, its dependencies and its tasks. | CR-0003 |
+| REQ-014 | Change requests across stages. A change to an approved document becomes a change request in `changes/CR-NNNN/`: diff, size, approval for significant changes, impact on later documents by requirement ID with Update / Still valid / Later, and a change package for the coding agent. The Changes page lists every request in `changes/`, including ones written by hand, with a status computed from its header, its dependencies and its tasks. The change request page has a "Plan the change" step before the package. | CR-0003 |
+| REQ-015 | Change packages: Keel writes each change request with templates for the request, the prompt, the tasks and the changes index. It plans the change into new tasks (with files likely to change from an opt-in code map) and suggested scenarios, links decision records and mock screens, suggests dependencies, warns on requirement-ID clashes and keeps `changes/README.md` up to date. | Spec |
 
 ## Approach
 
@@ -84,6 +85,7 @@ Code generation, multi-user roles and approvals, the Maintain stage, a VS Code e
 
 ## Version history
 
+- v16: change packages as complete as hand-written ones, REQ-015 (CR-0013).
 - v15: startup check and setup mode (CR-0012).
 - v14: Ollama is the default provider, with local models listed (CR-0011).
 - v13: opening a folder in four cases, baseline for existing projects (CR-0010).
