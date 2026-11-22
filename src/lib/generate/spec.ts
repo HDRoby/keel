@@ -1,6 +1,7 @@
 // Generate spec: fills a spec template from the approved intent (owner decision, T6). Keel writes the
 // Requirements table and scenario tags itself, so IDs stay traceable; the model writes the rest.
 // Regenerating merges with the proposer's edits and raises conflicts that must be resolved before approval.
+import { recordBaselineDecisions } from '../baseline/decisions';
 import { fillSections, parseSections } from '../brainstorm/sections';
 import { gateFor } from '../gates/rules';
 import { projectState } from '../gates/approvals';
@@ -146,6 +147,11 @@ export async function generateSpec(store: Store, templateRef: string, write: Wri
   await addSuggestions(store, proposals);
   if (composed.value.topics.length) writeDesign(store.root, { topics: composed.value.topics });
   await commitFiles(store.root, [...specBaselines(store.root, composed.value), ...(proposals.length ? [SCENARIOS_FILE] : []), ...(composed.value.topics.length ? [DESIGN_FILE] : [])], `Generation baseline for ${created.value.header.id} v1`);
+  // A project started from a baseline: its current stack is recorded as the Language and framework decision (CR-0010).
+  if ((await recordBaselineDecisions(store)).length) {
+    const latest = readDocument(store, 'docs/spec.md');
+    if (latest.ok) return ok(latest.value);
+  }
   return created;
 }
 

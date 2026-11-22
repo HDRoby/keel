@@ -31,6 +31,7 @@ export interface PlannedFile {
   state: FileState;
   data: Uint8Array;
   optional: boolean;   // setup files (package.json, …): written only when the folder has none
+  merged?: boolean;    // an agent file that was here at Initialise: Keel adds its block or pointer, the rest stays (CR-0010)
 }
 
 export interface WriteReport {
@@ -76,14 +77,47 @@ export function stateOf(root: string, file: Pick<PackageFile, 'path' | 'data'>, 
   return known[file.path] === hashOf(current) ? 'changed' : 'conflict';
 }
 
+export const KEEL_START = '<!-- keel:start -->';
+export const KEEL_END = '<!-- keel:end -->';
+export const CLAUDE_POINTER = 'Read `AGENTS.md`: the Keel instructions for this project are in it, between the keel:start and keel:end markers.';
+
+/** The user's AGENTS.md with Keel's instructions between the markers; the text outside them is never changed. */
+export function mergeKeelBlock(existing: string, keel: string): string {
+  const block = `${KEEL_START}\n${keel.trim()}\n${KEEL_END}`;
+  const start = existing.indexOf(KEEL_START);
+  const end = existing.indexOf(KEEL_END);
+  if (start >= 0 && end > start) return `${existing.slice(0, start)}${block}${existing.slice(end + KEEL_END.length)}`;
+  return `${existing.replace(/\s*$/, '')}\n\n${block}\n`;
+}
+
+/** The user's CLAUDE.md with one pointer line to AGENTS.md, added only when it does not mention AGENTS.md. */
+export function withClaudePointer(existing: string): string {
+  return existing.includes('AGENTS.md') ? existing : `${existing.replace(/\s*$/, '')}\n\n${CLAUDE_POINTER}\n`;
+}
+
+/** Agent files that were in the folder when Keel initialised it (CR-0010, owner decision): merged, never replaced. */
+export function agentFilesAtStart(root: string): string[] {
+  const value = readConfig(root)?.agent_files_at_start;
+  return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : [];
+}
+
 /** What Handoff would write, with each file's state. */
 export async function planHandoff(store: Store): Promise<Result<PlannedFile[], HandoffError>> {
   const built = await buildHandoff(store);
   if (!built.ok) return built;
   const known = writtenByKeel(store.root);
+  const atStart = agentFilesAtStart(store.root);
+  const decoder = new TextDecoder();
   return ok(built.value
     .filter((f) => AGENT_FILES.test(f.path) || SETUP_FILES.test(f.path))
     .map((f) => {
+      const full = join(store.root, f.path);
+      if ((f.path === 'AGENTS.md' || f.path === 'CLAUDE.md') && atStart.includes(f.path) && existsSync(full)) {
+        const existing = readFileSync(full, 'utf8');
+        const merged = f.path === 'AGENTS.md' ? mergeKeelBlock(existing, decoder.decode(f.data)) : withClaudePointer(existing);
+        const data = new TextEncoder().encode(merged);
+        return { path: f.path, data, optional: false, merged: true, state: merged === existing ? 'unchanged' as const : 'changed' as const };
+      }
       const optional = SETUP_FILES.test(f.path);
       return { path: f.path, data: f.data, optional, state: stateOf(store.root, f, known, optional) };
     }));

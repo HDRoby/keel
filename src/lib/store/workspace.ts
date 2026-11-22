@@ -43,6 +43,8 @@ export type ProjectError = 'not-initialised' | 'already-initialised' | 'invalid-
 export const KEEL_DIR = '.keel';
 export const CONFIG_FILE = '.keel/config.yml';
 export const DEFAULT_PATHS: ProjectPaths = { docs: 'docs', tasks: 'tasks', features: 'features' };
+/** The format of .keel/config.yml this Keel writes (CR-0010). A config without `format` is format 1. */
+export const CONFIG_FORMAT = 2;
 
 const REF = /^[a-z0-9][a-z0-9-]*@\d+$/;
 const FOLDER = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
@@ -173,6 +175,8 @@ export async function initialiseProject(store: Store, input: InitialiseInput, se
     standards: [...new Set(input.standards ?? [])],
     paths: DEFAULT_PATHS,
     commit: 'auto',
+    format: CONFIG_FORMAT,
+    mock_gate: 'recommended',
     ...input.extra,
   });
   for (const file of input.files ?? []) {

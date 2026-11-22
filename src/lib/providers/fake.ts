@@ -8,6 +8,7 @@ import { PROVIDERS, type ChatMessage, type ChatProvider, type RealProviderId } f
 const REVIEW_MARKER = 'Answer with one JSON object and nothing else.';
 const SCENARIO_MARKER = 'Answer with one scenario as JSON and nothing else.';
 const DESIGN_MARKER = 'Answer with the design topics as JSON and nothing else.';
+const BASELINE_MARKER = 'Answer with the baseline as JSON and nothing else.';
 
 export function fakeReply(standsFor: RealProviderId, messages: ChatMessage[]): string {
   const label = PROVIDERS.find((p) => p.id === standsFor)?.label ?? standsFor;
@@ -15,6 +16,7 @@ export function fakeReply(standsFor: RealProviderId, messages: ChatMessage[]): s
   if (messages[0]?.role === 'system' && messages[0].content.includes(REVIEW_MARKER)) return JSON.stringify(fakeReview(label, last));
   if (messages[0]?.role === 'system' && messages[0].content.includes(SCENARIO_MARKER)) return JSON.stringify(fakeFailureCase(last));
   if (messages[0]?.role === 'system' && messages[0].content.includes(DESIGN_MARKER)) return JSON.stringify(fakeDesign(last));
+  if (messages[0]?.role === 'system' && messages[0].content.includes(BASELINE_MARKER)) return JSON.stringify(fakeBaseline(last));
   if (messages[0]?.role === 'system' && messages[0].content.includes('Answer with a fit line as JSON and nothing else.')) return JSON.stringify({ kind: 'follows', text: 'Fits the requirements; no standard is broken' });
   return `Reply from ${label}: I read "${last}".`;
 }
@@ -121,12 +123,29 @@ export function fakeDesign(userMessage: string): Record<string, unknown> {
   return { topics: (input.topics ?? []).map((t) => ({ title: t.title, options: catalogue[t.title] ?? [option(`Option for ${t.title}`, 'A sensible default.', 'Simple.', 'Generic.', true)] })) };
 }
 
+/** A baseline from the shared files: the README's first paragraph as the problem, its bullets as requirements. */
+export function fakeBaseline(userMessage: string): Record<string, unknown> {
+  let input: { sections?: string[]; files?: { path: string; text: string }[] } = {};
+  try {
+    input = JSON.parse(userMessage) as typeof input;
+  } catch {
+    return { sections: {}, requirements: [] };
+  }
+  const readme = input.files?.find((f) => /^readme/i.test(f.path))?.text ?? '';
+  const paragraph = readme.split(/\n\s*\n/).map((p) => p.trim()).find((p) => p && !p.startsWith('#') && !/^[-*]/.test(p)) ?? '';
+  const bullets = readme.split('\n').map((l) => /^\s*[-*]\s+(.+)$/.exec(l)?.[1]?.trim()).filter((l): l is string => Boolean(l)).slice(0, 6);
+  const sections: Record<string, string> = {};
+  if (paragraph && input.sections?.includes('Problem')) sections.Problem = paragraph;
+  if (input.sections?.includes('Desired outcome')) sections['Desired outcome'] = 'Keep what works today, and plan the next change on top of it.';
+  return { sections, requirements: bullets };
+}
+
 export function createFakeProvider(standsFor: RealProviderId, env: Record<string, string | undefined> = process.env): ChatProvider {
   return {
     id: 'fake',
     async *stream(messages) {
       const log = env.KEEL_FAKE_LOG?.trim();
-      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : messages[0]?.content.includes(SCENARIO_MARKER) ? 'scenario' : messages[0]?.content.includes(DESIGN_MARKER) ? 'design' : 'chat'}\n`);
+      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : messages[0]?.content.includes(SCENARIO_MARKER) ? 'scenario' : messages[0]?.content.includes(DESIGN_MARKER) ? 'design' : messages[0]?.content.includes(BASELINE_MARKER) ? 'baseline' : 'chat'}\n`);
       for (const word of fakeReply(standsFor, messages).split(/(?<= )/)) yield word;
     },
   };
