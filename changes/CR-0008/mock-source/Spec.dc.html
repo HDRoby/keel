@@ -484,8 +484,8 @@ class Component extends DCLogic {
         { id: 'py', name: 'Python, FastAPI and React', summary: 'API in Python, UI in React.', pro: 'Good LLM libraries', con: 'Two languages; rewrite of what exists', fit: 'Breaks TypeScript conventions v3', ok: false, reqs: 'All' },
         { id: 'go', name: 'Go and htmx', summary: 'One binary with server-rendered pages.', pro: 'Single file to install', con: 'Rewrite; fewer UI components', fit: 'Breaks TypeScript conventions v3', ok: false, reqs: 'All' } ] },
       { id: 'storage', title: 'Storage', origin: 'From the spec template', options: [
-        { id: 'git', name: 'Git in the project folder, SQLite cache', rec: true, summary: 'Markdown files in this repository; .keel/cache/index.db rebuilt when needed.', pro: 'History and diffs for free; readable without Keel', con: 'Commits must stay limited to Keel files', fit: 'Fits Plain markdown v1', ok: true, reqs: 'REQ-002, REQ-008, REQ-012' },
-        { id: 'sqlite', name: 'SQLite only', summary: 'Everything in one database file.', pro: 'Simple queries', con: 'Documents not readable without Keel', fit: 'Breaks Plain markdown v1', ok: false, reqs: 'REQ-008' },
+        { id: 'git', name: 'Markdown files in git (this folder)', rec: true, summary: 'Documents, tasks and scenarios as markdown files in this repository; lists are read from the files.', pro: 'History and diffs for free; readable without Keel', con: 'Commits must stay limited to Keel files', fit: 'Fits Plain markdown v1', ok: true, reqs: 'REQ-002, REQ-008, REQ-012' },
+        { id: 'dbfile', name: 'A single database file', summary: 'Everything in one embedded database in .keel/.', pro: 'Simple queries', con: 'Documents not readable without Keel; a native module to ship', fit: 'Breaks Plain markdown v1', ok: false, reqs: 'REQ-008' },
         { id: 'pg', name: 'PostgreSQL', summary: 'A database server.', pro: 'Ready for many users', con: 'A server to run for one person', fit: 'Conflicts with Constraints: single user first', ok: false, reqs: 'REQ-008' } ] },
       { id: 'readback', title: 'Read-back mechanism', origin: 'Added by the assistant for REQ-007', options: [
         { id: 'local', name: 'Read the local git repository', rec: true, summary: 'Commits and uncommitted edits in docs/, tasks/ and features/.', pro: 'Instant, no token', con: 'Only sees what is in this folder', fit: 'Fits Security baseline v2: no token needed', ok: true, reqs: 'REQ-007' },
@@ -503,7 +503,7 @@ class Component extends DCLogic {
     const DEC0 = {
       form: { chosen: 'local', reason: 'Product managers will not install VS Code, and keys must stay on the computer.', adr: 'ADR-0005', history: 'Earlier: VS Code extension, dropped on 20/11/2026 (ADR-0002).' },
       stack: { chosen: 'keep', reason: 'The folder already has a working TypeScript and Next.js app, and the TypeScript conventions standard applies.', adr: 'ADR-0006' },
-      storage: { chosen: 'git', reason: 'Git gives history, diffs and an audit trail; documents stay readable without Keel.', adr: 'ADR-0007' },
+      storage: { chosen: 'git', reason: 'Git gives history, diffs and an audit trail; documents stay readable without Keel, and there is no database to ship or rebuild.', adr: 'ADR-0017', history: 'Supersedes ADR-0007, which added a cached index next to git (CR-0014).' },
       readback: { chosen: 'local', reason: 'The agent works in the same folder, so its changes are already on disk.', adr: 'ADR-0012', history: 'Supersedes ADR-0008: poll the GitHub API (changed by CR-0004).' }
     };
     const dec = this.state.dec || DEC0;
