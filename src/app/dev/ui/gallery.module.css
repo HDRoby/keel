@@ -1,0 +1,4 @@
+.page { padding: var(--spacing-3); max-width: 1400px; display: grid; gap: var(--spacing-3); }
+.stack { display: grid; gap: var(--spacing-2); }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--spacing-2); }
