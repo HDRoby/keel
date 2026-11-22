@@ -2,9 +2,9 @@
   "project": "PRJ-0001",
   "generated": "2026-11-20",
   "from": {
-    "intent": "INT-0001@5",
-    "spec": "SPC-0001@18",
-    "plan": "PLN-0001@19"
+    "intent": "INT-0001@6",
+    "spec": "SPC-0001@19",
+    "plan": "PLN-0001@20"
   },
   "requirements": {
     "REQ-001": {
@@ -129,14 +129,16 @@
       "tasks": [
         "R18",
         "R19",
-        "R21"
+        "R21",
+        "R22"
       ],
       "scenarios": [
         "features/ai-readiness.feature › Accepted advice in a Keel folder becomes a change request",
         "features/change-requests.feature › Hand-written change requests are listed with their status",
         "features/change-requests.feature › Changing an approved intent raises a change request",
         "features/change-requests.feature › Impact is listed by requirement",
-        "features/change-requests.feature › Approved changes mark later documents out of date"
+        "features/change-requests.feature › Approved changes mark later documents out of date",
+        "features/discuss-a-change.feature › Agreeing writes the package and keeps the discussion"
       ]
     },
     "REQ-016": {
@@ -153,6 +155,21 @@
         "features/ai-readiness.feature › Agent files that disagree are flagged",
         "features/ai-readiness.feature › Accepted advice in a Keel folder becomes a change request",
         "features/ai-readiness.feature › Reports are saved and compared"
+      ]
+    },
+    "REQ-017": {
+      "tasks": [
+        "R22"
+      ],
+      "scenarios": [
+        "features/discuss-a-change.feature › A discussion ends in a proposal card",
+        "features/discuss-a-change.feature › Writing yes does not create a change request",
+        "features/discuss-a-change.feature › Agreeing writes the package and keeps the discussion",
+        "features/discuss-a-change.feature › The proposal is checked by Keel",
+        "features/discuss-a-change.feature › An unreadable proposal is asked for again once",
+        "features/discuss-a-change.feature › Only the chosen sources are sent",
+        "features/discuss-a-change.feature › A message that looks like a key is never sent or saved",
+        "features/discuss-a-change.feature › A parked discussion stays for later"
       ]
     },
     "REQ-007": {
@@ -182,6 +199,7 @@
         "R16",
         "R17",
         "R2",
+        "R22",
         "T3"
       ],
       "scenarios": [
@@ -380,6 +398,17 @@
       ],
       "features": [
         "features/ai-readiness.feature"
+      ]
+    },
+    "R22": {
+      "title": "Discuss a change",
+      "requirements": [
+        "REQ-017",
+        "REQ-014",
+        "REQ-009"
+      ],
+      "features": [
+        "features/discuss-a-change.feature"
       ]
     },
     "R3": {
@@ -753,6 +782,51 @@
       "feature": "features/design-decisions.feature",
       "scenario": "The plan needs every topic decided",
       "requirement": "REQ-005"
+    },
+    {
+      "feature": "features/discuss-a-change.feature",
+      "scenario": "A discussion ends in a proposal card",
+      "requirement": "REQ-017"
+    },
+    {
+      "feature": "features/discuss-a-change.feature",
+      "scenario": "Writing yes does not create a change request",
+      "requirement": "REQ-017"
+    },
+    {
+      "feature": "features/discuss-a-change.feature",
+      "scenario": "Agreeing writes the package and keeps the discussion",
+      "requirement": "REQ-017"
+    },
+    {
+      "feature": "features/discuss-a-change.feature",
+      "scenario": "Agreeing writes the package and keeps the discussion",
+      "requirement": "REQ-014"
+    },
+    {
+      "feature": "features/discuss-a-change.feature",
+      "scenario": "The proposal is checked by Keel",
+      "requirement": "REQ-017"
+    },
+    {
+      "feature": "features/discuss-a-change.feature",
+      "scenario": "An unreadable proposal is asked for again once",
+      "requirement": "REQ-017"
+    },
+    {
+      "feature": "features/discuss-a-change.feature",
+      "scenario": "Only the chosen sources are sent",
+      "requirement": "REQ-017"
+    },
+    {
+      "feature": "features/discuss-a-change.feature",
+      "scenario": "A message that looks like a key is never sent or saved",
+      "requirement": "REQ-017"
+    },
+    {
+      "feature": "features/discuss-a-change.feature",
+      "scenario": "A parked discussion stays for later",
+      "requirement": "REQ-017"
     },
     {
       "feature": "features/handoff.feature",
