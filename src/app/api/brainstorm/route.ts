@@ -4,6 +4,7 @@ import { fallbackQuestion, loadContext, pendingQuestion, questionPrompt, recordA
 import { describeProviderError } from '@/lib/providers/errors';
 import { providerForTask } from '@/lib/providers/registry';
 import { serverStore } from '@/lib/store/server-store';
+import { commitBlocker } from '@/lib/store/git';
 
 const body = z.strictObject({ answer: z.string().trim().min(1).max(20_000).optional() });
 
@@ -13,6 +14,9 @@ export async function POST(request: Request): Promise<Response> {
   const store = serverStore();
   let context = loadContext(store);
   if (!context.ok) return Response.json({ error: context.message }, { status: 404 });
+  // Nothing is saved while the repository is in a merge, rebase or cherry-pick, or on a detached HEAD (R5).
+  const blocker = await commitBlocker(store.root);
+  if (blocker) return Response.json({ error: blocker }, { status: 409 });
   if (input.data.answer) {
     const answered = await recordAnswer(store, context.value, input.data.answer);
     if (!answered.ok) return Response.json({ error: answered.message }, { status: 409 });

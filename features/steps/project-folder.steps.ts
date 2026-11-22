@@ -1,6 +1,6 @@
 // One project per folder (REQ-012, CR-0004).
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 import { review } from '../../src/lib/gates/approvals';
@@ -118,21 +118,31 @@ function filesUnder(dir: string): string[] {
   });
 }
 
-// Commits only Keel's own paths: R5.
-Given('I have staged a change to {string}', async ({ $testInfo }, path: string) => {
-  pending($testInfo, `R5 (staged ${path})`);
+// Commits only Keel's own paths (task R5).
+Given('I have staged a change to {string}', async ({}, path: string) => {
+  mkdirSync(dirname(join(BDD_PROJECT, path)), { recursive: true });
+  writeFileSync(join(BDD_PROJECT, path), 'export const answer = 42;\n');
+  git('add', '--', path);
 });
 
-When('I save the intent', async ({ $testInfo }) => {
-  pending($testInfo, 'R5');
+// Saving the intent through the document store, as Draft intent.md and the review form do.
+When('I save the intent', async () => {
+  const store = bddStore();
+  const saved = await createDocument(store, {
+    kind: 'intent', title: 'Expense tracker', template: 'standard-intent@3',
+    body: '# Intent: Expense tracker\n\n## Requirements\n\n- REQ-001 Record an expense\n',
+  });
+  store.index.close();
+  expect(saved.ok).toBe(true);
 });
 
-Then('the Keel commit contains only docs\\/intent.md', async ({ $testInfo }) => {
-  pending($testInfo, 'R5');
+Then('the Keel commit contains only docs\\/intent.md', async () => {
+  expect(git('log', '-1', '--format=%an <%ae>|%s')).toBe('Keel <keel@localhost>|Keel: INT-0001 v1: Create intent');
+  expect(git('show', '--name-only', '--format=', 'HEAD')).toBe('docs/intent.md');
 });
 
-Then('{string} is still staged', async ({ $testInfo }, path: string) => {
-  pending($testInfo, `R5 (staged ${path})`);
+Then('{string} is still staged', async ({}, path: string) => {
+  expect(git('diff', '--cached', '--name-only').split('\n')).toContain(path);
 });
 
 // Adopting existing documents: R9.

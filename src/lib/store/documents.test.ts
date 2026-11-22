@@ -62,7 +62,7 @@ describe('createDocument', () => {
       status: 'draft', version: 1, template: 'standard-intent@3', brainstorm_style: 'challenger@1' } } });
     const dir = store.root;
     expect(readFileSync(join(dir, 'docs/intent.md'), 'utf8')).toMatch(/^---\nbrainstorm_style: challenger@1\n/);
-    expect((await fileHistory(dir, 'docs/intent.md'))[0]?.message).toBe('INT-0001 v1: Create intent');
+    expect((await fileHistory(dir, 'docs/intent.md'))[0]?.message).toBe('Keel: INT-0001 v1: Create intent');
     expect(store.index.documents()).toHaveLength(1);
   });
 
@@ -111,5 +111,29 @@ describe('readDocument and saveDocument', () => {
     await createDocument(store, intent);
     writeFileSync(join(store.root, 'docs/intent.md'), 'no header');
     expect(await saveDocument(store, 'docs/intent.md', { reason: 'x' })).toMatchObject({ error: 'invalid-front-matter' });
+  });
+});
+
+describe('writing into the user\'s repository (R5)', () => {
+  it('does not overwrite a document edited outside Keel, unless read-back accepts it', async () => {
+    const store = await withProject();
+    await createDocument(store, intent);
+    const file = join(store.root, 'docs/intent.md');
+    writeFileSync(file, readFileSync(file, 'utf8').replace('# Intent: Keel', '# Intent: Keel (edited by hand)'));
+    expect(await saveDocument(store, 'docs/intent.md', { reason: 'Edit', body: 'x' })).toMatchObject({ error: 'edited-outside' });
+    expect(readFileSync(file, 'utf8')).toContain('edited by hand');
+    expect(await saveDocument(store, 'docs/intent.md', { reason: 'Read back', body: 'Accepted.', external: true })).toMatchObject({ ok: true });
+    expect(await saveDocument(store, 'docs/intent.md', { reason: 'Edit', body: 'Next.' })).toMatchObject({ ok: true, value: { header: { version: 3 } } });
+  });
+
+  it('keeps the change unsaved while a merge is in progress', async () => {
+    const store = await withProject();
+    await createDocument(store, intent);
+    const file = join(store.root, 'docs/intent.md');
+    const before = readFileSync(file, 'utf8');
+    writeFileSync(join(store.root, '.git', 'MERGE_HEAD'), 'x');
+    expect(await saveDocument(store, 'docs/intent.md', { reason: 'Edit', body: 'x' })).toMatchObject({ error: 'repo-busy', message: 'A merge is in progress. Finish the merge in git, then try again.' });
+    expect(await createDocument(store, { ...intent, kind: 'plan' })).toMatchObject({ error: 'repo-busy' });
+    expect(readFileSync(file, 'utf8')).toBe(before);
   });
 });

@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { fail, ok, type Result } from '../result';
 import { writeFileAtomic } from './atomic';
 import type { Store } from './db';
-import { commitFiles, initRepo } from './git';
+import { commitBlocker, commitFiles, initRepo } from './git';
 import { ensureSeed } from '../seed';
 import { formatReqId } from '../trace/assign';
 import { buildTrace } from '../trace/index';
@@ -34,7 +34,7 @@ export interface Project {
   commit: 'auto' | 'off';
 }
 
-export type ProjectError = 'not-initialised' | 'already-initialised' | 'invalid-config' | 'unknown-standard' | 'seed-failed';
+export type ProjectError = 'not-initialised' | 'already-initialised' | 'invalid-config' | 'unknown-standard' | 'seed-failed' | 'repo-busy';
 
 /** Keel's folder inside the project, and its config file (repository paths). */
 export const KEEL_DIR = '.keel';
@@ -152,6 +152,8 @@ export async function initialiseProject(store: Store, input: InitialiseInput, se
   if ((input.files ?? []).some((f) => !f.path.startsWith(`${KEEL_DIR}/`) || f.path.includes('..'))) {
     return fail('invalid-config', 'Initialise writes only inside .keel/');
   }
+  const blocker = await commitBlocker(root);
+  if (blocker) return fail('repo-busy', blocker);
   await initRepo(root);
   const problems = ensureSeed(root, seed);
   if (problems.length > 0) return fail('seed-failed', problems.join('; '));
@@ -181,6 +183,8 @@ export async function initialiseProject(store: Store, input: InitialiseInput, se
 export async function updateConfig(store: Store, patch: Record<string, unknown>, message: string): Promise<Result<Project, ProjectError>> {
   const data = readConfig(store.root);
   if (!data) return fail('not-initialised', `${store.root} has no ${CONFIG_FILE}`);
+  const blocker = await commitBlocker(store.root);
+  if (blocker) return fail('repo-busy', blocker);
   writeConfig(store.root, { ...data, ...patch });
   const project = readProject(store.root);
   if (!project.ok) {

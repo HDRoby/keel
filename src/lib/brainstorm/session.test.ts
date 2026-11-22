@@ -93,7 +93,7 @@ describe('brainstorm session', () => {
     expect(after.answers.Problem).toEqual(['Newcomers are lost.', 'Seen in five sessions.']);
     expect(after.transcript.map((e) => e.role)).toEqual(['assistant', 'user', 'assistant', 'user']);
     const log = (await fileHistory(store.root, '.keel/brainstorm/explore.md')).map((c) => c.message);
-    expect(log).toEqual(['Keel: Initialise project', 'Brainstorm: captured Problem']);
+    expect(log).toEqual(['Keel: Initialise project', 'Keel: Brainstorm: captured Problem']);
   });
 
   it('builds the model prompt from the style, the section and the conversation', async () => {
@@ -136,10 +136,10 @@ describe('brainstorm session', () => {
     // Turns are squashed; the ID reservation and each intent version end a run of brainstorm commits.
     expect(log).toEqual([
       'Keel: Initialise project',
-      'Brainstorm: captured Problem, Desired outcome, Requirements, Affected users and systems',
-      'Brainstorm: captured Problem, Desired outcome, Requirements, Affected users and systems',
-      'Brainstorm: captured Problem, Desired outcome, Requirements, Affected users and systems, Constraints',
-      'Brainstorm: captured Problem, Desired outcome, Requirements, Affected users and systems, Constraints',
+      'Keel: Brainstorm: captured Problem, Desired outcome, Requirements, Affected users and systems',
+      'Keel: Brainstorm: captured Problem, Desired outcome, Requirements, Affected users and systems',
+      'Keel: Brainstorm: captured Problem, Desired outcome, Requirements, Affected users and systems, Constraints',
+      'Keel: Brainstorm: captured Problem, Desired outcome, Requirements, Affected users and systems, Constraints',
     ]);
   });
 

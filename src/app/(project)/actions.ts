@@ -21,6 +21,7 @@ import { generateSpec, regenerateSpec } from '@/lib/generate/spec';
 import { providerWriter } from '@/lib/generate/writer';
 import type { Result } from '@/lib/result';
 import { serverStore } from '@/lib/store/server-store';
+import { commitBlocker } from '@/lib/store/git';
 import { setProjectStandards } from '@/lib/store/workspace';
 import { VERSIONED_REF } from '@/lib/templates/library';
 
@@ -51,6 +52,7 @@ export async function startAction(form: FormData): Promise<void> {
 const setupForm = z.strictObject({ template: ref, style: ref, standards });
 
 export async function setupAction(form: FormData): Promise<void> {
+  await guard('setup');
   const input = setupForm.safeParse(formFields(form, ['standards']));
   if (!input.success) redirect('/?error=Invalid+request');
   const store = serverStore();
@@ -64,6 +66,7 @@ export async function setupAction(form: FormData): Promise<void> {
 
 /** Drafts intent.md, or saves new brainstorm answers as its next version once it exists. */
 export async function draftIntentAction(form: FormData): Promise<void> {
+  await guard('explore');
   const input = z.strictObject({ mode: z.enum(['draft', 'update']) }).safeParse(formFields(form));
   if (!input.success) redirect('/?error=Invalid+request');
   const store = serverStore();
@@ -83,6 +86,7 @@ const reviewForm = z.strictObject({
 
 /** Approve, request changes or reject the intent, spec or plan. */
 export async function reviewAction(form: FormData): Promise<void> {
+  await guard(String(form.get('document') ?? 'intent'));
   const input = reviewForm.safeParse(formFields(form));
   if (!input.success) redirect('/?error=Invalid+request');
   const { document, ...given } = input.data;
@@ -98,6 +102,7 @@ const decisionForm = z.strictObject({
 
 /** Records a Go, Park or No-go decision. */
 export async function decisionAction(form: FormData): Promise<void> {
+  await guard('spec');
   const input = decisionForm.safeParse(formFields(form));
   if (!input.success) redirect('/?error=Say+who+decided+and+why');
   const decision = input.data;
@@ -110,6 +115,16 @@ function at(stage: string): string {
   return `/${stage}`;
 }
 
+/**
+ * Stops a save while the repository is in a merge, rebase or cherry-pick, or on a detached HEAD, and
+ * keeps the change unsaved (task R5). The page shows why. Pages are checked against the known stages.
+ */
+async function guard(page: string): Promise<void> {
+  const blocker = await commitBlocker(serverStore().root);
+  const stage = ['setup', 'explore', 'intent', 'spec', 'plan', 'handoff'].includes(page) ? page : 'explore';
+  if (blocker) redirect(`${at(stage)}?error=${encodeURIComponent(blocker)}`);
+}
+
 function withError(path: string, result: Result<unknown>): string {
   return result.ok ? path : `${path}?error=${encodeURIComponent(result.message)}`;
 }
@@ -118,6 +133,7 @@ const addForm = z.strictObject({ section: z.string().min(1).max(200), text: z.st
 
 /** Adds an answer to a section of the proposer's choice. */
 export async function addToSectionAction(form: FormData): Promise<void> {
+  await guard('explore');
   const input = addForm.safeParse(formFields(form));
   if (!input.success) redirect('/?error=Invalid+request');
   const store = serverStore();
@@ -130,6 +146,7 @@ const generateForm = z.strictObject({ template: ref.optional() });
 
 /** Generate spec: fills the chosen spec template from the approved intent. */
 export async function generateSpecAction(form: FormData): Promise<void> {
+  await guard('spec');
   const input = generateForm.safeParse(formFields(form));
   if (!input.success || !input.data.template) redirect('/?error=Invalid+request');
   const store = serverStore();
@@ -139,6 +156,7 @@ export async function generateSpecAction(form: FormData): Promise<void> {
 
 /** Generate plan: fills the plan template and writes the task files. */
 export async function generatePlanAction(form: FormData): Promise<void> {
+  await guard('plan');
   const input = generateForm.safeParse(formFields(form));
   if (!input.success) redirect('/?error=Invalid+request');
   const store = serverStore();
@@ -150,6 +168,7 @@ const regenerateForm = z.strictObject({ document: z.enum(['spec', 'plan']) });
 
 /** Regenerate a draft spec or plan; edits are merged and conflicts raised. */
 export async function regenerateAction(form: FormData): Promise<void> {
+  await guard(String(form.get('document') ?? 'spec'));
   const input = regenerateForm.safeParse(formFields(form));
   if (!input.success) redirect('/?error=Invalid+request');
   const store = serverStore();
@@ -162,6 +181,7 @@ const choice = z.enum(['mine', 'theirs', 'merged']);
 
 /** Resolve the conflicts a regeneration raised. Fields: choice:<name> = mine | theirs | merged, merged:<name>. */
 export async function resolveConflictsAction(form: FormData): Promise<void> {
+  await guard(String(form.get('document') ?? 'spec'));
   const base = regenerateForm.safeParse({ document: form.get('document') });
   if (!base.success) redirect('/?error=Invalid+request');
   const resolutions: Resolution[] = [];
@@ -201,18 +221,21 @@ async function mockForm(form: FormData, withId: boolean) {
 
 /** Attach a mock reference: a link, or a PNG, JPG, PDF or HTML file up to 10 MB. */
 export async function attachMockAction(form: FormData): Promise<void> {
+  await guard(String(form.get('document') ?? 'intent'));
   const { store, page, document, title, source } = await mockForm(form, false);
   redirect(withError(page, await attachMock(store, { document, title, ...source })));
 }
 
 /** Replace a mock reference's link or file, keeping its ID and linked requirements. */
 export async function replaceMockAction(form: FormData): Promise<void> {
+  await guard(String(form.get('document') ?? 'intent'));
   const { store, page, title, source, id: mock } = await mockForm(form, true);
   redirect(withError(page, await replaceMock(store, mock ?? '', { title, ...source })));
 }
 
 /** Remove a mock reference and its file. */
 export async function removeMockAction(form: FormData): Promise<void> {
+  await guard(String(form.get('document') ?? 'intent'));
   const input = z.strictObject({ document: mockDocument, id: z.string().regex(MOCK_ID) }).safeParse(formFields(form));
   if (!input.success) redirect('/?error=Invalid+request');
   const store = serverStore();
@@ -223,6 +246,7 @@ export async function removeMockAction(form: FormData): Promise<void> {
 
 /** Set the requirements a mock reference shows. */
 export async function linkMockAction(form: FormData): Promise<void> {
+  await guard(String(form.get('document') ?? 'intent'));
   const input = z.strictObject({ document: mockDocument, id: z.string().regex(MOCK_ID), requirements: z.array(z.string().regex(REQ_ID)).max(500) })
     .safeParse(formFields(form, ['requirements']));
   if (!input.success) redirect('/?error=Invalid+request');
@@ -234,6 +258,7 @@ export async function linkMockAction(form: FormData): Promise<void> {
 
 /** Save the commands the handoff gives the coding agent and CI. */
 export async function saveHandoffCommandsAction(form: FormData): Promise<void> {
+  await guard('handoff');
   const input = commandsSchema.strict().safeParse(formFields(form));
   if (!input.success) redirect('/?error=Every+command+needs+a+value');
   const commands = input.data;
@@ -250,6 +275,7 @@ const pushForm = z.strictObject({
 
 /** Push the handoff package to the repository, as one Keel commit. */
 export async function pushHandoffAction(form: FormData): Promise<void> {
+  await guard('handoff');
   const input = pushForm.safeParse(formFields(form));
   if (!input.success) redirect('/?error=Invalid+request');
   const { kind, location, branch } = input.data;
@@ -278,12 +304,14 @@ export async function checkRepositoryAction(form: FormData): Promise<void> {
 
 /** Accept a read-back change as the document's next version. */
 export async function acceptChangeAction(form: FormData): Promise<void> {
+  await guard('handoff');
   const { path } = changeForm(form);
   redirect(withError(at('handoff'), await acceptChange(serverStore(), path)));
 }
 
 /** Dismiss a read-back change. */
 export async function dismissChangeAction(form: FormData): Promise<void> {
+  await guard('handoff');
   const { path } = changeForm(form);
   redirect(withError(at('handoff'), await dismissChange(serverStore(), path)));
 }

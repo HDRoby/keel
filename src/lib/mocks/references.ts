@@ -6,7 +6,7 @@ import matter from 'gray-matter';
 import { z } from 'zod';
 import { fail, ok, type Result } from '../result';
 import type { Store } from '../store/db';
-import { commitFiles } from '../store/git';
+import { commitBlocker, commitFiles, RepoBusyError } from '../store/git';
 import { readProject } from '../store/workspace';
 
 export type MockKind = 'link' | 'image' | 'pdf' | 'html';
@@ -132,6 +132,8 @@ function checkSource(id: string, input: NewMock): Result<CheckedSource, MockErro
 
 /** Writes the index (and a new file, if any), removes an old file, and commits it all at once. */
 async function saveMocks(dir: string, project: string, references: MockReference[], message: string, change: { add?: CheckedSource['file']; remove?: string } = {}): Promise<void> {
+  const blocker = await commitBlocker(dir);
+  if (blocker) throw new RepoBusyError(blocker);
   const nextMock = Math.max(nextMockNumber(dir), ...references.map((r) => Number(r.id.slice(5)) + 1));
   mkdirSync(join(dir, MOCKS_DIR), { recursive: true });
   const paths = [MOCKS_INDEX];

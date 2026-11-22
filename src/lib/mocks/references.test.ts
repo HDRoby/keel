@@ -43,7 +43,7 @@ describe('attachMock and linkMock', () => {
     const dir = store.root;
     expect(listMocks(dir)).toHaveLength(1);
     expect(readFileSync(join(dir, '.keel/mocks/references.md'), 'utf8')).toContain('| MOCK-001 | [Mockup](https://example.com/mock) | Link | Intent | REQ-001, REQ-002 |');
-    expect((await fileHistory(dir, '.keel/mocks/references.md')).map((c) => c.message)).toEqual(['MOCK-001: attach link to the intent', 'MOCK-001: shows REQ-001, REQ-002']);
+    expect((await fileHistory(dir, '.keel/mocks/references.md')).map((c) => c.message)).toEqual(['Keel: MOCK-001: attach link to the intent', 'Keel: MOCK-001: shows REQ-001, REQ-002']);
   });
 
   it('saves files under .keel/mocks/ and refuses unsafe links, unknown files and large files', async () => {
@@ -75,7 +75,7 @@ describe('replaceMock, removeMock and mockImage', () => {
     expect(replaced).toMatchObject({ ok: true, value: { id: 'MOCK-001', kind: 'link', title: 'Screen', requirements: ['REQ-001'], document: 'intent' } });
     expect(existsSync(join(dir, '.keel/mocks/mock-001-screen.png'))).toBe(false);
     expect(mockImage(dir, 'MOCK-001')).toMatchObject({ error: 'not-found' });
-    expect((await fileHistory(dir, '.keel/mocks/mock-001-screen.png')).at(-1)?.message).toBe('MOCK-001: replace with link');
+    expect((await fileHistory(dir, '.keel/mocks/mock-001-screen.png')).at(-1)?.message).toBe('Keel: MOCK-001: replace with link');
     expect(await replaceMock(store, 'MOCK-001', { title: '', url: 'ftp://x' })).toMatchObject({ error: 'invalid-input' });
     expect(await replaceMock(store, 'MOCK-009', { title: '', url: 'https://x.y' })).toMatchObject({ error: 'not-found' });
   });

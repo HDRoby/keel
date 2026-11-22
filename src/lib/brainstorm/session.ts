@@ -8,7 +8,7 @@ import { fail, ok, type Result } from '../result';
 import type { Store } from '../store/db';
 import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
 import { writeFileAtomic } from '../store/atomic';
-import { commitSquashing } from '../store/git';
+import { commitBlocker, commitSquashing, RepoBusyError } from '../store/git';
 import { initialiseProject, isInitialised, readProject, reserveRequirementIds, updateConfig } from '../store/workspace';
 import { previewRoot } from '../seed';
 import { REQUIREMENTS_SECTION, renderRequirements, requirementCandidates, unassigned } from '../trace/assign';
@@ -321,6 +321,9 @@ function sessionFile(session: Session): string {
 }
 
 async function save(store: Store, session: Session, options: { commit?: boolean } = {}): Promise<void> {
+  // Keep the turn unsaved rather than write a file Keel cannot commit (task R5).
+  const blocker = await commitBlocker(store.root);
+  if (blocker) throw new RepoBusyError(blocker);
   mkdirSync(dirname(join(store.root, BRAINSTORM_FILE)), { recursive: true });
   writeFileAtomic(join(store.root, BRAINSTORM_FILE), sessionFile(session));
   if (options.commit === false) return;

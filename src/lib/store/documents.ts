@@ -6,13 +6,13 @@ import { z } from 'zod';
 import type { DocumentHeader, DocumentKind, DocumentStatus, KeelDocument } from '../documents/types';
 import { fail, ok, type Result } from '../result';
 import { writeFileAtomic } from './atomic';
-import { commitFiles } from './git';
+import { commitBlocker, commitFiles, fileAt, keelVersionOf } from './git';
 import type { Store } from './db';
 import { fromYamlDate, readProject, today } from './workspace';
 
 export type StoredDocument = KeelDocument & { path: string };
 
-export type DocumentError = 'invalid-front-matter' | 'invalid-path' | 'not-found' | 'already-exists' | 'not-initialised';
+export type DocumentError = 'invalid-front-matter' | 'invalid-path' | 'not-found' | 'already-exists' | 'not-initialised' | 'repo-busy' | 'edited-outside';
 
 const SINGLE: Partial<Record<DocumentKind, string>> = {
   intent: 'docs/intent.md',
@@ -98,6 +98,8 @@ export async function createDocument(store: Store, input: NewDocument): Promise<
   const fileName = input.fileSlug && /^[a-z0-9][a-z0-9-]{0,40}$/.test(input.fileSlug) ? `${padded}-${input.fileSlug}` : id;
   const path = SINGLE[input.kind] ?? `${FOLDER[input.kind]}/${fileName}.md`;
   if (existsSync(join(dir, path))) return fail('already-exists', `${path} already exists`);
+  const blocker = await commitBlocker(dir);
+  if (blocker) return fail('repo-busy', blocker);
   const date = today(store);
   const header: DocumentHeader = {
     ...input.extra,
@@ -126,6 +128,18 @@ export interface DocumentChange {
   status?: DocumentStatus;
   extra?: Record<string, unknown>;   // extra header fields, such as approvals; core fields cannot be overwritten
   sameVersion?: boolean;             // a status change such as an approval: the content version stays (owner decision)
+  external?: boolean;                // read-back: the working copy holds the agent's change Keel is accepting
+}
+
+/**
+ * True when the working copy differs from the version Keel last committed (or, for a document Keel never
+ * committed, from HEAD): someone edited it outside Keel, and Keel must not overwrite it (task R5).
+ */
+export async function editedOutside(root: string, path: string): Promise<boolean> {
+  const file = join(root, path);
+  if (!existsSync(file)) return false;
+  const known = (await keelVersionOf(root, path)) ?? (await fileAt(root, 'HEAD', path));
+  return known !== undefined && known !== readFileSync(file, 'utf8');
 }
 
 /**
@@ -135,6 +149,11 @@ export interface DocumentChange {
 export async function saveDocument(store: Store, path: string, change: DocumentChange): Promise<Result<StoredDocument, DocumentError>> {
   const current = readDocument(store, path);
   if (!current.ok) return current;
+  const blocker = await commitBlocker(store.root);
+  if (blocker) return fail('repo-busy', blocker);
+  if (!change.external && (await editedOutside(store.root, path))) {
+    return fail('edited-outside', `${path} has changes made outside Keel. Review them on the Handoff page (read-back) first.`);
+  }
   const { header, body } = current.value;
   const doc: StoredDocument = {
     ...current.value,
