@@ -6,6 +6,7 @@ import { fail, ok, type Result } from '../result';
 import type { Store } from '../store/db';
 import { decryptSecret, encryptSecret, workspaceKey } from './secrets';
 import { setUserSetting, userSetting } from './user-dir';
+import { gitUserName } from '../store/git';
 
 const storedConfig = z.strictObject({
   apiKey: z.string().optional(),        // encrypted
@@ -62,6 +63,22 @@ export function providerConfig(store: Store, id: RealProviderId): Result<Provide
   if (!apiKey) return ok(rest);
   const key = decryptSecret(workspaceKey(store.user), apiKey);
   return key.ok ? ok({ ...rest, apiKey: key.value }) : key;
+}
+
+/** The name used in forms by default: git config user.name, else the name saved in Settings. */
+export async function defaultAuthor(store: Pick<Store, 'root' | 'user'>): Promise<string> {
+  const fromGit = await gitUserName(store.root);
+  if (fromGit) return fromGit;
+  const saved = userSetting(store.user, 'author');
+  return typeof saved === 'string' ? saved : '';
+}
+
+/** Saves the default author name in the user config folder. Empty removes it. */
+export function saveAuthor(store: Pick<Store, 'user'>, name: string): Result<string, 'invalid-name'> {
+  const clean = name.trim();
+  if (clean.length > 120) return fail('invalid-name', 'A name can be up to 120 characters');
+  setUserSetting(store.user, 'author', clean || undefined);
+  return ok(clean);
 }
 
 export function modelChoice(store: Store, task: ModelTask): ModelChoice {

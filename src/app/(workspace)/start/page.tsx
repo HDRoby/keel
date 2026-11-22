@@ -7,9 +7,9 @@ import { StandardsPicker } from '@/components/StandardsPicker';
 import { parseSections } from '@/lib/brainstorm/sections';
 import { listStyles } from '@/lib/brainstorm/styles';
 import { previewRoot } from '@/lib/seed';
+import { defaultAuthor } from '@/lib/settings/settings';
 import { isInitialised } from '@/lib/store/workspace';
 import { listStandards } from '@/lib/standards/library';
-import { gitUserName } from '@/lib/store/git';
 import { serverStore } from '@/lib/store/server-store';
 import { parseTemplateRef, readTemplate, templateOptions } from '@/lib/templates/library';
 
@@ -30,7 +30,7 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
     return { ...t, sections: sections.map((s) => `${s.heading}${s.required ? '*' : ''}`).join(', ') };
   });
   const styles = listStyles(home);
-  const author = (await gitUserName()) ?? '';
+  const author = await defaultAuthor(serverStore());
   const defaultTemplate = templates.some((t) => t.ref === DEFAULT_TEMPLATE) ? DEFAULT_TEMPLATE : templates[0]?.ref;
 
   return (

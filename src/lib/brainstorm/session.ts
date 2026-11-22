@@ -163,7 +163,8 @@ export async function recordQuestion(store: Store, session: Session, text: strin
   const asking = pendingQuestion(session);
   if (!asking) return fail('no-question', 'No question is pending');
   const next: Session = { ...session, transcript: [...session.transcript, { role: 'assistant', text: text.trim(), ...asking }] };
-  await save(store, next);
+  // A question alone changes nothing worth a commit: it is committed with the answer that follows.
+  await save(store, next, { commit: false });
   return ok(next);
 }
 
@@ -327,9 +328,10 @@ function sessionFile(session: Session): string {
   return matter.stringify(`\n${readable(session)}`, session);
 }
 
-async function save(store: Store, session: Session): Promise<void> {
+async function save(store: Store, session: Session, options: { commit?: boolean } = {}): Promise<void> {
   mkdirSync(dirname(join(store.root, BRAINSTORM_FILE)), { recursive: true });
   writeFileAtomic(join(store.root, BRAINSTORM_FILE), sessionFile(session));
+  if (options.commit === false) return;
   await commitSquashing(store.root, [BRAINSTORM_FILE], brainstormCommitMessage(session), 'Brainstorm:');
 }
 

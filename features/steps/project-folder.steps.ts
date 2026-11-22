@@ -1,9 +1,10 @@
 // One project per folder (REQ-012, CR-0004).
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
-import { BDD_PROJECT, git, initialisedFolder, pending, startIdea } from './support';
+import { providerConfig } from '../../src/lib/settings/settings';
+import { bddStore, BDD_PROJECT, BDD_USER, git, initialisedFolder, pending, startIdea } from './support';
 
 const { Given, When, Then } = createBdd();
 
@@ -70,18 +71,36 @@ Then('I see the Spec stage', async ({ $testInfo }) => {
   pending($testInfo, 'R4');
 });
 
-// Keys stay in the user config folder: R2.
-When('I save an Anthropic API key in Settings', async ({ $testInfo }) => {
-  pending($testInfo, 'R2');
+// Keys stay in the user config folder (ADR-0011). Made up for the test.
+const API_KEY = 'sk-ant-api03-folder-test-0123456789abcdefghij';
+
+When('I save an Anthropic API key in Settings', async ({ page }) => {
+  await page.goto('/settings');
+  const form = page.getByRole('form', { name: 'Anthropic connection' });
+  await form.getByLabel('API key').fill(API_KEY);
+  await form.getByRole('button', { name: 'Save Anthropic' }).click();
+  await expect(page.getByRole('status')).toHaveText('Saved.');
 });
 
-Then('no file in the project folder contains the key', async ({ $testInfo }) => {
-  pending($testInfo, 'R2');
+Then('no file in the project folder contains the key', async () => {
+  const containing = filesUnder(BDD_PROJECT).filter((file) => readFileSync(file).toString('latin1').includes(API_KEY));
+  expect(containing).toEqual([]);
 });
 
-Then('the key is stored in the user config folder', async ({ $testInfo }) => {
-  pending($testInfo, 'R2');
+Then('the key is stored in the user config folder', async () => {
+  const settings = readFileSync(join(BDD_USER, 'settings.json'), 'utf8');
+  expect(settings).toContain('"provider.anthropic"');
+  expect(settings).not.toContain(API_KEY);
+  expect(statSync(join(BDD_USER, 'secret.key')).mode & 0o777).toBe(0o600);
+  expect(providerConfig(bddStore(), 'anthropic')).toMatchObject({ ok: true, value: { apiKey: API_KEY } });
 });
+
+function filesUnder(dir: string): string[] {
+  return readdirSync(dir).flatMap((name) => {
+    const path = join(dir, name);
+    return statSync(path).isDirectory() ? filesUnder(path) : [path];
+  });
+}
 
 // Commits only Keel's own paths: R5.
 Given('I have staged a change to {string}', async ({ $testInfo }, path: string) => {

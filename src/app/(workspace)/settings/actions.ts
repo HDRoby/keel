@@ -7,7 +7,7 @@ import { saveGithubToken } from '@/lib/github/auth';
 import { MODEL_TASK_IDS, PROVIDER_IDS, type ModelChoice } from '@/lib/providers/types';
 import { checkApiKey } from '@/lib/providers/errors';
 import { testConnection } from '@/lib/providers/test-connection';
-import { saveModelChoice, saveProvider } from '@/lib/settings/settings';
+import { saveAuthor, saveModelChoice, saveProvider } from '@/lib/settings/settings';
 import { serverStore } from '@/lib/store/server-store';
 
 const optionalText = z.string().trim().max(500).optional();
@@ -62,4 +62,12 @@ export async function saveGithubAction(form: FormData): Promise<void> {
   if (!input.data.token && !input.data.clear) redirect('/settings?error=Paste+a+token+or+tick+Remove');
   const saved = saveGithubToken(serverStore(), input.data.clear ? undefined : input.data.token);
   redirect(saved.ok ? '/settings?saved=github' : `/settings?error=${encodeURIComponent(saved.message)}`);
+}
+
+/** The default author name, kept in the user config folder (used when git config has no user.name). */
+export async function saveAuthorAction(form: FormData): Promise<void> {
+  const input = z.strictObject({ author: z.string().max(200) }).safeParse(formFields(form));
+  if (!input.success) redirect('/settings?error=Invalid+request');
+  const saved = saveAuthor(serverStore(), input.data.author);
+  redirect(saved.ok ? '/settings?saved=1' : `/settings?error=${encodeURIComponent(saved.message)}`);
 }

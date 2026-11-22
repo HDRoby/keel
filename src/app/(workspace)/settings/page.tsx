@@ -1,10 +1,12 @@
-// Settings (mockup screen "Settings"): provider connections and model per task (REQ-009).
-import { saveGithubAction, saveModelAction, saveProviderAction, testProviderAction } from './actions';
+// Settings (mockup screen "Settings"): provider connections, model per task and your name (REQ-009).
+// Everything here is kept in the user config folder, never in the project folder (ADR-0011).
+import { saveAuthorAction, saveGithubAction, saveModelAction, saveProviderAction, testProviderAction } from './actions';
 import { SubmitButton } from '@/components/SubmitButton';
 import { hasGithubToken } from '@/lib/github/auth';
 import { ErrorAlert, PageHead, Topbar } from '@/components/Shell';
 import { MODEL_TASKS, PROVIDERS } from '@/lib/providers/types';
 import { modelChoice, providerView } from '@/lib/settings/settings';
+import { userSetting } from '@/lib/settings/user-dir';
 import { serverStore } from '@/lib/store/server-store';
 
 export const dynamic = 'force-dynamic';
@@ -17,10 +19,16 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
     <>
       <Topbar crumb="Workspace" title="Settings" />
       <main className="content">
-        <PageHead title="Settings" />
+        <PageHead title="Settings" description={<>Kept on this computer in <code>{store.user}</code>, never in the project folder.</>} />
         <ErrorAlert error={error} />
         {saved && <p role="status" className="notice">Saved.</p>}
         {tested && <p role="status" className="notice">{tested}</p>}
+
+        <form action={saveAuthorAction} aria-label="Your name" className="card stack">
+          <h2 style={{ margin: 0 }}>You</h2>
+          <label>Your name <input name="author" defaultValue={typeof userSetting(store.user, 'author') === 'string' ? String(userSetting(store.user, 'author')) : ''} placeholder="Used when git config has no user.name" /></label>
+          <div><button type="submit">Save name</button></div>
+        </form>
 
         <section className="card">
           <h2>Model per task</h2>
