@@ -141,7 +141,7 @@ An approved document is never reopened: it changes through a **change request**.
 
 **One request** shows what changed, its size (minor or significant) and approval, the **impact on later documents by requirement** (choose **Update**, **Still valid** or **Later** for each), and the **change package** for the agent. While an approved significant request is not applied, the documents it affects are marked **Out of date · CR-NNNN**.
 
-**Plan the change (coming: CR-0013)**: the assistant breaks the request into new tasks with the files likely to change (from a code map of file names), suggests scenarios, and links decision records and mock screens. The package then follows your templates, and `changes/README.md` lists every open request in order.
+**Plan the change**: the assistant breaks the request into new tasks with the files likely to change (from a code map of file names), suggests scenarios, and links decision records and mock screens. The package then follows your templates, and `changes/README.md` lists every open request in order.
 
 **A change request folder**:
 
@@ -164,7 +164,7 @@ To apply one: paste its `PROMPT.md` into your coding agent, review the result, m
 
 Everything lives in `.keel/` and is versioned with the project.
 
-- **Templates** (`.keel/templates`), grouped by kind: intent, spec, plan, agent instructions, decision records, roadmap, agent kit, and (coming: CR-0013) change request, prompt for the coding agent, task and changes index. Each template defines its metadata and sections (required or optional). A template in use cannot be removed; a new version is a new file.
+- **Templates** (`.keel/templates`), grouped by kind: intent, spec, plan, agent instructions, decision records, roadmap, agent kit, change request, prompt for the coding agent, task and changes index. Each template defines its metadata and sections (required or optional). A template in use cannot be removed; a new version is a new file.
 - **Brainstorm styles** (`.keel/styles`): skill files that set how the assistant comments: Challenger, Coach, Cost and value, Market (can search the web), Engineering-first.
 - **Standards** (`.keel/standards`): conventions and guidelines (company, personal, project) that the spec and plan are checked against and that the agent receives as skills.
 
@@ -183,12 +183,12 @@ Two parts:
 
 **This project** (`.keel/config.yml`, committed):
 
-- **Templates for new documents**: intent, spec, plan, agent instructions, roadmap, brainstorm style, and (coming: CR-0013) task, change request, prompt for the coding agent and changes index.
+- **Templates for new documents**: intent, spec, plan, agent instructions, roadmap, brainstorm style, task, change request, prompt for the coding agent and changes index.
 - **Folders**: where documents, tasks and scenarios go (default `docs`, `tasks`, `features`).
 - **Commits**: commit Keel's files automatically, or write them and commit yourself.
 - **Read-back**: how often to check the folder.
 - **Clickable mock before the plan**: Recommended, Required or Off.
-- **Code map for planning changes** and **Keep changes/README.md up to date** (coming: CR-0013).
+- **Code map for planning changes** and **Keep changes/README.md up to date**.
 
 ## 14. Where Keel keeps things
 
