@@ -6,7 +6,7 @@ import { formFields } from '@/lib/form-fields';
 import { saveGithubToken } from '@/lib/github/auth';
 import { MODEL_TASK_IDS, MODEL_TASKS, PROVIDER_IDS, type ModelChoice } from '@/lib/providers/types';
 import { effectiveChoice } from '@/lib/providers/local';
-import { SETTINGS_FILE } from '@/lib/settings/user-dir';
+import { SETTINGS_FILE, userDirProblem } from '@/lib/settings/user-dir';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { checkApiKey } from '@/lib/providers/errors';
@@ -15,6 +15,12 @@ import { exploreTiming, saveAuthor, saveExploreTiming, saveModelChoice, saveProv
 import { forgetStartupCheck } from '@/lib/startup/check';
 import { serverStore } from '@/lib/store/server-store';
 import { updateConfig } from '@/lib/store/workspace';
+
+/** Settings live in the user config folder: when Keel cannot write there, say which folder and how to fix it. */
+function needsWritableUserDir(): void {
+  const problem = userDirProblem(serverStore().user);
+  if (problem) redirect(`/settings?error=${encodeURIComponent(`${problem.message} ${problem.fix}`)}`);
+}
 
 const optionalText = z.string().trim().max(500).optional();
 const providerForm = z.strictObject({
@@ -33,6 +39,7 @@ const modelForm = z.strictObject({
 });
 
 export async function saveProviderAction(form: FormData): Promise<void> {
+  needsWritableUserDir();
   const input = providerForm.safeParse(formFields(form));
   if (!input.success) redirect('/settings?error=Check+the+provider+fields');
   const { provider, clearKey, ...update } = input.data;
@@ -44,6 +51,7 @@ export async function saveProviderAction(form: FormData): Promise<void> {
 
 /** Test a provider with one tiny call. */
 export async function testProviderAction(form: FormData): Promise<void> {
+  needsWritableUserDir();
   const input = z.strictObject({ provider: z.enum(PROVIDER_IDS) }).safeParse(formFields(form));
   if (!input.success) redirect('/settings?error=Invalid+request');
   const tested = await testConnection(serverStore(), input.data.provider);
@@ -51,6 +59,7 @@ export async function testProviderAction(form: FormData): Promise<void> {
 }
 
 export async function saveModelAction(form: FormData): Promise<void> {
+  needsWritableUserDir();
   const input = modelForm.safeParse(formFields(form));
   if (!input.success) redirect('/settings?error=Invalid+request');
   const { task, ...choice } = input.data;
@@ -63,6 +72,7 @@ const githubForm = z.strictObject({ token: z.string().trim().max(300), clear: z.
 
 /** Save or remove the GitHub token used to push handoffs and read changes back. */
 export async function saveGithubAction(form: FormData): Promise<void> {
+  needsWritableUserDir();
   const input = githubForm.safeParse(formFields(form));
   if (!input.success) redirect('/settings?error=Invalid+request');
   if (!input.data.token && !input.data.clear) redirect('/settings?error=Paste+a+token+or+tick+Remove');
@@ -72,6 +82,7 @@ export async function saveGithubAction(form: FormData): Promise<void> {
 
 /** The default author name, kept in the user config folder (used when git config has no user.name). */
 export async function saveAuthorAction(form: FormData): Promise<void> {
+  needsWritableUserDir();
   const input = z.strictObject({ author: z.string().max(200) }).safeParse(formFields(form));
   if (!input.success) redirect('/settings?error=Invalid+request');
   const saved = saveAuthor(serverStore(), input.data.author);
@@ -80,6 +91,7 @@ export async function saveAuthorAction(form: FormData): Promise<void> {
 
 /** When Explore asks for a review: the pause after typing and the minimum interval (task R10). */
 export async function saveExploreTimingAction(form: FormData): Promise<void> {
+  needsWritableUserDir();
   const input = z.strictObject({ pauseSeconds: z.coerce.number(), intervalSeconds: z.coerce.number() }).safeParse(formFields(form));
   if (!input.success) redirect('/settings?error=Invalid+request');
   const saved = saveExploreTiming(serverStore(), input.data);
@@ -96,6 +108,7 @@ export async function saveMockGateAction(form: FormData): Promise<void> {
 
 /** First run (CR-0012): saves the providers and models shown (Ollama with the local models), then checks again. */
 export async function useTheseSettingsAction(): Promise<void> {
+  needsWritableUserDir();
   const store = serverStore();
   for (const { task } of MODEL_TASKS) {
     const choice = await effectiveChoice(store, task);

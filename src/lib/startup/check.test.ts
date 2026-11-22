@@ -1,4 +1,5 @@
-import { readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { saveExploreTiming, saveModelChoice, saveProvider } from '../settings/settings';
@@ -21,6 +22,19 @@ describe('runStartupCheck', () => {
     expect(setupRedirect(result, '/spec')).toBe('/check');
     expect(setupRedirect(result, '/settings')).toBeUndefined();
     expect(allowedInSetup(result)).toEqual(['/check', '/settings']);
+  });
+
+  it('says which folder keeps Keel from saving settings, and opens in setup mode', async () => {
+    const store = tempStore();
+    const config = mkdtempSync(join(tmpdir(), 'keel-locked-'));
+    chmodSync(config, 0o500);
+    try {
+      const result = await runStartupCheck({ ...store, user: join(config, 'keel') }, { env: fake, quiet: true });
+      expect(result.ok).toBe(false);
+      expect(result.checks.find((c) => c.id === 'settings')).toMatchObject({ state: 'bad', message: expect.stringContaining('is not writable by you'), fix: expect.stringContaining('sudo chown "$USER"') });
+    } finally {
+      chmodSync(config, 0o700);
+    }
   });
 
   it('passes with valid settings, a running provider and models that answer, and prints one line', async () => {

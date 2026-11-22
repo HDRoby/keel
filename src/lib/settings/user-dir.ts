@@ -1,8 +1,8 @@
 // The user config folder: personal settings and secrets, never inside a project folder (ADR-0011).
 // This is the only place Keel reads the home folder.
-import { chmodSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { accessSync, chmodSync, constants, existsSync, mkdirSync, readFileSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { writeFileAtomic } from '../store/atomic';
 
 export type Env = Record<string, string | undefined>;
@@ -30,9 +30,42 @@ export function migratesLegacy(env: Env = process.env): boolean {
   return !env.KEEL_USER_DIR?.trim() || Boolean(env.KEEL_HOME?.trim());
 }
 
-/** Creates the folder, owner only. */
+const tilde = (path: string) => (process.env.HOME && path.startsWith(process.env.HOME) ? `~${path.slice(process.env.HOME.length)}` : path);
+
+/**
+ * Why Keel cannot keep its settings in this folder, or undefined when it can: the folder (or, before it exists, the
+ * nearest folder above it) must be writable by the user running Keel. Says which folder blocks it and how to fix it.
+ */
+export function userDirProblem(dir: string): { message: string; fix: string } | undefined {
+  let at = dir;
+  while (!existsSync(at) && dirname(at) !== at) at = dirname(at);
+  try {
+    accessSync(at, constants.W_OK | constants.X_OK);
+    return undefined;
+  } catch {
+    let owner = '';
+    try {
+      const uid = statSync(at).uid;
+      owner = uid === 0 ? ' (it is owned by root)' : process.getuid && uid !== process.getuid() ? ' (it is owned by another user)' : '';
+    } catch { /* unknown */ }
+    const blocked = at === dir ? `${tilde(dir)} is not writable by you${owner}` : `${tilde(at)} is not writable by you${owner}, so ${tilde(dir)} cannot be created`;
+    return {
+      message: `Keel cannot save your settings: ${blocked}.`,
+      fix: `Fix: make it yours (sudo chown "$USER" ${tilde(at)}), or start Keel with KEEL_USER_DIR set to a folder you own.`,
+    };
+  }
+}
+
+/** Creates the folder, owner only. Says which folder blocks it instead of a bare permission error. */
 export function ensureUserDir(dir: string): string {
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true, mode: 0o700 });
+  if (existsSync(dir)) return dir;
+  try {
+    mkdirSync(dir, { recursive: true, mode: 0o700 });
+  } catch (error) {
+    const problem = userDirProblem(dir);
+    if (problem) throw new Error(`${problem.message} ${problem.fix}`);
+    throw error;
+  }
   return dir;
 }
 
