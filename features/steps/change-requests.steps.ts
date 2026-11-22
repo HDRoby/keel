@@ -58,7 +58,7 @@ Then('CR-0004 is {string} with {string}', async ({ page }, status: string, progr
 });
 
 Then('CR-0005 is {string}', async ({ page }, status: string) => {
-  await expect(row(page, 'CR-0005').locator('.pill')).toHaveText(status);
+  await expect(row(page, 'CR-0005').locator('[data-tag]')).toHaveText(status);
 });
 
 Then('{string} is CR-0004', async ({ page }, region: string) => {
