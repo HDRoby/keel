@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { DocumentReview } from '@/components/DocumentReview';
 import { MockReferences } from '@/components/MockReferences';
-import { StageLayout } from '@/components/StageBar';
+import { StageLayout } from '@/components/ui/StageBar';
 import { listMocks } from '@/lib/mocks/references';
 import { readDocument } from '@/lib/store/documents';
 import { requirementIds } from '@/lib/trace/index';

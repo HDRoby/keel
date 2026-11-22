@@ -1,0 +1,6 @@
+.link { display: inline; background: none; border: 0; padding: 0; min-height: 0; font: var(--text-medium-1); line-height: 16px; cursor: pointer; }
+.link:hover:not(:disabled) { background: none; text-decoration: underline; }
+.link:disabled { background: none; color: var(--gray-4); cursor: not-allowed; }
+.accent, .accent:hover:not(:disabled) { color: var(--brand-primary); }
+.muted, .muted:hover:not(:disabled) { color: var(--text-muted); }
+.danger, .danger:hover:not(:disabled) { color: var(--danger); }

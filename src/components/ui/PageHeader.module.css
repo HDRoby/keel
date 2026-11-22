@@ -1,0 +1,7 @@
+.header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-2); flex-wrap: wrap; }
+.left { display: grid; gap: 4px; min-width: 0; }
+.title { font: var(--text-bold-6); color: var(--text-strong); margin: 0; }
+.meta { font: var(--text-regular-1); color: var(--text-muted); margin: 0; }
+.setup { display: inline-flex; align-items: center; gap: 4px; font: var(--text-medium-1); line-height: 16px; width: fit-content; }
+.description { font-size: 13px; line-height: 19px; color: var(--text-muted); margin: 0; max-width: 760px; }
+.actions { display: flex; gap: var(--spacing-1); align-items: center; flex-wrap: wrap; }

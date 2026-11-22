@@ -8,7 +8,7 @@ import { readbackInterval } from '@/lib/readback/schedule';
 import { parseDocument } from '@/lib/store/documents';
 import { compactChanges, lineChanges } from '@/lib/versions/diff';
 import { ErrorAlert } from '@/components/Shell';
-import { StageLayout } from '@/components/StageBar';
+import { StageLayout } from '@/components/ui/StageBar';
 import { handoffCommands, type Commands } from '@/lib/handoff/scaffold';
 import { besidePath, planHandoff, type FileState, type PlannedFile } from '@/lib/handoff/write';
 import { loadStage, type StageProps } from '../stage';

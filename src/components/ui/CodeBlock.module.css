@@ -1,0 +1,2 @@
+.code { margin: 0; background: var(--code-bg); color: var(--code-text); border-radius: var(--radius-m); padding: 16px 20px; font-family: var(--mono); font-size: 12px; line-height: 19px; white-space: pre-wrap; overflow-wrap: anywhere; overflow-x: auto; }
+.terminal { border-radius: 12px; }

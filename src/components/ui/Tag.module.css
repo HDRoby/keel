@@ -1,0 +1,10 @@
+.tag { display: inline-flex; align-items: center; gap: 8px; height: 24px; font: var(--text-regular-2); padding: 2px 8px; border: 1px solid transparent; border-radius: var(--radius-s); white-space: nowrap; width: fit-content; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.neutral { background: var(--status-neutral-bg); color: var(--status-neutral-fg); }
+.accent { background: var(--accent-soft); color: var(--accent-strong); }
+.outline { background: var(--surface-card); border-color: var(--brand-primary); color: var(--brand-primary); }
+.ok { background: var(--status-success-bg); color: var(--status-success-fg); }
+.warn { background: var(--warn-soft); color: var(--warn-text); }
+.danger { background: var(--danger-soft); color: var(--danger); }
+.link { background: var(--link-soft); color: var(--link-text); }
+.handoff { background: var(--handoff-soft); color: var(--handoff); }
+.hint { font: var(--text-regular-1); color: var(--text-muted); font-weight: 400; }

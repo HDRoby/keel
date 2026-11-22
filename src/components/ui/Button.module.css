@@ -1,0 +1,24 @@
+.button {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-1); max-width: 100%;
+  min-height: 36px; padding: 7px 15px; border: 1px solid var(--brand-primary); border-radius: var(--radius-m);
+  font: var(--text-regular-2); text-align: center; cursor: pointer; transition: var(--transition); white-space: nowrap;
+}
+.button:hover { text-decoration: none; }
+.button:focus-visible { outline: none; box-shadow: var(--shadow-3); }
+.small { min-height: 28px; padding: 3px 11px; }
+.primary { background: var(--brand-primary); color: var(--text-inverse); }
+.primary:hover:not(:disabled) { background: var(--alerts-info-3); border-color: var(--alerts-info-3); color: var(--text-inverse); }
+.outline { background: var(--brand-white); color: var(--brand-primary); }
+.outline:hover:not(:disabled) { background: var(--alerts-info-1); color: var(--brand-primary); }
+.secondary { background: var(--alerts-info-1); border-color: var(--alerts-info-1); color: var(--brand-primary); }
+.secondary:hover:not(:disabled) { background: var(--brand-primary); border-color: var(--brand-primary); color: var(--text-inverse); }
+.text { background: transparent; border-color: transparent; color: var(--brand-primary); padding: 7px 8px; }
+.text:hover:not(:disabled) { background: var(--alerts-info-1); color: var(--brand-primary); }
+.danger.primary { background: var(--brand-danger); border-color: var(--brand-danger); }
+.danger.primary:hover:not(:disabled) { background: var(--alerts-danger-3); border-color: var(--alerts-danger-3); }
+.danger.outline, .danger.text { border-color: var(--brand-danger); color: var(--brand-danger); }
+.danger.text { border-color: transparent; }
+.danger.outline:hover:not(:disabled), .danger.text:hover:not(:disabled) { background: var(--alerts-danger-1); color: var(--brand-danger); }
+.danger.secondary { background: var(--alerts-danger-1); border-color: var(--alerts-danger-1); color: var(--brand-danger); }
+.button:disabled { cursor: not-allowed; color: var(--gray-4); background: var(--gray-2); border-color: transparent; }
+.text:disabled { background: transparent; }

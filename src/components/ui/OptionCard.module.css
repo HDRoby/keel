@@ -1,0 +1,17 @@
+.card { display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--border-default); border-radius: var(--radius-m); padding: 12px; background: var(--surface-card); cursor: pointer; font-weight: 400; transition: var(--transition); min-width: 0; }
+.card:hover { border-color: var(--border-dashed); }
+.card:has(input:checked) { background: var(--surface-selected); border-color: var(--brand-primary); }
+.card:has(input:focus-visible) { box-shadow: var(--ring); }
+.head { display: flex; align-items: center; gap: var(--spacing-1); flex-wrap: wrap; }
+.head input { margin: 0; accent-color: var(--accent); }
+.title { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--text-strong); }
+.tag { margin-left: auto; font: var(--text-regular-1); color: var(--text-muted); }
+.summary { font-size: 13px; line-height: 18px; color: var(--text-secondary); }
+.pro { font-size: 12px; line-height: 16px; color: var(--ok-text); }
+.con { font-size: 12px; line-height: 16px; color: var(--warn-text); }
+.fit { font-size: 12px; line-height: 16px; font-weight: 500; }
+.good { color: var(--ok-text); }
+.bad { color: var(--danger); }
+.meta { font: var(--text-regular-1); color: var(--text-muted); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.one { grid-template-columns: 1fr; }

@@ -173,7 +173,7 @@
   --surface: var(--brand-white);
   --surface-muted: #f6f7f9;
   --surface-alt: #fcfcfd;
-  --segmented-bg: #f0f2f5;
+  
   --border: var(--gray-2);
   --border-input: var(--gray-4);
   --border-dashed: var(--gray-3);
@@ -192,6 +192,7 @@
   --handoff-soft: #f3ecff;
   --code-bg: #1e1f24;
   --code-text: #e6e8ec;
+  --notice-border: #f0eeed;
   --radius: var(--radius-card);
   --shadow: var(--box-shadow-1);
   --ring: 0 0 0 3px var(--alerts-info-1);
@@ -218,7 +219,7 @@ label { display: block; font-weight: 500; }
 label > input, label > select, label > textarea { margin-top: 4px; }
 input[type='text'], input[type='url'], input[type='password'], input:not([type]), select, textarea {
   display: block; width: 100%; font: inherit; color: inherit; background: var(--surface);
-  border: 1px solid var(--border-input); border-radius: var(--radius-m); padding: 8px 12px; transition: var(--transition);
+  border: 1px solid var(--border-input); border-radius: var(--radius-m); padding: 8px 16px; transition: var(--transition);
 }
 input:hover, select:hover, textarea:hover { border-color: var(--accent); }
 input[type='checkbox'], input[type='radio'] { accent-color: var(--accent); margin-right: 6px; }

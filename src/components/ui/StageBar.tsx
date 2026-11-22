@@ -1,13 +1,15 @@
-// Stage bar (mockup: stage-bar.png, REQ-005) and the stage page frame.
-// Locked stages are greyed out, not links, and say why.
+// Stage bar (docs/ui-guide.md, mock source StageBar.dc.html, REQ-005) and the stage page frame.
+// Each stage: icon, label and a note. Active: accent. Done: ok check. Out of date: warn. Locked: dashed, not a link, says why.
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { Stage } from '@/lib/documents/types';
 import type { StageSummary } from '@/lib/gates/approvals';
 import type { StageGate } from '@/lib/gates/rules';
 import type { Project } from '@/lib/store/workspace';
-import { CheckCircle, Current, Lock, Open } from './Icons';
-import { ErrorAlert, PageHead, Topbar } from './Shell';
+import { CheckCircle, Current, Lock, Open, OutOfDate } from '../Icons';
+import { ErrorAlert, PageHead, Topbar } from '../Shell';
+import { cx } from './cx';
+import styles from './StageBar.module.css';
 
 interface StageBarProps {
   gates: StageGate[];
@@ -17,23 +19,25 @@ interface StageBarProps {
 
 export function StageBar({ gates, current, summaries }: StageBarProps) {
   return (
-    <nav aria-label="Stages" className="stagebar">
+    <nav aria-label="Stages" className={styles.bar}>
       {gates.map((g, i) => {
         const summary = summaries[g.stage];
+        const stale = summary.outOfDate?.length ? summary.outOfDate : undefined;
+        const state = !g.available ? 'locked' : g.stage === current ? 'active' : stale ? 'stale' : summary.done ? 'done' : 'open';
         const body = (
           <>
-            {!g.available ? <Lock /> : g.stage === current ? <Current /> : summary.done ? <CheckCircle /> : <Open />}
-            <span>
-              <span className="name">{i + 1} · {g.label}</span>
-              <span className="detail">{g.available ? summary.detail : g.reason}</span>
-              {summary.outOfDate?.length ? <span className="stale">Out of date · {summary.outOfDate.join(', ')}</span> : null}
+            <span className={styles.icon}>{state === 'locked' ? <Lock /> : state === 'active' ? <Current /> : state === 'stale' ? <OutOfDate /> : state === 'done' ? <CheckCircle /> : <Open />}</span>
+            <span className={styles.text}>
+              <span className={styles.label}>{i + 1} · {g.label}</span>
+              <span className={styles.note}>{g.available ? summary.detail : g.reason}</span>
+              {stale ? <span className={cx(styles.note, styles.staleNote)}>Out of date · {stale.join(', ')}</span> : null}
             </span>
           </>
         );
         return g.available ? (
-          <Link key={g.stage} href={`/${g.stage}`} className="stage" aria-current={g.stage === current ? 'step' : undefined}>{body}</Link>
+          <Link key={g.stage} href={`/${g.stage}`} className={cx(styles.stage, styles[state])} aria-current={g.stage === current ? 'step' : undefined}>{body}</Link>
         ) : (
-          <span key={g.stage} role="link" aria-disabled="true" title={g.reason} className="stage">{body}</span>
+          <span key={g.stage} role="link" aria-disabled="true" title={g.reason} className={cx(styles.stage, styles.locked)}>{body}</span>
         );
       })}
     </nav>

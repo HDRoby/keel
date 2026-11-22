@@ -4,7 +4,7 @@ import { generatePlanAction } from '../actions';
 import { Conflicts } from '@/components/Conflicts';
 import { DocumentReview } from '@/components/DocumentReview';
 import { RegenerateForm } from '@/components/RegenerateForm';
-import { StageLayout } from '@/components/StageBar';
+import { StageLayout } from '@/components/ui/StageBar';
 import { SubmitButton } from '@/components/SubmitButton';
 import { conflictsOf } from '@/lib/generate/resolve';
 import { readDocument } from '@/lib/store/documents';

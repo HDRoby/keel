@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ExploreBoard } from './board';
 import { Pencil } from '@/components/Icons';
-import { StageBar } from '@/components/StageBar';
+import { StageBar } from '@/components/ui/StageBar';
 import { ErrorAlert, PageHead, Topbar } from '@/components/Shell';
 import { loadContext, templateLabel } from '@/lib/brainstorm/session';
 import { exploreView } from '@/lib/brainstorm/view';

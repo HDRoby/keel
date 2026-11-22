@@ -1,0 +1,18 @@
+.comment { border-left: 3px solid var(--border-strong); background: var(--surface-muted); border-radius: var(--radius-row); padding: 12px 14px; display: grid; gap: 6px; }
+.overline { font-size: 11px; line-height: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+.text { font-size: 14px; line-height: 21px; color: var(--text-secondary); }
+.text strong { color: var(--text-strong); font-weight: 600; }
+.preview { display: flex; gap: var(--spacing-1); align-items: baseline; font-size: 13px; line-height: 19px; color: var(--text-secondary); min-width: 0; }
+.proposed { background: var(--surface-card); border: 1px dashed var(--border-strong); border-radius: var(--radius-m); padding: 8px 12px; display: grid; gap: 6px; font-size: 14px; line-height: 20px; color: var(--text); }
+.actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.thread { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
+.item { font-size: 13px; line-height: 19px; color: var(--text-secondary); }
+.user { justify-self: end; background: var(--surface-card); border-radius: var(--radius-m); padding: 6px 10px; color: var(--text); }
+.challenge { border-left-color: var(--warn); background: var(--warn-soft); }
+.challenge .overline { color: var(--warn-text); }
+.link { border-left-color: var(--link); background: var(--link-soft); }
+.link .overline { color: var(--link-text); }
+.suggest, .question { border-left-color: var(--accent); background: var(--accent-soft); }
+.suggest .overline, .question .overline { color: var(--accent-strong); }
+.ok { border-left-color: var(--ok); background: var(--ok-soft); }
+.ok .overline { color: var(--ok-text); }

@@ -1,0 +1,8 @@
+.section { border: 1px solid var(--border-default); border-radius: 10px; padding: 14px 16px; display: grid; gap: 10px; background: var(--surface-card); transition: var(--transition); }
+.active, .section:focus-within { border-color: var(--accent); box-shadow: var(--ring); }
+.head { display: flex; align-items: center; gap: var(--spacing-1); margin: 0; font: var(--text-medium-3); color: var(--text-strong); flex-wrap: wrap; }
+.status { display: flex; }
+.label { font: var(--text-medium-3); }
+.extra { display: inline-flex; gap: var(--spacing-1); align-items: center; margin-left: auto; font: var(--text-regular-1); color: var(--text-muted); }
+.input { display: grid; gap: 6px; }
+.input textarea, .input input { width: 100%; }

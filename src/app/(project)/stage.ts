@@ -1,6 +1,6 @@
 // Shared loading for the stage pages: the project, its gates and the gate of the page's stage.
 import { notFound } from 'next/navigation';
-import type { StageFrame } from '@/components/StageBar';
+import type { StageFrame } from '@/components/ui/StageBar';
 import type { Stage } from '@/lib/documents/types';
 import { projectState, stageSummaries } from '@/lib/gates/approvals';
 import { stageGates, type StageGate } from '@/lib/gates/rules';

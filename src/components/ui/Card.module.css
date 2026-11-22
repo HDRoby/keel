@@ -1,0 +1,8 @@
+.card { background: var(--surface-card); border-radius: var(--radius-card); box-shadow: var(--box-shadow-1); transition: var(--transition); min-width: 0; }
+.normal { padding: var(--spacing-3); }
+.long { padding: var(--spacing-3) var(--spacing-3) 20px; }
+.none { padding: 0; overflow: hidden; }
+.head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-2); margin-bottom: var(--spacing-2); flex-wrap: wrap; }
+.title { font: var(--text-medium-4); color: var(--text-strong); margin: 0; }
+.meta { font: var(--text-regular-1); color: var(--text-muted); margin: 4px 0 0; }
+.actions { display: flex; gap: var(--spacing-1); align-items: center; flex-wrap: wrap; }

@@ -4,7 +4,7 @@ import { Conflicts } from '@/components/Conflicts';
 import { DocumentReview } from '@/components/DocumentReview';
 import { MockReferences } from '@/components/MockReferences';
 import { RegenerateForm } from '@/components/RegenerateForm';
-import { StageLayout } from '@/components/StageBar';
+import { StageLayout } from '@/components/ui/StageBar';
 import { SubmitButton } from '@/components/SubmitButton';
 import { DECISION_TITLE, decisionsOf } from '@/lib/gates/approvals';
 import { conflictsOf } from '@/lib/generate/resolve';
