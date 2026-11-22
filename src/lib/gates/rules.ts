@@ -1,4 +1,5 @@
 // Stage gates (REQ-005): each stage unlocks only when the one before it is approved.
+// Plan needs a Go decision and an accepted scenario for every requirement (CR-0006).
 // Handoff needs an approved plan and a latest decision of Go.
 import type { DocumentStatus, Stage } from '../documents/types';
 
@@ -11,6 +12,7 @@ export interface ProjectState {
   spec?: DocumentStatus;
   plan?: DocumentStatus;
   decisions: Decision[];   // oldest first; the latest one counts
+  uncovered?: string[];    // spec requirements with no accepted scenario (REQ-005, CR-0006)
 }
 
 export interface StageGate {
@@ -41,12 +43,15 @@ export function stageGates(state: ProjectState): StageGate[] {
     explore: true,
     intent: state.requiredCaptured || state.intent !== undefined,
     spec: state.intent === 'approved',
-    plan: state.decisions.at(-1) === 'go',
+    plan: state.decisions.at(-1) === 'go' && (state.uncovered ?? []).length === 0,
     handoff: state.plan === 'approved' && state.decisions.at(-1) === 'go',
   };
   // Handoff also needs the latest decision to be Go (owner decision): a later Park or No-go locks it.
+  const uncovered = state.uncovered ?? [];
   const reason = (stage: Exclude<Stage, 'explore'>) =>
-    stage === 'handoff' && state.plan === 'approved' ? REASONS.plan : REASONS[stage];
+    stage === 'plan' && state.decisions.at(-1) === 'go' && uncovered.length
+      ? `Needs at least one accepted scenario for ${uncovered.join(', ')}`
+      : stage === 'handoff' && state.plan === 'approved' ? REASONS.plan : REASONS[stage];
   return STAGES.map(({ stage, label }) => ({
     stage, label, available: open[stage], ...(open[stage] || stage === 'explore' ? {} : { reason: reason(stage) }),
   }));

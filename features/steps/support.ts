@@ -12,6 +12,8 @@ import { recordDecision, review } from '../../src/lib/gates/approvals';
 import { saveExploreTiming } from '../../src/lib/settings/settings';
 import { generatePlan } from '../../src/lib/generate/plan';
 import { generateSpec } from '../../src/lib/generate/spec';
+import { raiseScenarioChange } from '../../src/lib/changes/scenarios';
+import { acceptAllSuggestions } from '../../src/lib/scenarios/store';
 import { openIndex, type Store } from '../../src/lib/store/db';
 import { createDocument, parseDocument } from '../../src/lib/store/documents';
 import { initialiseProject } from '../../src/lib/store/workspace';
@@ -145,6 +147,7 @@ export async function projectWithApprovedPlan(extra?: (store: Store) => void | P
   });
   expect((await review(store, 'intent', { action: 'approve', by: 'Ada Lovelace', comment: '' })).ok).toBe(true);
   expect((await generateSpec(store, 'requirements-and-design-spec@2', silent)).ok).toBe(true);
+  expect((await acceptAllSuggestions(store, raiseScenarioChange)).ok).toBe(true);   // the draft's scenarios, accepted (CR-0006)
   expect((await recordDecision(store, { decision: 'go', by: 'Ada Lovelace', reason: 'Worth it.', consequences: '' })).ok).toBe(true);
   expect((await generatePlan(store, silent)).ok).toBe(true);
   expect((await review(store, 'plan', { action: 'approve', by: 'Ada Lovelace', comment: '' })).ok).toBe(true);

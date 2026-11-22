@@ -6,11 +6,13 @@ import { appendFileSync } from 'node:fs';
 import { PROVIDERS, type ChatMessage, type ChatProvider, type RealProviderId } from './types';
 
 const REVIEW_MARKER = 'Answer with one JSON object and nothing else.';
+const SCENARIO_MARKER = 'Answer with one scenario as JSON and nothing else.';
 
 export function fakeReply(standsFor: RealProviderId, messages: ChatMessage[]): string {
   const label = PROVIDERS.find((p) => p.id === standsFor)?.label ?? standsFor;
   const last = [...messages].reverse().find((m) => m.role === 'user')?.content ?? '';
   if (messages[0]?.role === 'system' && messages[0].content.includes(REVIEW_MARKER)) return JSON.stringify(fakeReview(label, last));
+  if (messages[0]?.role === 'system' && messages[0].content.includes(SCENARIO_MARKER)) return JSON.stringify(fakeFailureCase(last));
   return `Reply from ${label}: I read "${last}".`;
 }
 
@@ -73,12 +75,31 @@ export function fakeReview(label: string, userMessage: string): Record<string, u
   return { comments, suggestions, ...(reply ? { reply } : {}) };
 }
 
+/** A failure scenario for the requirement in the message, for "Suggest a failure case". */
+export function fakeFailureCase(userMessage: string): Record<string, unknown> {
+  let requirement = { id: 'REQ-000', statement: 'the requirement' };
+  try {
+    requirement = (JSON.parse(userMessage) as { requirement: typeof requirement }).requirement;
+  } catch {
+    // keep the default
+  }
+  const what = requirement.statement.charAt(0).toLowerCase() + requirement.statement.slice(1);
+  return {
+    name: `${requirement.statement} is refused when the input is not valid`,
+    steps: [
+      { keyword: 'Given', text: 'the input is not valid' },
+      { keyword: 'When', text: `I try to ${what}` },
+      { keyword: 'Then', text: 'I see why it was refused, and nothing is saved' },
+    ],
+  };
+}
+
 export function createFakeProvider(standsFor: RealProviderId, env: Record<string, string | undefined> = process.env): ChatProvider {
   return {
     id: 'fake',
     async *stream(messages) {
       const log = env.KEEL_FAKE_LOG?.trim();
-      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : 'chat'}\n`);
+      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : messages[0]?.content.includes(SCENARIO_MARKER) ? 'scenario' : 'chat'}\n`);
       for (const word of fakeReply(standsFor, messages).split(/(?<= )/)) yield word;
     },
   };

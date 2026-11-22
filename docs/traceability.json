@@ -3,8 +3,8 @@
   "generated": "2026-11-20",
   "from": {
     "intent": "INT-0001@4",
-    "spec": "SPC-0001@9",
-    "plan": "PLN-0001@9"
+    "spec": "SPC-0001@10",
+    "plan": "PLN-0001@10"
   },
   "requirements": {
     "REQ-001": {
@@ -45,15 +45,20 @@
     },
     "REQ-004": {
       "tasks": [
+        "R11",
         "T5"
       ],
       "scenarios": [
         "features/brainstorm.feature › Requirements are a section, and IDs are given when drafting",
+        "features/scenarios.feature › Scenarios are grouped by requirement",
+        "features/scenarios.feature › I add a second scenario to a requirement",
+        "features/scenarios.feature › A suggested failure case counts only once accepted",
         "features/traceability.feature › A changed requirement shows its impact"
       ]
     },
     "REQ-005": {
       "tasks": [
+        "R11",
         "R18",
         "T6"
       ],
@@ -62,6 +67,7 @@
         "features/brainstorm.feature › Editing an approved intent creates a change request",
         "features/change-requests.feature › Changing an approved intent raises a change request",
         "features/change-requests.feature › Approved changes mark later documents out of date",
+        "features/scenarios.feature › The plan needs a scenario for every requirement",
         "features/stage-gating.feature › Spec is locked until the intent is approved",
         "features/stage-gating.feature › Approving the intent unlocks the spec"
       ]
@@ -175,6 +181,16 @@
       ],
       "features": [
         "features/brainstorm.feature"
+      ]
+    },
+    "R11": {
+      "title": "Edit acceptance scenarios in the Spec",
+      "requirements": [
+        "REQ-004",
+        "REQ-005"
+      ],
+      "features": [
+        "features/scenarios.feature"
       ]
     },
     "R18": {
@@ -539,6 +555,26 @@
       "feature": "features/read-back.feature",
       "scenario": "Keel's own commits are not read back",
       "requirement": "REQ-007"
+    },
+    {
+      "feature": "features/scenarios.feature",
+      "scenario": "Scenarios are grouped by requirement",
+      "requirement": "REQ-004"
+    },
+    {
+      "feature": "features/scenarios.feature",
+      "scenario": "I add a second scenario to a requirement",
+      "requirement": "REQ-004"
+    },
+    {
+      "feature": "features/scenarios.feature",
+      "scenario": "A suggested failure case counts only once accepted",
+      "requirement": "REQ-004"
+    },
+    {
+      "feature": "features/scenarios.feature",
+      "scenario": "The plan needs a scenario for every requirement",
+      "requirement": "REQ-005"
     },
     {
       "feature": "features/stage-gating.feature",

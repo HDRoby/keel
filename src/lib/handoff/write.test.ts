@@ -1,6 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { raiseScenarioChange } from '../changes/scenarios';
+import { acceptAllSuggestions } from '../scenarios/store';
 import { describe, expect, it } from 'vitest';
 import { recordDecision, review } from '../gates/approvals';
 import { generatePlan } from '../generate/plan';
@@ -18,6 +20,7 @@ async function approvedPlan() {
   await createDocument(store, { kind: 'intent', title: 'Demo', template: 'standard-intent@3', body: '## Requirements\n\n- REQ-001 Show the run command\n' });
   await review(store, 'intent', { action: 'approve', by: 'Ada', comment: '' });
   await generateSpec(store, 'requirements-and-design-spec@2', silent);
+  await acceptAllSuggestions(store, raiseScenarioChange);   // the first draft's scenarios, accepted (CR-0006)
   await recordDecision(store, { decision: 'go', by: 'Ada', reason: 'Yes', consequences: '' });
   await generatePlan(store, silent);
   await review(store, 'plan', { action: 'approve', by: 'Ada', comment: '' });
@@ -90,10 +93,10 @@ describe('writeHandoff', () => {
 
     const other = await approvedPlan();
     saveProvider(other.store, 'openai', { apiKey: 'a-stored-key-0123456789' });
-    const task = join(other.store.root, 'features', 'demo.feature');
+    const task = join(other.store.root, 'features', 'show-the-run-command.feature');
     writeFileSync(task, `${readFileSync(task, 'utf8')}\n  # key a-stored-key-0123456789\n`);
-    const refused = await writeHandoff(other.store, { 'features/demo.feature': 'keel' });
-    expect(refused.ok ? '' : refused.message).toMatch(/^(Nothing was written|The package was not written): Stored credential in features\/demo\.feature/);
+    const refused = await writeHandoff(other.store, { 'features/show-the-run-command.feature': 'keel' });
+    expect(refused.ok ? '' : refused.message).toMatch(/^(Nothing was written|The package was not written): Stored credential in features\/show-the-run-command\.feature/);
     expect(existsSync(join(other.store.root, 'AGENTS.md'))).toBe(false);
   });
 });

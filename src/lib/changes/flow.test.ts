@@ -1,6 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { raiseScenarioChange } from '../changes/scenarios';
+import { acceptAllSuggestions } from '../scenarios/store';
 import { describe, expect, it } from 'vitest';
 import { fillSections } from '../brainstorm/fill';
 import { loadContext, sectionOf, startIdea } from '../brainstorm/session';
@@ -30,6 +32,7 @@ async function approvedPlan() {
   await draftIntent(store);
   await review(store, 'intent', { action: 'approve', by: 'Ada', comment: '' });
   await generateSpec(store, 'requirements-and-design-spec@2', silent);
+  await acceptAllSuggestions(store, raiseScenarioChange);   // the first draft's scenarios, accepted (CR-0006)
   await review(store, 'spec', { action: 'approve', by: 'Ada', comment: '' });
   await recordDecision(store, { decision: 'go', by: 'Ada', reason: 'Yes', consequences: '' });
   await generatePlan(store, silent);

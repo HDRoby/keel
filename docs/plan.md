@@ -6,9 +6,9 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 9
+version: 10
 template: implementation-plan@2
-from_spec: SPC-0001@9
+from_spec: SPC-0001@10
 ---
 
 # Plan: Keel v0.1
@@ -60,8 +60,15 @@ Runs after CR-0005 (R10); CR-0006 builds on it.
 | --- | --- | --- | --- |
 | R18 | Change requests across stages, and the Changes page | REQ-014, REQ-005, REQ-008 | change-requests |
 
+## Rework for CR-0006
+
+| Task | Title | Requirements | Scenarios |
+| --- | --- | --- | --- |
+| R11 | Edit acceptance scenarios in the Spec | REQ-004, REQ-005 | scenarios |
+
 ## Version history
 
+- v10: task R11 for CR-0006.
 - v9: task R18 for CR-0003; runs after CR-0005 (R10).
 - v8: task R10 for CR-0005.
 - v7: rework tasks R1 to R9 for CR-0004.

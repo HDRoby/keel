@@ -1,8 +1,6 @@
 // Generate spec: fills a spec template from the approved intent (owner decision, T6). Keel writes the
 // Requirements table and scenario tags itself, so IDs stay traceable; the model writes the rest.
 // Regenerating merges with the proposer's edits and raises conflicts that must be resolved before approval.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
 import { fillSections, parseSections } from '../brainstorm/sections';
 import { gateFor } from '../gates/rules';
 import { projectState } from '../gates/approvals';
@@ -11,11 +9,13 @@ import { standardsFor, type Standard } from '../standards/library';
 import type { Store } from '../store/db';
 import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
 import { commitFiles } from '../store/git';
-import { fileNameFor, readProject } from '../store/workspace';
+import { readProject } from '../store/workspace';
+import { parseFeatureDoc, type Step } from '../scenarios/gherkin';
+import { acceptedScenarios, addSuggestions, SCENARIOS_FILE, suggestions } from '../scenarios/store';
 import { parseTemplateRef, readTemplate } from '../templates/library';
 import { renderTemplate } from '../templates/render';
 import { requirementStatements } from '../trace/parse';
-import { conflictNote, mergePiece, mergeSections, readBaseline, writeBaseline, type Conflict } from './merge';
+import { conflictNote, mergeSections, readBaseline, writeBaseline, type Conflict } from './merge';
 import { writeSection, type Writer } from './writer';
 
 export type GenerateError = 'locked' | 'already-exists' | 'not-found' | 'unknown-template' | 'invalid-input' | 'not-draft';
@@ -56,12 +56,18 @@ export function standardsSources(standards: Standard[]): string {
 interface ComposedSpec {
   title: string;
   body: string;
+  proposals: { req: string; name: string; steps: Step[] }[];   // one scenario per requirement, as suggestions
   feature?: string;      // only when the template has an Acceptance scenarios section
-  featurePath: string;
   extra: Record<string, unknown>;
 }
 
-async function composeSpec(store: Store, templateRef: string, write: Writer): Promise<Result<ComposedSpec, GenerateError>> {
+/** A proposed scenario from the model's text (or a plain one when it is not well formed). */
+export function proposalFor(id: string, statement: string, written?: string): { req: string; name: string; steps: Step[] } {
+  const parsed = parseFeatureDoc(`Feature: x\n${scenarioFor(id, statement, written)}\n`).scenarios[0];
+  return { req: id, name: parsed?.name ?? statement, steps: parsed?.steps ?? [] };
+}
+
+async function composeSpec(store: Store, templateRef: string, write: Writer, only?: string[]): Promise<Result<ComposedSpec, GenerateError>> {
   const intent = readDocument(store, 'docs/intent.md');
   if (!intent.ok) return fail('not-found', intent.message);
   const ref = parseTemplateRef(templateRef);
@@ -72,26 +78,25 @@ async function composeSpec(store: Store, templateRef: string, write: Writer): Pr
 
   const { title } = intent.value.header;
   const statements = requirementStatements(intent.value.body);
-  const featurePath = `features/${fileNameFor(project.ok ? project.value.title : title)}.feature`;
   const sources = [`Intent ${intent.value.header.id} v${intent.value.header.version}:\n\n${intent.value.body}`, standardsSources(standardsFor(store.root, chosen, 'spec'))]
     .filter(Boolean).join('\n\n');
   const sections: Record<string, string[]> = {};
-  let feature: string | undefined;
+  const proposals: ComposedSpec['proposals'] = [];
 
   for (const { heading, guidance } of parseSections(template.value.content)) {
     if (heading === 'Requirements') {
       sections[heading] = [requirementsTable(statements)];
     } else if (heading === 'Acceptance scenarios') {
-      const scenarios: string[] = [];
+      // Proposed as suggestions in the Acceptance scenarios tab; they count once accepted (CR-0006).
       for (const [id, statement] of Object.entries(statements)) {
+        if (only && !only.includes(id)) continue;
         const written = await write('documents', [
           { role: 'system', content: `Write one Gherkin scenario for ${id}: "${statement}". One behaviour, described as behaviour, not clicks. Reply with "Scenario:" and its Given, When and Then lines only.` },
           { role: 'user', content: sources },
         ]);
-        scenarios.push(scenarioFor(id, statement, written));
+        proposals.push(proposalFor(id, statement, written));
       }
-      feature = featureFile(title, scenarios);
-      sections[heading] = [`Saved to \`${featurePath}\`.\n\n\`\`\`gherkin\n${feature}\`\`\``];
+      sections[heading] = ['Edited in the Acceptance scenarios tab: at least one per requirement, tagged `@REQ-xxx`. Accepted scenarios are saved in `features/`.'];
     } else if (heading === 'Standards applied') {
       sections[heading] = [standardsApplied(standardsFor(store.root, chosen))];
     } else {
@@ -100,32 +105,31 @@ async function composeSpec(store: Store, templateRef: string, write: Writer): Pr
     }
   }
   return ok({
-    title, feature, featurePath,
+    title, proposals,
     body: fillSections(renderTemplate(template.value.content, { title }).body, sections),
     extra: { from_intent: `${intent.value.header.id}@${intent.value.header.version}`, standards: chosen },
   });
 }
 
-/** Writes docs/spec.md from a spec template, and the acceptance scenarios to features/<project title>.feature. */
+/** Writes docs/spec.md from a spec template, and proposes one acceptance scenario per requirement as a suggestion. */
 export async function generateSpec(store: Store, templateRef: string, write: Writer): Promise<Result<StoredDocument, GenerateError>> {
   const gate = gateFor(projectState(store), 'spec');
   if (!gate.available) return fail('locked', gate.reason ?? 'The spec stage is locked');
   if (readDocument(store, 'docs/spec.md').ok) return fail('already-exists', 'spec.md already exists');
   const composed = await composeSpec(store, templateRef, write);
   if (!composed.ok) return composed;
-  const { title, body, feature, featurePath, extra } = composed.value;
+  const { title, body, proposals, extra } = composed.value;
   const created = await createDocument(store, { kind: 'spec', title, body, template: templateRef, extra: { ...extra, conflicts: [] } });
   if (!created.ok) return fail('invalid-input', created.message);
-  const dir = store.root;
-  if (feature) writeFeature(dir, featurePath, feature);
-  await commitFiles(dir, [...(feature ? [featurePath] : []), ...specBaselines(dir, composed.value)], `Generation baseline for ${created.value.header.id} v1`);
+  await addSuggestions(store, proposals);
+  await commitFiles(store.root, [...specBaselines(store.root, composed.value), ...(proposals.length ? [SCENARIOS_FILE] : [])], `Generation baseline for ${created.value.header.id} v1`);
   return created;
 }
 
 /**
- * Regenerates a draft spec as its next version. Sections and the feature file merge three ways with
- * what Keel generated last time: edits stay, new text comes in, and pieces changed on both sides
- * become conflicts that block approval until resolved.
+ * Regenerates a draft spec as its next version. Sections merge three ways with what Keel generated last time:
+ * edits stay, new text comes in, and pieces changed on both sides become conflicts that block approval until
+ * resolved. Scenarios are proposed only for requirements that have none yet (accepted or suggested).
  */
 export async function regenerateSpec(store: Store, write: Writer): Promise<Result<StoredDocument, GenerateError>> {
   const gate = gateFor(projectState(store), 'spec');
@@ -133,15 +137,15 @@ export async function regenerateSpec(store: Store, write: Writer): Promise<Resul
   const spec = readDocument(store, 'docs/spec.md');
   if (!spec.ok) return fail('not-found', spec.message);
   if (spec.value.header.status !== 'draft') return fail('not-draft', `spec.md is ${spec.value.header.status}; only a draft spec can be regenerated`);
-  const composed = await composeSpec(store, spec.value.header.template, write);
+  const intent = readDocument(store, 'docs/intent.md');
+  const covered = new Set([...acceptedScenarios(store.root).flatMap((s) => s.requirements), ...suggestions(store.root).map((s) => s.req)]);
+  const missing = Object.keys(intent.ok ? requirementStatements(intent.value.body) : {}).filter((id) => !covered.has(id));
+  const composed = await composeSpec(store, spec.value.header.template, write, missing);
   if (!composed.ok) return composed;
-  const { body, feature, featurePath, extra } = composed.value;
+  const { body, proposals, extra } = composed.value;
   const dir = store.root;
   const merged = mergeSections(readBaseline(dir, 'docs/spec.md') ?? '', spec.value.body, body);
-  const featureNow = existsSync(join(dir, featurePath)) ? readFileSync(join(dir, featurePath), 'utf8') : undefined;
-  const featureMerge = feature === undefined ? { value: featureNow, conflict: false } : mergePiece(readBaseline(dir, featurePath), featureNow, feature);
   const conflicts: Conflict[] = [...merged.conflicts];
-  if (featureMerge.conflict) conflicts.push({ kind: 'file', name: featurePath, mine: featureNow ?? '', theirs: feature ?? '' });
 
   const saved = await saveDocument(store, 'docs/spec.md', {
     body: merged.body,
@@ -149,18 +153,12 @@ export async function regenerateSpec(store: Store, write: Writer): Promise<Resul
     reason: `Regenerated from ${String(extra.from_intent)}${conflictNote(conflicts)}`,
   });
   if (!saved.ok) return fail('invalid-input', saved.message);
-  if (featureMerge.value !== undefined && featureMerge.value !== featureNow) writeFeature(dir, featurePath, featureMerge.value);
-  const featureFiles = existsSync(join(dir, featurePath)) ? [featurePath] : [];
-  await commitFiles(dir, [...featureFiles, ...specBaselines(dir, composed.value)], `Regeneration baseline for ${saved.value.header.id} v${saved.value.header.version}`);
+  await addSuggestions(store, proposals);
+  await commitFiles(dir, [...specBaselines(dir, composed.value), ...(proposals.length ? [SCENARIOS_FILE] : [])], `Regeneration baseline for ${saved.value.header.id} v${saved.value.header.version}`);
   return saved;
 }
 
-function writeFeature(dir: string, featurePath: string, content: string): void {
-  mkdirSync(dirname(join(dir, featurePath)), { recursive: true });
-  writeFileSync(join(dir, featurePath), content);
-}
-
 /** Records what Keel generated, for the next regeneration's merge, and returns the baseline paths. */
-function specBaselines(dir: string, { body, feature, featurePath }: ComposedSpec): string[] {
-  return [writeBaseline(dir, 'docs/spec.md', body), ...(feature ? [writeBaseline(dir, featurePath, feature)] : [])];
+function specBaselines(dir: string, { body }: ComposedSpec): string[] {
+  return [writeBaseline(dir, 'docs/spec.md', body)];
 }

@@ -3,6 +3,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import ts from 'typescript';
+import { raiseScenarioChange } from '../changes/scenarios';
+import { acceptAllSuggestions } from '../scenarios/store';
 import { describe, expect, it } from 'vitest';
 import { recordDecision, review } from '../gates/approvals';
 import { generatePlan } from '../generate/plan';
@@ -102,6 +104,7 @@ describe('buildHandoff', () => {
     await review(store, 'intent', { action: 'approve', by: 'Ada', comment: '' });
     expect(await buildHandoff(store)).toMatchObject({ error: 'locked' });
     await generateSpec(store, 'requirements-and-design-spec@2', silent);
+    await acceptAllSuggestions(store, raiseScenarioChange);   // the first draft's scenarios, accepted (CR-0006)
     await recordDecision(store, { decision: 'go', by: 'Ada', reason: 'Yes', consequences: '' });
     await generatePlan(store, silent);
     await review(store, 'plan', { action: 'approve', by: 'Ada', comment: '' });
@@ -117,7 +120,7 @@ describe('buildHandoff', () => {
     const paths = built.value.map((f) => f.path);
     expect(paths).toEqual(expect.arrayContaining([
       'AGENTS.md', 'CLAUDE.md', 'REVIEW.md', 'README.md', 'docs/intent.md', 'docs/spec.md', 'docs/plan.md', 'docs/roadmap.md',
-      'docs/decisions/0001-go.md', 'docs/traceability.json', 'tasks/T1.md', 'features/demo.feature', 'features/steps/demo.steps.ts',
+      'docs/decisions/0001-go.md', 'docs/traceability.json', 'tasks/T1.md', 'features/show-the-run-command.feature', 'features/steps/show-the-run-command.steps.ts',
       '.claude/agents/verifier.md', '.claude/skills/security-baseline/SKILL.md', '.github/workflows/ci.yml',
       'package.json', 'tsconfig.json', 'playwright.config.ts', '.gitignore',
     ]));

@@ -1,9 +1,10 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { raiseScenarioChange } from '../changes/scenarios';
+import { acceptAllSuggestions, suggestions } from '../scenarios/store';
 import { describe, expect, it } from 'vitest';
 import { ensureSeed } from '../seed';
 import { createDocument, readDocument, saveDocument } from '../store/documents';
-import { commitFiles } from '../store/git';
 import { tempStore } from '../store/test-store';
 import { initialiseProject } from '../store/workspace';
 import { recordDecision, review } from '../gates/approvals';
@@ -80,21 +81,23 @@ describe('regenerateSpec', () => {
     expect(await regenerateSpec(store, writer(state))).toMatchObject({ error: 'not-draft' });
   });
 
-  it('treats an edited feature file as a conflict when the scenarios change too', async () => {
+  it('proposes scenarios only for requirements that have none, and never touches the accepted ones', async () => {
     const store = await project();
     await generateSpec(store, 'requirements-and-design-spec@2', async () => undefined);
+    await acceptAllSuggestions(store, raiseScenarioChange);   // the first draft's scenarios, accepted (CR-0006)
     const short = await project();
     await generateSpec(short, 'short-spec@1', async () => undefined);
-    expect(existsSync(join(short.root, 'features/approvals.feature'))).toBe(false);
+    expect(suggestions(short.root)).toEqual([]);
     const dir = store.root;
-    writeFileSync(join(dir, 'features/approvals.feature'), 'Feature: Mine\n');
-    await commitFiles(dir, ['features/approvals.feature'], 'Edit scenarios');
+    const before = readFileSync(join(dir, 'features/record-an-approval.feature'), 'utf8');
     await saveDocument(store, 'docs/intent.md', { reason: 'More', body: `${INTENT}- REQ-003 Revoke\n` });
     const again = await regenerateSpec(store, async () => undefined);
-    expect(again.ok && conflictsOf(again.value).map((c) => c.name)).toEqual(['features/approvals.feature']);
-    await resolveConflicts(store, 'spec', [{ name: 'features/approvals.feature', choice: 'theirs' }]);
-    expect(readFileSync(join(dir, 'features/approvals.feature'), 'utf8')).toContain('@REQ-003');
+    expect(again.ok && conflictsOf(again.value)).toEqual([]);
+    expect(suggestions(dir).map((s) => s.req)).toEqual(['REQ-003']);
+    expect(readFileSync(join(dir, 'features/record-an-approval.feature'), 'utf8')).toBe(before);
+    expect(existsSync(join(dir, 'features/revoke.feature'))).toBe(false);
   });
+
 });
 
 describe('gates on regeneration', () => {

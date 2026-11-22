@@ -28,9 +28,12 @@ When('I open the Spec stage', async ({ page }) => {
   await page.goto(stagePath('spec'));
 });
 
+// Also used by scenarios.feature for the Plan stage: the stage is the one of the page that is open.
 Then('the stage is locked', async ({ page }) => {
-  await expect(page.getByRole('status')).toContainText('Locked.');
-  await expect(stage(page, 'Spec')).toHaveAttribute('aria-disabled', 'true');
+  const name = new URL(page.url()).pathname.slice(1);
+  const label = `${name.charAt(0).toUpperCase()}${name.slice(1)}`;
+  await expect(page.getByRole('status').filter({ hasText: 'Locked.' })).toBeVisible();
+  await expect(stage(page, label)).toHaveAttribute('aria-disabled', 'true');
 });
 
 Then('I see "Needs an approved intent"', async ({ page }) => {
