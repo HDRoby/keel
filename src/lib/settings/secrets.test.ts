@@ -20,7 +20,9 @@ describe('secrets', () => {
     expect(decryptSecret(key, sealed)).toEqual({ ok: true, value: 'sk-test-123' });
     expect(encryptSecret(key, 'same')).not.toBe(encryptSecret(key, 'same'));
     const [v, iv, tag, data = ''] = sealed.split('.');
-    expect(decryptSecret(key, [v, iv, tag, `A${data.slice(1)}`].join('.'))).toMatchObject({ error: 'cannot-decrypt' });
+    // Change the first character of the ciphertext to a different one ("A" may already be there).
+    const tampered = `${data.startsWith('A') ? 'B' : 'A'}${data.slice(1)}`;
+    expect(decryptSecret(key, [v, iv, tag, tampered].join('.'))).toMatchObject({ error: 'cannot-decrypt' });
     expect(decryptSecret(workspaceKey(mkdtempSync(join(tmpdir(), 'keel-key-'))), sealed)).toMatchObject({ error: 'cannot-decrypt' });
     expect(decryptSecret(key, 'plain')).toMatchObject({ error: 'cannot-decrypt' });
   });

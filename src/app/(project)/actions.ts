@@ -8,6 +8,7 @@ import { readStandard } from '@/lib/standards/library';
 import { projectState, recordDecision, review } from '@/lib/gates/approvals';
 import { gateFor } from '@/lib/gates/rules';
 import { buildHandoff, commandsSchema, saveHandoffCommands } from '@/lib/handoff/scaffold';
+import { writeHandoff, type ConflictChoice } from '@/lib/handoff/write';
 import { githubToken } from '@/lib/github/auth';
 import { pushHandoff } from '@/lib/github/push';
 import { acceptChange, dismissChange, readbackState } from '@/lib/readback/changes';
@@ -254,6 +255,28 @@ export async function linkMockAction(form: FormData): Promise<void> {
   const store = serverStore();
   const linked = await linkMock(store, input.data.id, requirements, requirementIds(store.root));
   redirect(withError(at(document), linked));
+}
+
+/** Handoff: write the agent files into the folder. Conflicts: choice:<path> = mine | keel | beside. */
+export async function writeHandoffAction(form: FormData): Promise<void> {
+  await guard('handoff');
+  const store = serverStore();
+  if (!gateFor(projectState(store), 'handoff').available) redirect(at('handoff'));
+  const choices: Record<string, ConflictChoice> = {};
+  for (const [key, value] of form.entries()) {
+    if (!key.startsWith('choice:') || typeof value !== 'string') continue;
+    const path = key.slice('choice:'.length);
+    const choice = z.enum(['mine', 'keel', 'beside']).safeParse(value);
+    if (!choice.success || path.length > 300 || path.includes('..')) redirect(`${at('handoff')}?error=Invalid+request`);
+    choices[path] = choice.data;
+  }
+  const written = await writeHandoff(store, choices);
+  if (!written.ok) redirect(withError(at('handoff'), written));
+  const { written: files, conflicts } = written.value;
+  const notice = files.length === 0 ? 'Nothing to write: the folder already has the handoff files.'
+    : `Wrote ${files.length} file${files.length === 1 ? '' : 's'} in one Keel commit.`;
+  const waiting = conflicts.length ? ` ${conflicts.length} conflict${conflicts.length === 1 ? '' : 's'} left as you have ${conflicts.length === 1 ? 'it' : 'them'}.` : '';
+  redirect(`${at('handoff')}?notice=${encodeURIComponent(notice + waiting)}`);
 }
 
 /** Save the commands the handoff gives the coding agent and CI. */

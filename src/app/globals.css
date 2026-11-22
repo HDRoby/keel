@@ -205,3 +205,7 @@ button.link:hover { text-decoration: underline; }
 .tree-toggle code { font-weight: 500; }
 .table-actions { float: right; font-weight: 400; }
 .flush-table { overflow-x: auto; }
+
+/* Handoff: conflict choices */
+.conflict-choice { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; font-size: 13px; }
+.conflict-choice label { display: inline-flex; gap: 4px; align-items: center; }

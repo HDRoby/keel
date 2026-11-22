@@ -1,5 +1,5 @@
 // Handoff stage (mockup: handoff.png): the repository scaffold for any coding agent, as a zip (REQ-006).
-import { acceptChangeAction, checkRepositoryAction, dismissChangeAction, pushHandoffAction, saveHandoffCommandsAction } from '../actions';
+import { acceptChangeAction, checkRepositoryAction, dismissChangeAction, pushHandoffAction, saveHandoffCommandsAction, writeHandoffAction } from '../actions';
 import { SubmitButton } from '@/components/SubmitButton';
 import { hasGithubToken } from '@/lib/github/auth';
 import { repositoryOf } from '@/lib/github/push';
@@ -10,7 +10,8 @@ import { parseDocument } from '@/lib/store/documents';
 import { compactChanges, lineChanges } from '@/lib/versions/diff';
 import { ErrorAlert } from '@/components/Shell';
 import { StageLayout } from '@/components/StageBar';
-import { buildHandoff, handoffCommands, type Commands } from '@/lib/handoff/scaffold';
+import { handoffCommands, type Commands } from '@/lib/handoff/scaffold';
+import { besidePath, planHandoff, type FileState, type PlannedFile } from '@/lib/handoff/write';
 import { loadStage, type StageProps } from '../stage';
 
 export const dynamic = 'force-dynamic';
@@ -19,14 +20,20 @@ const LABELS: Record<keyof Commands, string> = {
   install: 'Install', run: 'Run the app', test: 'Unit tests', scenarios: 'Acceptance scenarios', verify: 'All checks (CI)',
 };
 
-/** Groups package paths by their first folder, for the contents list. */
-function grouped(paths: string[]): [string, string[]][] {
-  const groups = new Map<string, string[]>();
-  for (const path of paths) {
-    const top = path.includes('/') ? `${path.split('/')[0]}/` : 'Root';
-    groups.set(top, [...(groups.get(top) ?? []), path]);
-  }
-  return [...groups.entries()];
+const STATE: Record<FileState, { label: string; badge: string }> = {
+  new: { label: 'New', badge: 'accent' },
+  changed: { label: 'Changed', badge: 'accent' },
+  unchanged: { label: 'Unchanged', badge: '' },
+  conflict: { label: 'Conflict', badge: 'warn' },
+  kept: { label: 'Yours, kept', badge: '' },
+};
+
+/** "3 new, 1 changed, 12 unchanged, 1 conflict." */
+function counts(files: PlannedFile[]): string {
+  const order: FileState[] = ['new', 'changed', 'unchanged', 'conflict', 'kept'];
+  const parts = order.map((state) => [state, files.filter((f) => f.state === state).length] as const).filter(([, n]) => n > 0)
+    .map(([state, n]) => `${n} ${STATE[state].label.toLowerCase()}${state === 'conflict' && n > 1 ? 's' : ''}`);
+  return `${files.length} files: ${parts.join(', ')}.`;
 }
 
 /** An ISO time as "YYYY-MM-DD HH:MM". */
@@ -37,7 +44,7 @@ function when(iso: string): string {
 export default async function HandoffPage({ searchParams }: StageProps) {
   const { error, notice } = await (searchParams as Promise<{ error?: string; notice?: string }>);
   const page = await loadStage('handoff');
-  const built = page.gate.available ? await buildHandoff(page.store) : undefined;
+  const planned = page.gate.available ? await planHandoff(page.store) : undefined;
   const commands = handoffCommands(page.store);
   const repository = repositoryOf(page.store);
   const lastPush = repository?.pushes.at(-1);
@@ -119,24 +126,42 @@ export default async function HandoffPage({ searchParams }: StageProps) {
 
   return (
     <StageLayout page={page} error={error} locked={readbackCard}
-      actions={built?.ok ? <a href={`/api/handoff`} className="button primary" download>Download zip</a> : undefined}>
+      actions={planned?.ok ? <a href="/api/handoff" className="button" download>Download as zip</a> : undefined}>
       <div className="columns">
         <section className="card" aria-labelledby="package">
-          <h2 id="package">Handoff package</h2>
-          <p className="muted">A repository scaffold any coding agent can build from: instructions, documents, tasks, failing acceptance scenarios, agent kit, standards and CI. No application code.</p>
-          {built && !built.ok && <ErrorAlert error={built.message} />}
-          {built?.ok && (
-            <>
-              <p role="status" className="muted">{built.value.length} files. Checked for keys and tokens: none found.</p>
-              {grouped(built.value.map((f) => f.path)).map(([group, paths]) => (
-                <details key={group} open={group === 'Root'}>
-                  <summary>{group} ({paths.length})</summary>
-                  <ul aria-label={`Files in ${group}`} className="plain-list mono">
-                    {paths.map((p) => <li key={p}>{p}</li>)}
-                  </ul>
-                </details>
-              ))}
-            </>
+          <h2 id="package">Handoff into this folder</h2>
+          <p className="muted">The documents are already in <code>docs/</code> and <code>tasks/</code>. Handoff writes the agent files next to them: instructions, agent kit, standards as skills, failing step stubs and CI. Keel never overwrites a file it did not write without asking.</p>
+          {notice && <p role="status" className="notice">{notice}</p>}
+          {planned && !planned.ok && <ErrorAlert error={planned.message} />}
+          {planned?.ok && (
+            <form action={writeHandoffAction} aria-label="Write to folder">
+              <p role="status" className="muted">{counts(planned.value)} Checked for keys and tokens: none found.</p>
+              <table aria-label="Handoff files">
+                <thead><tr><th>File</th><th>State</th></tr></thead>
+                <tbody>
+                  {planned.value.map((f) => (
+                    <tr key={f.path} aria-label={f.path}>
+                      <td><code>{f.path}</code></td>
+                      <td>
+                        <span className={`badge ${STATE[f.state].badge}`}>{STATE[f.state].label}</span>
+                        {f.state === 'conflict' && (
+                          <fieldset className="bare conflict-choice">
+                            <legend className="visually-hidden">What to do with {f.path}</legend>
+                            <label><input type="radio" name={`choice:${f.path}`} value="mine" defaultChecked /> Keep mine</label>
+                            <label><input type="radio" name={`choice:${f.path}`} value="keel" /> Use Keel&apos;s</label>
+                            <label><input type="radio" name={`choice:${f.path}`} value="beside" /> Write as <code>{besidePath(f.path)}</code></label>
+                          </fieldset>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="row space-above">
+                <SubmitButton primary label="Write to folder" busyLabel="Writing…" />
+                <a href="/api/handoff" download>Download as zip</a>
+              </div>
+            </form>
           )}
         </section>
         <div>
@@ -150,7 +175,6 @@ export default async function HandoffPage({ searchParams }: StageProps) {
               Pushed {lastPush.plan} on {when(lastPush.date)} · commit {lastPush.commit.slice(0, 7)} · {repository?.location} · branch {repository?.branch}
             </p>
           )}
-          {notice && <p role="status" className="notice">{notice}</p>}
           <form action={pushHandoffAction} aria-label="Push" className="stack">
             <label>Target <select name="kind" defaultValue={repository?.kind ?? 'github'}>
               <option value="github">GitHub repository</option>
