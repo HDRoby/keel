@@ -6,9 +6,9 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 17
+version: 18
 template: implementation-plan@2
-from_spec: SPC-0001@16
+from_spec: SPC-0001@17
 ---
 
 # Plan: Keel v0.1
@@ -108,8 +108,15 @@ Runs after CR-0005 (R10); CR-0006 builds on it.
 | --- | --- | --- | --- |
 | R19 | Change packages as complete as hand-written ones | REQ-015, REQ-003, REQ-014 | change-packages |
 
+## Rework for CR-0014
+
+| Task | Title | Requirements | Scenarios |
+| --- | --- | --- | --- |
+| R20 | Publish as keel-sdlc, runnable with one command | REQ-012, REQ-002, REQ-008 | package-smoke (CI) |
+
 ## Version history
 
+- v18: task R20 for CR-0014.
 - v17: task R19 for CR-0013.
 - v16: task R17 for CR-0012.
 - v15: task R16 for CR-0011.

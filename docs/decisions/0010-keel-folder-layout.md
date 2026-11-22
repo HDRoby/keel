@@ -46,3 +46,7 @@ All config and libraries travel with the project and are versioned with it. A re
 - Initialise seeds `templates/`, `styles/`, `standards/` and `agent-kit/` from the built-in seed (and later from the personal library, see roadmap).
 - Removing a template is blocked while a document in this folder uses it.
 - `config.yml` must never hold a secret (ADR-0011). A test scans `.keel/` for key patterns.
+
+## Amendment (CR-0014, 2026-11-22)
+
+`cache/` holds the run lock (`run.json`) only. There is no index database since ADR-0017.
