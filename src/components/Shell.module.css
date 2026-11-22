@@ -1,5 +1,6 @@
 .shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; background: var(--surface-page); }
-.side { display: flex; flex-direction: column; gap: var(--spacing-3); padding: var(--spacing-3) var(--spacing-1); background: var(--surface-card); border-right: 1px solid var(--border-default); position: sticky; top: 0; height: 100vh; overflow: auto; }
+.side { background: var(--surface-card); border-right: 1px solid var(--border-default); }
+.sideInner { display: flex; flex-direction: column; gap: var(--spacing-3); padding: var(--spacing-3) var(--spacing-1); position: sticky; top: 0; max-height: 100vh; overflow: auto; }
 .brand { display: inline-flex; flex-direction: column; gap: 6px; width: fit-content; padding: 0 var(--spacing-2); font: var(--text-bold-4); color: var(--text-strong); }
 .brand:hover { color: var(--text-strong); text-decoration: none; }
 /* width 0 with min-width 100%: the logo adds no width of its own, so it is exactly as wide as "Keel". */

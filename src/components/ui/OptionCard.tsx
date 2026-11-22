@@ -42,6 +42,6 @@ export function OptionCard({ control, title, label, tag, recommended, summary, p
 }
 
 /** A grid of option cards. */
-export function OptionGrid({ label, children, columns = 'auto' }: { label?: string; children: ReactNode; columns?: 'auto' | 'one' }) {
-  return <fieldset className={cx(styles.grid, columns === 'one' && styles.one)} aria-label={label}>{children}</fieldset>;
+export function OptionGrid({ label, labelledBy, radio, children, columns = 'auto' }: { label?: string; labelledBy?: string; radio?: boolean; children: ReactNode; columns?: 'auto' | 'one' | 'two' | 'three' }) {
+  return <div role={radio ? 'radiogroup' : 'group'} className={cx(styles.grid, styles[columns])} aria-label={label} aria-labelledby={labelledBy}>{children}</div>;
 }

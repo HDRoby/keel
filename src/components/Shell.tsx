@@ -23,6 +23,7 @@ export function Shell({ project, children }: { project?: ShellProject; children:
   return (
     <div className={styles.shell}>
       <aside className={styles.side}>
+        <div className={styles.sideInner}>
         <Link href="/" className={styles.brand}>
           {/* As wide as the word below it: the image takes no width of its own. */}
           <Image src="/keel-logo.png" alt="" width={266} height={296} priority className={styles.logo} />
@@ -33,6 +34,7 @@ export function Shell({ project, children }: { project?: ShellProject; children:
           : <NavGroup label="This folder" name="Project" icon="lightbulb" links={[['/', 'Initialise']]} exact />}
         <NavGroup label="Library (.keel)" name="Library" icon="folder" links={LIBRARY_LINKS} />
         <NavGroup label="Settings" name="Settings" icon="settings" links={[['/settings', 'Settings']]} />
+        </div>
       </aside>
       <div className={styles.main}>{children}</div>
     </div>

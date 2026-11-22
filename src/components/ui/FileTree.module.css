@@ -5,7 +5,7 @@
 .header { background: var(--surface-muted) !important; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--text-muted); }
 summary.row { cursor: pointer; }
 .path { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.path code { font-size: 12px; overflow-wrap: anywhere; }
+.path code { font-size: 12px; overflow-wrap: anywhere; color: var(--text-strong); background: none; }
 .d1 .path { padding-left: 20px; }
 .d2 .path { padding-left: 40px; }
 .d3 .path { padding-left: 60px; }
@@ -20,11 +20,13 @@ summary.row { cursor: pointer; }
 .when { color: var(--text-muted); font-size: 12px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
 .plain { background: var(--gray-3); }
-.dependent { background: var(--warn); }
+.dependent { background: var(--brand-danger); }
+.dependent .path code, [data-kind='dependent'] > .row .path code { color: var(--brand-danger); }
 .ignored { background: var(--gray-2); }
 .new { background: var(--ok); }
 .changed { background: var(--accent); }
 .conflict { background: var(--danger); }
 .kept { background: var(--gray-4); }
 .ignored .what, [data-kind='ignored'] .what { color: var(--text-muted); }
+.headerActions { display: inline-flex; gap: 8px; margin-left: 12px; font-weight: 400; }
 .legend { display: flex; gap: 16px; flex-wrap: wrap; padding: 8px 16px; border-top: 1px solid var(--border-default); font: var(--text-regular-1); color: var(--text-muted); background: var(--surface-card); }

@@ -8,3 +8,4 @@
 .link { background: var(--link-soft); color: var(--link-text); }
 .handoff { background: var(--handoff-soft); color: var(--handoff); }
 .hint { font: var(--text-regular-1); color: var(--text-muted); font-weight: 400; }
+.tag > span[aria-hidden] { margin-left: -2px; }

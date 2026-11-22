@@ -1,4 +1,4 @@
-.card { display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--border-default); border-radius: var(--radius-m); padding: 12px; background: var(--surface-card); cursor: pointer; font-weight: 400; transition: var(--transition); min-width: 0; }
+.card { display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--border-default); border-radius: var(--radius-m); padding: 12px 14px; background: var(--surface-card); cursor: pointer; font-weight: 400; transition: var(--transition); min-width: 0; }
 .card:hover { border-color: var(--border-dashed); }
 .card:has(input:checked) { background: var(--surface-selected); border-color: var(--brand-primary); }
 .card:has(input:focus-visible) { box-shadow: var(--ring); }
@@ -15,3 +15,6 @@
 .meta { font: var(--text-regular-1); color: var(--text-muted); }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; border: 0; padding: 0; margin: 0; min-width: 0; }
 .one { grid-template-columns: 1fr; }
+.two { grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+.three { grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
+@media (min-width: 900px) { .two { grid-template-columns: repeat(2, minmax(0, 1fr)); } .three { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

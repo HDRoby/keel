@@ -9,11 +9,13 @@ import styles from './FileTree.module.css';
 export type FileKind = 'plain' | 'dependent' | 'ignored' | 'new' | 'changed' | 'conflict' | 'kept';
 export interface FileRow { path: string; name: string; what: ReactNode; when?: ReactNode; kind?: FileKind; children?: FileRow[]; open?: boolean }
 
-const KIND_LABEL: Record<FileKind, string> = { plain: 'Always', dependent: 'Depends on a choice', ignored: 'Not in git', new: 'New', changed: 'Changed', conflict: 'Conflict', kept: 'Kept' };
+const KIND_LABEL: Record<FileKind, string> = { plain: 'Always created', dependent: 'Depends on your selection (zero to many)', ignored: 'Not in git', new: 'New', changed: 'Changed', conflict: 'Conflict', kept: 'Kept' };
 
 const countFiles = (row: FileRow): number => (row.children ? row.children.reduce((n, c) => n + countFiles(c), 0) : 1);
 
-function Row({ row, depth }: { row: FileRow; depth: number }) {
+interface Control { isOpen?: (path: string) => boolean; onToggle?: (path: string, open: boolean) => void }
+
+function Row({ row, depth, control }: { row: FileRow; depth: number; control: Control }) {
   const kind = row.kind ?? 'plain';
   const cells = (folder: boolean) => (
     <>
@@ -29,21 +31,25 @@ function Row({ row, depth }: { row: FileRow; depth: number }) {
   );
   if (!row.children) return <div role="row" className={cx(styles.row, styles[`d${Math.min(depth, 4)}`])} data-kind={kind} aria-label={row.path}>{cells(false)}</div>;
   return (
-    <details className={styles.group} open={row.open} data-kind={kind}>
+    <details className={styles.group} open={control.isOpen ? control.isOpen(row.path) : row.open} data-kind={kind}
+      onToggle={control.onToggle ? (e) => control.onToggle?.(row.path, e.currentTarget.open) : undefined}>
       <summary role="row" className={cx(styles.row, styles[`d${Math.min(depth, 4)}`])} aria-label={row.path}>{cells(true)}</summary>
-      {row.children.map((c) => <Row key={c.path} row={c} depth={depth + 1} />)}
+      {row.children.map((c) => <Row key={c.path} row={c} depth={depth + 1} control={control} />)}
     </details>
   );
 }
 
-export function FileTree({ rows, label, legend = [], columns = ['Path', 'What it is for', 'When'] }: { rows: FileRow[]; label?: string; legend?: FileKind[]; columns?: [string, string, string] }) {
+export function FileTree({ rows, label, legend = [], legendExtra, columns = ['Path', 'What it is for', 'When'], headerActions, isOpen, onToggle }: {
+  rows: FileRow[]; label?: string; legend?: FileKind[]; legendExtra?: ReactNode; columns?: [string, string, string]; headerActions?: ReactNode;
+} & Control) {
   return (
     <div className={styles.tree} role="table" aria-label={label}>
-      <div role="row" className={cx(styles.row, styles.header)}>{columns.map((c) => <span key={c} role="columnheader">{c}</span>)}</div>
-      {rows.map((r) => <Row key={r.path} row={r} depth={0} />)}
-      {legend.length > 0 && (
+      <div role="row" className={cx(styles.row, styles.header)}>{columns.map((c, i) => <span key={c} role="columnheader">{c}{i === 0 && headerActions ? <span className={styles.headerActions}>{headerActions}</span> : null}</span>)}</div>
+      {rows.map((r) => <Row key={r.path} row={r} depth={0} control={{ isOpen, onToggle }} />)}
+      {(legend.length > 0 || legendExtra) && (
         <div className={styles.legend}>
           {legend.map((k) => <span key={k}><span className={cx(styles.dot, styles[k])} aria-hidden="true" /> {KIND_LABEL[k]}</span>)}
+          {legendExtra}
         </div>
       )}
     </div>

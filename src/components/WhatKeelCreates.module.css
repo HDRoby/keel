@@ -1,0 +1,8 @@
+.body { display: grid; gap: var(--spacing-2); }
+.intro { margin: 0; color: var(--text-secondary); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-1); }
+.tile { display: flex; flex-direction: column; gap: 4px; background: var(--surface-muted); border-radius: var(--radius-m); padding: 12px; font-size: 12px; line-height: 16px; color: var(--text-secondary); }
+.tile strong { font: var(--text-medium-2); color: var(--text-strong); }
+.count { margin-top: auto; font-weight: 500; color: var(--text-strong); }
+.when { display: inline-flex; gap: 6px; align-items: center; }
+.note { margin: 0; font: var(--text-regular-1); color: var(--text-muted); }

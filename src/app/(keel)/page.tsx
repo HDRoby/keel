@@ -2,11 +2,20 @@
 // current stage. Initialise sets title, description, author, templates per kind, style and standards.
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { adoptAction, startAction } from '@/app/(project)/actions';
 import { findKeelDocuments } from '@/lib/store/adopt';
-import { ErrorAlert, PageHead, Topbar } from '@/components/Shell';
+import { Icon } from '@/components/Icons';
+import { ErrorAlert, Topbar } from '@/components/Shell';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Field } from '@/components/ui/Field';
+import { LinkButton } from '@/components/ui/LinkButton';
+import { Notice } from '@/components/ui/Notice';
+import { OptionCard, OptionGrid } from '@/components/ui/OptionCard';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Tag } from '@/components/ui/Tag';
+import css from './initialise.module.css';
 import { StandardsPicker } from '@/components/StandardsPicker';
 import { WhatKeelCreates, type CreatesLibrary } from '@/components/WhatKeelCreates';
 import { parseSections } from '@/lib/brainstorm/sections';
@@ -39,15 +48,16 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
   }
 
   const library = previewRoot();
-  const intents = templateOptions(library, 'intent', 'latest').map((t) => {
+  const withSections = (t: { ref: string; name: string }) => {
     const ref = parseTemplateRef(t.ref);
     const content = ref ? readTemplate(library, ref.id, ref.version) : undefined;
     const sections = content?.ok ? parseSections(content.value.content) : [];
     return { ...t, sections: sections.map((s) => `${s.heading}${s.required ? '*' : ''}`).join(', ') };
-  });
-  const specs = templateOptions(library, 'spec', 'latest');
-  const plans = templateOptions(library, 'plan', 'latest').filter((t) => !t.ref.startsWith('task@'));
-  const styles = listStyles(library);
+  };
+  const intents = templateOptions(library, 'intent', 'latest').map(withSections);
+  const specs = templateOptions(library, 'spec', 'latest').map(withSections);
+  const plans = templateOptions(library, 'plan', 'latest').filter((t) => !t.ref.startsWith('task@')).map(withSections);
+  const brainstormStyles = listStyles(library);
   const standards = listStandards(library);
   const author = await defaultAuthor(store);
   const isRepo = existsSync(join(store.root, '.git'));
@@ -59,90 +69,92 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
     styles: mdFiles(join(library, '.keel', 'styles')),
     standards: standards.map((s) => ({ ref: s.ref, id: s.id, name: s.name })),
     templateNames: Object.fromEntries(listTemplates(library).flatMap((t) => t.versions.map((v) => [`${t.id}@${v}`, templateName(t.id, v)]))),
-    styleNames: Object.fromEntries(styles.map((s) => [s.ref, s.name])),
+    styleNames: Object.fromEntries(brainstormStyles.map((s) => [s.ref, s.name])),
   };
+
+  const templateCards = (name: string, options: { ref: string; name: string; sections: string }[], wanted: string) => options.map((t) => (
+    <OptionCard key={t.ref} label={t.name} title={t.name} tag={t.ref === wanted ? 'Default' : undefined}
+      foot={t.sections ? `Sections: ${t.sections} (* required)` : undefined}
+      control={<input type="radio" name={name} value={t.ref} defaultChecked={t.ref === pick(options, wanted)} aria-label={t.name} />} />
+  ));
 
   return (
     <>
       <Topbar title="Initialise" />
       <main className="content narrow">
-        <PageHead title="Initialise this folder"
-          description={<>Keel will create <code>.keel/</code> here. Nothing else changes until you approve documents.</>} />
+        <PageHeader title="Initialise this folder"
+          description={<>This folder has no <code>.keel/</code> yet. Describe the idea and pick the templates, brainstorm style and standards. Keel copies them into <code>.keel/</code> in this folder, so they are versioned with the project.</>} />
         <ErrorAlert error={error} />
-        <section className="card" aria-label="Folder">
-          <p className="tight"><strong>Folder</strong> <code>{store.root}</code></p>
-          {!isRepo && <p className="muted">This folder is not a git repository. Keel will run git init.</p>}
-        </section>
+        <Card title="Project folder" label="Folder" actions={<Tag><Icon name="folder" size={16} /> One project per folder</Tag>}>
+          <div className={css.stack}>
+            <code className={css.path}>{store.root}</code>
+            <p className={css.text}>This is also the repository your coding agent builds in. Keel writes its documents to <code>docs/</code>, <code>tasks/</code> and <code>features/</code>, and commits only its own files.</p>
+            {!isRepo && <Notice kind="info" title="Not a git repository yet">Keel will run git init here when you initialise.</Notice>}
+            <p className={css.note}>API keys and your personal settings stay in your user folder (<code>~/.config/keel</code>), never in this project.</p>
+          </div>
+        </Card>
 
         {found && (
-          <section className="card" aria-labelledby="found-heading">
-            <h2 id="found-heading">Keel documents found</h2>
-            <p>This folder already has documents with a Keel header, for project <strong>{found.title}</strong> ({found.id}):</p>
-            <ul className="plain-list">
-              {found.documents.map((d) => <li key={d.path}><code>{d.path}</code> · {d.id} v{d.version} · {d.status}</li>)}
-            </ul>
-            <p className="muted">Adopt keeps them as they are and takes the project id, title, templates, style and standards from them. New requirement IDs start after REQ-{String(found.maxReq).padStart(3, '0')}.</p>
-            <form action={adoptAction} className="row">
-              <label>Your name <input name="author" defaultValue={author || found.author} /></label>
-              <button type="submit" className="primary">Adopt</button>
-            </form>
-          </section>
+          <Card title="Keel documents found">
+            <div className={css.stack}>
+              <p className={css.text}>This folder already has documents with a Keel header, for project <strong>{found.title}</strong> ({found.id}):</p>
+              <ul className={css.list}>
+                {found.documents.map((d) => <li key={d.path}><code>{d.path}</code> · {d.id} v{d.version} · {d.status}</li>)}
+              </ul>
+              <p className={css.note}>Adopt keeps them as they are and takes the project id, title, templates, style and standards from them. New requirement IDs start after REQ-{String(found.maxReq).padStart(3, '0')}.</p>
+              <form action={adoptAction} className={css.inline}>
+                <Field label="Your name"><input name="author" defaultValue={author || found.author} /></Field>
+                <Button type="submit" variant="primary">Adopt</Button>
+              </form>
+            </div>
+          </Card>
         )}
 
         <WhatKeelCreates formId={FORM_ID} library={creates} />
 
-        <form id={FORM_ID} action={startAction}>
-          <section className="card stack">
-            <label>Title <input name="title" required placeholder="A working title" defaultValue={title} /></label>
-            <label>Description <textarea name="description" rows={3} placeholder="What is the problem, and who has it?" defaultValue={description} /></label>
-            <label>Your name <input name="author" defaultValue={author} required /></label>
-          </section>
-
-          <section className="card" aria-labelledby="template-heading">
-            <div className="section-head"><h2 id="template-heading">Intent template</h2><Link href="/templates">Templates</Link></div>
-            <div className="options" role="radiogroup" aria-labelledby="template-heading">
-              {intents.map((t) => (
-                <label key={t.ref} className="option">
-                  {t.ref === DEFAULTS.intent && <span className="option-tag">Default</span>}
-                  <input type="radio" name="template" value={t.ref} defaultChecked={t.ref === pick(intents, DEFAULTS.intent)} aria-label={t.name} />
-                  <span className="option-title">{t.name}</span>
-                  <span className="option-foot">Sections: {t.sections} (* required)</span>
-                </label>
-              ))}
+        <form id={FORM_ID} action={startAction} className={css.form}>
+          <Card label="The idea">
+            <div className={css.stack}>
+              <Field label="Title" required><input name="title" required placeholder="A working title" defaultValue={title} /></Field>
+              <Field label="Description" optional><textarea name="description" rows={3} placeholder="What is the problem, and who has it?" defaultValue={description} /></Field>
+              <Field label="Your name" required><input name="author" defaultValue={author} required /></Field>
             </div>
-            <div className="row space-above">
-              <label>Spec template <select name="spec" defaultValue={pick(specs, DEFAULTS.spec)}>
-                {specs.map((t) => <option key={t.ref} value={t.ref}>{t.name}</option>)}
-              </select></label>
-              <label>Plan template <select name="plan" defaultValue={pick(plans, DEFAULTS.plan)}>
-                {plans.map((t) => <option key={t.ref} value={t.ref}>{t.name}</option>)}
-              </select></label>
-            </div>
-            <p className="muted space-above">You can change the intent template later in Project setup.</p>
-          </section>
+          </Card>
 
-          <section className="card" aria-labelledby="style-heading">
-            <div className="section-head"><h2 id="style-heading">Brainstorm style</h2><Link href="/styles">Brainstorm styles</Link></div>
-            <div className="options" role="radiogroup" aria-labelledby="style-heading">
-              {styles.map((s, i) => (
-                <label key={s.id} className="option">
-                  <span className="option-tag">{i === 0 ? 'Default · ' : ''}v{s.version}</span>
-                  <input type="radio" name="style" value={s.ref} defaultChecked={i === 0} aria-label={s.name} />
-                  <span className="option-title">{s.name}</span>
-                  <span className="option-text">{s.description}</span>
-                </label>
-              ))}
+          <Card title={<span id="template-heading">Intent template</span>} actions={<LinkButton href="/templates">Manage templates</LinkButton>}>
+            <div className={css.stack}>
+              <OptionGrid radio labelledBy="template-heading" columns="two">{templateCards('template', intents, DEFAULTS.intent)}</OptionGrid>
+              <p className={css.note}>You can change the intent template later in Project setup.</p>
             </div>
-          </section>
+          </Card>
 
-          <section className="card" aria-labelledby="standards-heading">
-            <h2 id="standards-heading" className="tight">Standards</h2>
-            <p className="muted">Conventions the spec and plan are checked against. They go into the handoff as skills.</p>
+          <Card title={<span id="style-heading">Brainstorm style</span>} actions={<LinkButton href="/styles">Manage styles</LinkButton>}>
+            <div className={css.stack}>
+              <OptionGrid radio labelledBy="style-heading" columns="three">
+                {brainstormStyles.map((s, i) => (
+                  <OptionCard key={s.id} label={s.name} title={s.name} tag={`${i === 0 ? 'Default · ' : ''}v${s.version}`} summary={s.description}
+                    control={<input type="radio" name="style" value={s.ref} defaultChecked={i === 0} aria-label={s.name} />} />
+                ))}
+              </OptionGrid>
+              <p className={css.note}>The style is fixed once the brainstorm starts.</p>
+            </div>
+          </Card>
+
+          <Card title="Document templates" meta="Used when Keel writes the later documents for this project." actions={<LinkButton href="/templates">Manage templates</LinkButton>}>
+            <div className={css.stack}>
+              <h3 id="spec-heading" className={css.group}>Spec</h3>
+              <OptionGrid radio labelledBy="spec-heading" columns="three">{templateCards('spec', specs, DEFAULTS.spec)}</OptionGrid>
+              <h3 id="plan-heading" className={css.group}>Plan</h3>
+              <OptionGrid radio labelledBy="plan-heading" columns="three">{templateCards('plan', plans, DEFAULTS.plan)}</OptionGrid>
+            </div>
+          </Card>
+
+          <Card title="Standards" meta="Conventions and guidelines the spec, plan and code are checked against. They go into the handoff as skills." actions={<LinkButton href="/standards">Manage standards</LinkButton>}>
             <StandardsPicker standards={standards} chosen={[]} />
-          </section>
+          </Card>
 
-          <div className="row">
-            <button type="submit" className="primary">Initialise and start brainstorm</button>
+          <div className={css.inline}>
+            <Button type="submit" variant="primary" icon={<Icon name="forum" size={18} />}>Initialise and start brainstorm</Button>
           </div>
         </form>
       </main>
