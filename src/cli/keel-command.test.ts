@@ -53,4 +53,13 @@ describe('keel command', () => {
     expect(keel('--port', 'x').err).toContain('Not a port: x');
     expect(keel('--help').out).toContain('Usage: keel [path] [options]');
   });
+
+  it('starts the pre-built standalone server when there is one, and next dev in a clone without a build (ADR-0016)', async () => {
+    const { serverMode } = await import('../../bin/keel.mjs');
+    const install = mkdtempSync(join(tmpdir(), 'keel-install-'));
+    expect(serverMode(install)).toBe('dev');
+    mkdirSync(join(install, '.next', 'standalone'), { recursive: true });
+    writeFileSync(join(install, '.next', 'standalone', 'server.js'), '');
+    expect(serverMode(install)).toBe('standalone');
+  });
 });

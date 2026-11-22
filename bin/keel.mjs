@@ -180,8 +180,8 @@ async function main(argv) {
     return 0;
   }
 
-  const install = join(dirname(fileURLToPath(import.meta.url)), '..');
-  const mode = existsSync(join(install, '.next', 'BUILD_ID')) ? 'start' : 'dev';
+  const install = installFolder();
+  const mode = serverMode(install);
   const port = options.port ?? (await firstFreePort(3000));
   if (options.port && !(await portIsFree(port))) {
     console.error(`keel: port ${port} is in use`);
@@ -193,12 +193,7 @@ async function main(argv) {
     return 0;
   }
 
-  const next = createRequire(import.meta.url).resolve('next/dist/bin/next');
-  const server = spawn(process.execPath, [next, mode, '--hostname', '127.0.0.1', '--port', String(port)], {
-    cwd: install,
-    stdio: ['ignore', 'inherit', 'inherit'],
-    env: { ...process.env, KEEL_PROJECT_DIR: root },
-  });
+  const server = startServer(install, mode, port, root);
   console.log(`Keel for ${root}: http://127.0.0.1:${port}`);
   const run = { pid: process.pid, port, started: new Date().toISOString() };
   // The lock is written once .keel exists, which Initialise creates while Keel runs.
@@ -222,6 +217,28 @@ async function main(argv) {
     if (options.open) openBrowser(lines.includes('Keel opens in setup mode') ? `http://127.0.0.1:${port}/check` : url);
   }
   return undefined;
+}
+
+/** The folder Keel is installed in (the package, or a clone). */
+export function installFolder() {
+  return join(dirname(fileURLToPath(import.meta.url)), '..');
+}
+
+/** 'standalone' when the pre-built server is there (the published package, or a clone after npm run build), else 'dev'. */
+export function serverMode(install) {
+  return existsSync(join(install, '.next', 'standalone', 'server.js')) ? 'standalone' : 'dev';
+}
+
+/** Starts the server on 127.0.0.1 for one project folder. */
+function startServer(install, mode, port, root) {
+  const env = { ...process.env, KEEL_PROJECT_DIR: root };
+  const stdio = ['ignore', 'inherit', 'inherit'];
+  if (mode === 'standalone') {
+    const dir = join(install, '.next', 'standalone');
+    return spawn(process.execPath, [join(dir, 'server.js')], { cwd: dir, stdio, env: { ...env, HOSTNAME: '127.0.0.1', PORT: String(port) } });
+  }
+  const next = createRequire(import.meta.url).resolve('next/dist/bin/next');
+  return spawn(process.execPath, [next, 'dev', '--hostname', '127.0.0.1', '--port', String(port)], { cwd: install, stdio, env });
 }
 
 /** The startup check from the running server, as terminal lines. */

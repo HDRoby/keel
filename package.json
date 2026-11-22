@@ -12,8 +12,8 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "next build && node scripts/copy-standalone.mjs",
+    "start": "node bin/keel.mjs",
     "test": "vitest run",
     "test:bdd": "bddgen && playwright test",
     "lint": "eslint . --max-warnings 0",
