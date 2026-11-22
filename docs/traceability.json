@@ -3,16 +3,23 @@
   "generated": "2026-11-20",
   "from": {
     "intent": "INT-0001@3",
-    "spec": "SPC-0001@7",
-    "plan": "PLN-0001@7"
+    "spec": "SPC-0001@8",
+    "plan": "PLN-0001@8"
   },
   "requirements": {
     "REQ-001": {
       "tasks": [
+        "R10",
         "T4"
       ],
       "scenarios": [
-        "features/brainstorm.feature › The assistant asks about the next missing required section"
+        "features/brainstorm.feature › Explore shows the template's sections with a comment on each",
+        "features/brainstorm.feature › Leaving a changed section triggers one review of all sections",
+        "features/brainstorm.feature › An unchanged list is not reviewed again",
+        "features/brainstorm.feature › The assistant links sections that conflict",
+        "features/brainstorm.feature › The assistant never rewrites my text on its own",
+        "features/brainstorm.feature › A suggestion counts only once I accept it",
+        "features/brainstorm.feature › Requirements are a section, and IDs are given when drafting"
       ]
     },
     "REQ-002": {
@@ -22,6 +29,8 @@
         "T1"
       ],
       "scenarios": [
+        "features/brainstorm.feature › intent.md is assembled from the sections without a model call",
+        "features/brainstorm.feature › Editing an approved intent creates a change request",
         "features/intent-document.feature › The intent carries its metadata"
       ]
     },
@@ -39,6 +48,7 @@
         "T5"
       ],
       "scenarios": [
+        "features/brainstorm.feature › Requirements are a section, and IDs are given when drafting",
         "features/traceability.feature › A changed requirement shows its impact"
       ]
     },
@@ -47,6 +57,8 @@
         "T6"
       ],
       "scenarios": [
+        "features/brainstorm.feature › A suggestion counts only once I accept it",
+        "features/brainstorm.feature › Editing an approved intent creates a change request",
         "features/stage-gating.feature › Spec is locked until the intent is approved",
         "features/stage-gating.feature › Approving the intent unlocks the spec"
       ]
@@ -139,6 +151,15 @@
       "features": [
         "features/project-folder.feature",
         "features/mock-references.feature"
+      ]
+    },
+    "R10": {
+      "title": "Sections with live comments",
+      "requirements": [
+        "REQ-001"
+      ],
+      "features": [
+        "features/brainstorm.feature"
       ]
     },
     "R2": {
@@ -320,8 +341,63 @@
     },
     {
       "feature": "features/brainstorm.feature",
-      "scenario": "The assistant asks about the next missing required section",
+      "scenario": "Explore shows the template's sections with a comment on each",
       "requirement": "REQ-001"
+    },
+    {
+      "feature": "features/brainstorm.feature",
+      "scenario": "Leaving a changed section triggers one review of all sections",
+      "requirement": "REQ-001"
+    },
+    {
+      "feature": "features/brainstorm.feature",
+      "scenario": "An unchanged list is not reviewed again",
+      "requirement": "REQ-001"
+    },
+    {
+      "feature": "features/brainstorm.feature",
+      "scenario": "The assistant links sections that conflict",
+      "requirement": "REQ-001"
+    },
+    {
+      "feature": "features/brainstorm.feature",
+      "scenario": "The assistant never rewrites my text on its own",
+      "requirement": "REQ-001"
+    },
+    {
+      "feature": "features/brainstorm.feature",
+      "scenario": "A suggestion counts only once I accept it",
+      "requirement": "REQ-001"
+    },
+    {
+      "feature": "features/brainstorm.feature",
+      "scenario": "A suggestion counts only once I accept it",
+      "requirement": "REQ-005"
+    },
+    {
+      "feature": "features/brainstorm.feature",
+      "scenario": "Requirements are a section, and IDs are given when drafting",
+      "requirement": "REQ-001"
+    },
+    {
+      "feature": "features/brainstorm.feature",
+      "scenario": "Requirements are a section, and IDs are given when drafting",
+      "requirement": "REQ-004"
+    },
+    {
+      "feature": "features/brainstorm.feature",
+      "scenario": "intent.md is assembled from the sections without a model call",
+      "requirement": "REQ-002"
+    },
+    {
+      "feature": "features/brainstorm.feature",
+      "scenario": "Editing an approved intent creates a change request",
+      "requirement": "REQ-002"
+    },
+    {
+      "feature": "features/brainstorm.feature",
+      "scenario": "Editing an approved intent creates a change request",
+      "requirement": "REQ-005"
     },
     {
       "feature": "features/handoff.feature",

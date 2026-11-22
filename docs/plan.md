@@ -6,9 +6,9 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 7
+version: 8
 template: implementation-plan@2
-from_spec: SPC-0001@7
+from_spec: SPC-0001@8
 ---
 
 # Plan: Keel v0.1
@@ -46,8 +46,15 @@ One project per folder, in the code repository, with a `.keel/` folder (CR-0004,
 | R8 | Optional push to the existing remote | REQ-006 | handoff › push |
 | R9 | Adopt existing documents and import old projects | REQ-012 | project-folder › adopt |
 
+## Rework for CR-0005
+
+| Task | Title | Requirements | Scenarios |
+| --- | --- | --- | --- |
+| R10 | Sections with live comments | REQ-001, REQ-002 | brainstorm |
+
 ## Version history
 
+- v8: task R10 for CR-0005.
 - v7: rework tasks R1 to R9 for CR-0004.
 - v6: UI pass between T7 and T8a (owner request): app shell, stage bar, Projects, Start, Explore, Intent, Spec and Plan follow the layouts in docs/mocks/, in the neutral design the mocks README asks for (system font, one accent colour). Documents are rendered from markdown.
 - v5: T6 also generates spec.md and plan.md (with task files) from their templates; spec and plan authoring was missing from the plan (owner decision). Approvals change the status without a new version. From spec v4.

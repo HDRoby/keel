@@ -26,6 +26,6 @@ These show intent; the spec decides. Compare UI work with them. Exported from th
 | `8 · Settings (you on this computer · this project).png` | Settings, split into this computer and this project | REQ-009, REQ-012 |
 | `Component · Stage bar.png` | Stage bar component | REQ-005 |
 
-The Projects and Start screens are replaced by Initialise (CR-0004). The earlier PNGs were outdated and have been removed; git history keeps them.
+Explore follows the fill-in-first layout in the clickable mockup (CR-0005). The Projects and Start screens are replaced by Initialise (CR-0004). The earlier PNGs were outdated and have been removed; git history keeps them.
 
 The mockup uses one company's design system for its look. Keel v0.1 should use a neutral design (system font, one accent colour) unless a design system is chosen in Settings.

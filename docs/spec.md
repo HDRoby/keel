@@ -6,7 +6,7 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 7
+version: 8
 template: requirements-and-design-spec@2
 from_intent: INT-0001@3
 standards:
@@ -24,8 +24,8 @@ decision: go (docs/decisions/0001-go.md)
 
 | ID | Requirement | Source |
 | --- | --- | --- |
-| REQ-001 | Template-driven brainstorm with an LLM. The assistant asks about the missing sections of the intent template chosen at the start. | Intent |
-| REQ-002 | `intent.md` with metadata: ID, project, author, created, updated, status, version, template, brainstorm style. | Intent |
+| REQ-001 | Template-driven brainstorm. Explore shows the intent template's sections for the user to fill in. An LLM reviews all sections whenever the user leaves a section, pauses, or replies to a comment, and writes a comment on each section: challenges, cross-references between sections, suggestions or questions. It only fills empty sections as suggestions and offers rewrites the user applies; it never changes the user's text on its own. Requirements is one of the sections, with one row per requirement. | Intent |
+| REQ-002 | `intent.md` with metadata: ID, project, author, created, updated, status, version, template, brainstorm style. intent.md is assembled from the Explore sections with no model call. Requirement IDs are given when the intent is drafted and never change. Once the intent is approved, edits in Explore are saved as a change request. | Intent |
 | REQ-003 | Versioned, editable templates for intent, spec, plan, roadmap, decision records, agent instructions and the agent kit. A template used by any project cannot be removed. | Intent |
 | REQ-004 | Stable requirement IDs traced from intent to spec, plan tasks and acceptance scenarios. | Intent |
 | REQ-005 | Stage gating: Intent needs the required template sections; Spec needs an approved intent; Plan needs a Go decision; Handoff needs an approved plan and a latest decision of Go. Locked stages say why. An approved document is not reopened by a review; it changes through a change request. | Intent |
@@ -82,6 +82,7 @@ Code generation, multi-user roles and approvals, change requests across stages (
 
 ## Version history
 
+- v8: Explore shows the template sections with live comments from the assistant (CR-0005).
 - v7: one project per folder in the code repository, `.keel/` folder, read-back from local git, optional push (CR-0004).
 - v6: REQ-007 refined: an accepted read-back change to an approved document goes back to draft for a new approval (owner decision, task T9).
 - v5: REQ-005 refined: Handoff also needs the latest decision to be Go, and an approved document is not reopened by a review (owner decisions, task T6).
