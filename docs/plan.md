@@ -6,9 +6,9 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 18
+version: 19
 template: implementation-plan@2
-from_spec: SPC-0001@17
+from_spec: SPC-0001@18
 ---
 
 # Plan: Keel v0.1
@@ -114,8 +114,15 @@ Runs after CR-0005 (R10); CR-0006 builds on it.
 | --- | --- | --- | --- |
 | R20 | Publish as keel-sdlc, runnable with one command | REQ-012, REQ-002, REQ-008 | package-smoke (CI) |
 
+## Rework for CR-0015
+
+| Task | Title | Requirements | Scenarios |
+| --- | --- | --- | --- |
+| R21 | AI readiness report | REQ-016, REQ-012, REQ-014 | ai-readiness |
+
 ## Version history
 
+- v19: task R21 for CR-0015.
 - v18: task R20 for CR-0014.
 - v17: task R19 for CR-0013.
 - v16: task R17 for CR-0012.

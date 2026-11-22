@@ -15,6 +15,7 @@ import { readProject } from '../store/workspace';
 import { parseTemplateRef, readTemplate } from '../templates/library';
 import { renderTemplate } from '../templates/render';
 import { parseFeature, requirementStatements, scenarioLabel, type ScenarioTrace } from '../trace/parse';
+import { readinessHandover } from '../readiness/accept';
 import { conflictNote, mergePiece, mergeSections, readBaseline, writeBaseline, type Conflict } from './merge';
 import { standardsSources, type GenerateError } from './spec';
 import { writeSection, type Writer } from './writer';
@@ -107,6 +108,27 @@ async function composePlan(store: Store, write: Writer): Promise<Result<Composed
       ? `${orderOfWork(planned, scenarios)}\n\nEach task has its own file in \`tasks/\`.`
       : await writeSection(write, 'documents', { kind: 'implementation plan', title, heading, guidance, sources })];
   }
+  // Accepted advice from an AI readiness report handed to the baseline (CR-0015): tasks after the planned ones.
+  const handover = readinessHandover(store);
+  const fromReport = (handover?.tasks ?? []).map((a, i) => ({
+    id: `T${planned.length + i + 1}`,
+    title: a.title,
+    requirements: [] as string[],
+    body: fillSections(renderTemplate(taskTemplate.value.content, { task_id: `T${planned.length + i + 1}`, title: a.title }).body, {
+      Goal: [a.why],
+      'Scenarios that prove it': ['None: this task comes from the AI readiness report.'],
+      'Files that are likely to change': [a.evidence.map((e) => `- \`${e.path}\``).join('\n') || 'To be decided by the coding agent.'],
+      Notes: [`From the AI readiness report \`${handover?.report}\` (${a.area}; ${a.impact} impact, ${a.effort} effort; ${a.choice === 'adopt' ? 'Adopt' : 'Add'}).`],
+      'Questions for the owner': ['(none yet)'],
+    }),
+  }));
+  if (fromReport.length) {
+    planSections['From the readiness report'] = [[
+      `Accepted advice from the AI readiness report \`${handover?.report}\`, after the tasks above.`, '',
+      '| Task | Title | Area | Impact |', '| --- | --- | --- | --- |',
+      ...fromReport.map((t, i) => `| ${t.id} | ${t.title} | ${handover?.tasks[i]?.area ?? ''} | ${handover?.tasks[i]?.impact ?? ''} |`),
+    ].join('\n')];
+  }
   const tasks = planned.map((task, i) => ({
     id: `T${i + 1}`,
     title: task.title,
@@ -119,9 +141,11 @@ async function composePlan(store: Store, write: Writer): Promise<Result<Composed
       ...(screensFor(store.root, task.requirements) ? { Notes: [screensFor(store.root, task.requirements) ?? ''] } : {}),
     }),
   }));
+  tasks.push(...fromReport);
+  const body = fillSections(renderTemplate(planTemplate.value.content, { title }).body, planSections);
   return ok({
     title, tasks, planTemplate: `implementation-plan@${planTemplate.value.version}`, taskTemplate: `task@${taskTemplate.value.version}`,
-    body: fillSections(renderTemplate(planTemplate.value.content, { title }).body, planSections),
+    body: planSections['From the readiness report'] ? `${body.trimEnd()}\n\n## From the readiness report\n\n${planSections['From the readiness report'][0]}\n` : body,
     extra: spec.ok ? { from_spec: `${spec.value.header.id}@${spec.value.header.version}` } : { from_intent: `${intent.value.header.id}@${intent.value.header.version}` },
   });
 }

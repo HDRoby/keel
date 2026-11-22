@@ -25,7 +25,7 @@ export interface FolderScan {
   truncated: boolean;        // stopped at the file limit
 }
 
-const SKIP = new Set(['node_modules', '.git', '.next', 'dist', 'build', 'out', 'coverage', 'vendor', 'target', '.venv', 'venv', '__pycache__', '.keel', '.turbo', '.cache']);
+const SKIP = new Set(['node_modules', '.git', '.next', 'dist', 'build', 'out', 'coverage', 'vendor', 'target', '.venv', 'venv', '__pycache__', '.keel', '.turbo', '.cache', '.features-gen']);
 const CODE = /\.(ts|tsx|js|jsx|mjs|cjs|py|go|rs|java|kt|rb|php|cs|swift|c|cc|cpp|h|vue|svelte)$/;
 const TEST = /(^|\/)(tests?|__tests__|spec)\/|\.(test|spec)\.[a-z]+$|_test\.(go|py)$|^test_.*\.py$/;
 const AGENT_FILES = ['AGENTS.md', 'CLAUDE.md', 'GEMINI.md', '.cursorrules', '.windsurfrules', '.github/copilot-instructions.md'];
@@ -118,4 +118,44 @@ export function readShared(root: string, paths: string[], offered: ShareableFile
 /** The code map for planning a change (CR-0013): file and folder names only, without Keel's own folders, capped. */
 export function codeMap(root: string, max = 2000): string[] {
   return walk(root).files.filter((f) => !f.startsWith('.keel/') && !f.startsWith('changes/') && !f.startsWith('.github/')).sort().slice(0, max);
+}
+
+/** What the readiness rules need beyond the folder case (CR-0015). Names and short config only; read locally. */
+export interface ScanFacts {
+  files: string[];             // every file walked, relative
+  tracked: string[];           // files git tracks or would track (not ignored); every file outside a repository
+  lockfiles: string[];         // package-lock.json, pnpm-lock.yaml, yarn.lock, bun.lock(b)
+  ciWorkflows: string[];       // .github/workflows/*.yml, .gitlab-ci.yml, …
+  lintConfigs: string[];       // eslint, prettier, biome, ruff, golangci, rubocop, editorconfig …
+  testFiles: string[];         // files that look like tests
+  gitignore: string[];         // the root .gitignore lines, trimmed, without comments
+}
+
+const LOCKFILES = ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'bun.lockb', 'bun.lock'];
+const CI = /^(\.github\/workflows\/[^/]+\.ya?ml|\.gitlab-ci\.yml|\.circleci\/config\.yml|azure-pipelines\.yml|bitbucket-pipelines\.yml|Jenkinsfile)$/;
+const LINT = /^(eslint\.config\.[cm]?[jt]s|\.eslintrc(\.[a-z]+)?|\.prettierrc(\.[a-z]+)?|prettier\.config\.[cm]?js|biome\.jsonc?|ruff\.toml|\.ruff\.toml|\.flake8|\.pylintrc|\.golangci\.ya?ml|rustfmt\.toml|\.rubocop\.yml|\.editorconfig|\.stylelintrc(\.[a-z]+)?)$/;
+
+function trackedFiles(root: string, files: string[]): string[] {
+  if (!existsSync(join(root, '.git'))) return files;
+  try {
+    const out = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 5000, maxBuffer: 32 * 1024 * 1024 });
+    return out.split('\n').filter(Boolean).filter((f) => !f.split('/').some((part) => SKIP.has(part)));
+  } catch {
+    return files;
+  }
+}
+
+export function scanFacts(root: string, files: string[] = walk(root).files): ScanFacts {
+  const gitignore = existsSync(join(root, '.gitignore'))
+    ? readFileSync(join(root, '.gitignore'), 'utf8').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))
+    : [];
+  return {
+    files,
+    tracked: trackedFiles(root, files),
+    lockfiles: LOCKFILES.filter((f) => files.includes(f)),
+    ciWorkflows: files.filter((f) => CI.test(f)).sort(),
+    lintConfigs: files.filter((f) => LINT.test(f)).sort(),
+    testFiles: files.filter((f) => TEST.test(f) && !f.startsWith('features/fixtures/')).sort(),
+    gitignore,
+  };
 }

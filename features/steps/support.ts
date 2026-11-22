@@ -35,6 +35,9 @@ Before(async () => {
   // Reviews after a 1-second pause and at most one a second, so scenarios do not wait 5 and 10 seconds.
   saveExploreTiming({ user: BDD_USER }, { pauseSeconds: 1, intervalSeconds: 1 });
   writeFileSync(FAKE_LOG, '');
+  // The readiness review's request capture and test control (CR-0015, src/lib/providers/fake.ts).
+  rmSync(`${FAKE_LOG}.requests`, { force: true });
+  rmSync(`${FAKE_LOG}.control.json`, { force: true });
 });
 
 /** How many model calls the fake provider has made so far in this scenario, not counting the startup check's health probe (CR-0012), which sends no project content. */

@@ -18,7 +18,7 @@ describe('buildTrace', () => {
   });
 
   it('records statements and their source document', () => {
-    expect(buildTrace(REPO).requirements['REQ-004']).toMatchObject({ statement: 'Stable requirement IDs traced from intent to spec, plan and tests', source: 'INT-0001@4', tasks: ['R11', 'T5'] });
+    expect(buildTrace(REPO).requirements['REQ-004']).toMatchObject({ statement: 'Stable requirement IDs traced from intent to spec, plan and tests', source: 'INT-0001@5', tasks: ['R11', 'T5'] });
   });
 
   it('lists the requirement IDs of a project, sorted', () => {

@@ -7,6 +7,7 @@ import { basename, join } from 'node:path';
 import matter from 'gray-matter';
 import { z } from 'zod';
 import { EXPLORE_FILE, exploreFromIntent, LEGACY_FILE } from '../brainstorm/session';
+import { clearUserReports, userReportFiles } from '../readiness/report';
 import { fail, ok, type Result } from '../result';
 import { previewRoot } from '../seed';
 import { parseTemplateRef, readTemplate, templateIdentity } from '../templates/library';
@@ -91,8 +92,9 @@ export async function adoptProject(store: Store, author?: string): Promise<Resul
   const made = await initialiseProject(store, {
     id: found.id, title: found.title, author: author?.trim() || found.author,
     templates: { ...found.templates, intent: intentTemplate }, style, standards: found.standards,
-    extra: { next_req: found.maxReq + 1 }, files,
+    extra: { next_req: found.maxReq + 1 }, files: [...files, ...userReportFiles(store)],
   });
+  if (made.ok) clearUserReports(store);
   return made;
 }
 

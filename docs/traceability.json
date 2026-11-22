@@ -2,9 +2,9 @@
   "project": "PRJ-0001",
   "generated": "2026-11-20",
   "from": {
-    "intent": "INT-0001@4",
-    "spec": "SPC-0001@17",
-    "plan": "PLN-0001@18"
+    "intent": "INT-0001@5",
+    "spec": "SPC-0001@18",
+    "plan": "PLN-0001@19"
   },
   "requirements": {
     "REQ-001": {
@@ -103,11 +103,13 @@
         "R17",
         "R2",
         "R20",
+        "R21",
         "R3",
         "R4",
         "R9"
       ],
       "scenarios": [
+        "features/ai-readiness.feature › The check runs only when asked",
         "features/opening-a-folder.feature › An empty folder starts a new project",
         "features/opening-a-folder.feature › A Keel folder with an old config offers an upgrade",
         "features/opening-a-folder.feature › An existing project is offered a baseline",
@@ -126,13 +128,31 @@
     "REQ-014": {
       "tasks": [
         "R18",
-        "R19"
+        "R19",
+        "R21"
       ],
       "scenarios": [
+        "features/ai-readiness.feature › Accepted advice in a Keel folder becomes a change request",
         "features/change-requests.feature › Hand-written change requests are listed with their status",
         "features/change-requests.feature › Changing an approved intent raises a change request",
         "features/change-requests.feature › Impact is listed by requirement",
         "features/change-requests.feature › Approved changes mark later documents out of date"
+      ]
+    },
+    "REQ-016": {
+      "tasks": [
+        "R21"
+      ],
+      "scenarios": [
+        "features/ai-readiness.feature › The check runs only when asked",
+        "features/ai-readiness.feature › The check works in any kind of folder",
+        "features/ai-readiness.feature › Only names and the ticked files are sent",
+        "features/ai-readiness.feature › Files that may hold keys are never sent",
+        "features/ai-readiness.feature › Advice must point at files that exist",
+        "features/ai-readiness.feature › The report still works when the model fails",
+        "features/ai-readiness.feature › Agent files that disagree are flagged",
+        "features/ai-readiness.feature › Accepted advice in a Keel folder becomes a change request",
+        "features/ai-readiness.feature › Reports are saved and compared"
       ]
     },
     "REQ-007": {
@@ -351,6 +371,17 @@
         "features/design-decisions.feature"
       ]
     },
+    "R21": {
+      "title": "AI readiness report",
+      "requirements": [
+        "REQ-016",
+        "REQ-012",
+        "REQ-014"
+      ],
+      "features": [
+        "features/ai-readiness.feature"
+      ]
+    },
     "R3": {
       "title": "`npx keel [path]` command",
       "requirements": [
@@ -513,6 +544,61 @@
     }
   },
   "scenarios": [
+    {
+      "feature": "features/ai-readiness.feature",
+      "scenario": "The check runs only when asked",
+      "requirement": "REQ-016"
+    },
+    {
+      "feature": "features/ai-readiness.feature",
+      "scenario": "The check runs only when asked",
+      "requirement": "REQ-012"
+    },
+    {
+      "feature": "features/ai-readiness.feature",
+      "scenario": "The check works in any kind of folder",
+      "requirement": "REQ-016"
+    },
+    {
+      "feature": "features/ai-readiness.feature",
+      "scenario": "Only names and the ticked files are sent",
+      "requirement": "REQ-016"
+    },
+    {
+      "feature": "features/ai-readiness.feature",
+      "scenario": "Files that may hold keys are never sent",
+      "requirement": "REQ-016"
+    },
+    {
+      "feature": "features/ai-readiness.feature",
+      "scenario": "Advice must point at files that exist",
+      "requirement": "REQ-016"
+    },
+    {
+      "feature": "features/ai-readiness.feature",
+      "scenario": "The report still works when the model fails",
+      "requirement": "REQ-016"
+    },
+    {
+      "feature": "features/ai-readiness.feature",
+      "scenario": "Agent files that disagree are flagged",
+      "requirement": "REQ-016"
+    },
+    {
+      "feature": "features/ai-readiness.feature",
+      "scenario": "Accepted advice in a Keel folder becomes a change request",
+      "requirement": "REQ-016"
+    },
+    {
+      "feature": "features/ai-readiness.feature",
+      "scenario": "Accepted advice in a Keel folder becomes a change request",
+      "requirement": "REQ-014"
+    },
+    {
+      "feature": "features/ai-readiness.feature",
+      "scenario": "Reports are saved and compared",
+      "requirement": "REQ-016"
+    },
     {
       "feature": "features/brainstorm-styles.feature",
       "scenario": "The chosen style is recorded with the intent",

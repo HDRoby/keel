@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "docs": {
+      "command": "docs-server",
+      "env": { "apiKey": "fixture-not-a-key" }
+    }
+  }
+}
