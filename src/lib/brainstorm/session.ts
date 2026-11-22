@@ -15,6 +15,7 @@ import { commitFiles } from '../store/git';
 import { initialiseProject, isInitialised, readProject, updateConfig } from '../store/workspace';
 import { parseTemplateRef, readTemplate, templateName } from '../templates/library';
 import { readStandard } from '../standards/library';
+import { clearUserReports, userReportFiles } from '../readiness/report';
 import { parseSections, type Section } from './sections';
 import { readStyle, type Style } from './styles';
 
@@ -148,9 +149,11 @@ export async function startIdea(store: Store, input: NewIdea): Promise<Result<Ex
     templates: Object.fromEntries(Object.entries({ intent: input.template, ...input.templates }).filter(([, v]) => v)),
     style: input.style, standards: [...(input.standards ?? []), ...(input.projectStandard ? [input.projectStandard.ref] : [])],
     ...(input.extra ? { extra: input.extra } : {}),
-    files: [{ path: EXPLORE_FILE, content: serialise(state) }, ...(input.projectStandard ? [{ path: input.projectStandard.path, content: input.projectStandard.content }] : [])],
+    files: [{ path: EXPLORE_FILE, content: serialise(state) }, ...(input.projectStandard ? [{ path: input.projectStandard.path, content: input.projectStandard.content }] : []),
+      ...userReportFiles(store)],   // readiness reports run before Initialise (CR-0015)
   });
   if (!project.ok) return fail('invalid-input', project.message);
+  clearUserReports(store);
   return ok(state);
 }
 

@@ -91,6 +91,8 @@ export async function startAction(form: FormData): Promise<void> {
 const changeTemplatesForm = z.strictObject({
   back: z.enum(['/settings', '/setup']),
   task: ref, change: ref, 'change-prompt': ref, 'changes-index': ref,
+  // Folders initialised before CR-0015 have no readiness report template yet: the select is empty.
+  'readiness-report': z.union([z.literal(''), ref]).optional(),
   codeMap: z.enum(['off', 'names', 'files']),
   changesIndex: z.enum(['auto', 'off']),
 });
@@ -99,7 +101,8 @@ const changeTemplatesForm = z.strictObject({
 export async function saveChangeTemplatesAction(form: FormData): Promise<void> {
   const input = changeTemplatesForm.safeParse(formFields(form));
   if (!input.success) redirect('/settings?error=Invalid+request');
-  const { back, codeMap, changesIndex, ...chosen } = input.data;
+  const { back, codeMap, changesIndex, 'readiness-report': report, ...picked } = input.data;
+  const chosen: Record<string, string> = { ...picked, ...(report ? { 'readiness-report': report } : {}) };
   const store = serverStore();
   const unknown = Object.values(chosen).filter((r) => {
     const parsed = parseTemplateRef(r);

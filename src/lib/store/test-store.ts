@@ -1,4 +1,4 @@
-// Test helper: a throwaway project folder (not yet a git repository), user folder and in-memory index.
+// Test helper: a throwaway project folder (not yet a git repository) and user folder.
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';

@@ -12,7 +12,7 @@ import styles from './ChangeTemplatesForm.module.css';
 
 export function ChangeTemplatesForm({ root, project, back }: { root: string; project: Project; back: string }) {
   return (
-    <Card title={<span id="change-templates">Templates for new documents</span>} meta="Change requests: the request, the prompt for the coding agent, the tasks and the changes index. A document keeps the template version that produced it."
+    <Card title={<span id="change-templates">Templates for new documents</span>} meta="Change requests: the request, the prompt for the coding agent, the tasks and the changes index; and the AI readiness report. A document keeps the template version that produced it."
       actions={<LinkButton href="/templates">Manage templates</LinkButton>}>
       <form action={saveChangeTemplatesAction} aria-label="Templates for new documents" className={styles.form}>
         <input type="hidden" name="back" value={back} />

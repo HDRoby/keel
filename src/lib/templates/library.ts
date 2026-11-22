@@ -7,7 +7,7 @@ import { fail, ok, type Result } from '../result';
 import { listDocumentPaths, parseDocument } from '../store/documents';
 import { VERSIONED_REF } from '../refs';
 
-export type TemplateGroup = 'intent' | 'spec' | 'plan' | 'roadmap' | 'decision' | 'change' | 'agent-instructions' | 'agent-kit';
+export type TemplateGroup = 'intent' | 'spec' | 'plan' | 'roadmap' | 'decision' | 'change' | 'report' | 'agent-instructions' | 'agent-kit';
 
 export const GROUPS: { group: TemplateGroup; label: string }[] = [
   { group: 'intent', label: 'Intent' },
@@ -16,6 +16,7 @@ export const GROUPS: { group: TemplateGroup; label: string }[] = [
   { group: 'roadmap', label: 'Roadmap' },
   { group: 'decision', label: 'Decision records' },
   { group: 'change', label: 'Change requests · request, prompt, tasks and index' },
+  { group: 'report', label: 'Reports' },
   { group: 'agent-instructions', label: 'Agent instructions' },
   { group: 'agent-kit', label: 'Agent kit' },
 ];
@@ -240,6 +241,8 @@ export const CHANGE_TEMPLATE_KINDS = [
   { key: 'change', kind: 'change', label: 'Change request' },
   { key: 'change-prompt', kind: 'change-prompt', label: 'Prompt for the coding agent' },
   { key: 'changes-index', kind: 'changes-index', label: 'Changes index' },
+  // Not part of a change package, but chosen the same way (CR-0015).
+  { key: 'readiness-report', kind: 'report', label: 'Readiness report' },
 ] as const;
 export type ChangeTemplateKey = (typeof CHANGE_TEMPLATE_KINDS)[number]['key'];
 
