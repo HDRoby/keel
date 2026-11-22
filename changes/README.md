@@ -17,12 +17,15 @@ These change requests come from the owner's review of the Keel mockup on 2026-11
 | 9 | [CR-0011](CR-0011/CR-0011.md) | Ollama is the default provider; Settings lists the models on this computer and offers them per task | R16 |
 | 10 | [CR-0012](CR-0012/CR-0012.md) | Startup check: valid settings, working model access and a valid project config, or setup mode until fixed | R17 |
 | 11 | [CR-0013](CR-0013/CR-0013.md) | Change packages as complete as hand-written ones: templates (request, prompt, task, index) in Settings, Plan the change with a code map, linked decisions and mocks, changes/README.md kept up to date | R19 |
+| 12 | [CR-0014](CR-0014/CR-0014.md) | Remove SQLite (unused index), then publish as keel-sdlc: `npx keel-sdlc [path]` with a pre-built server, CI smoke test on three systems, release workflow | R20 |
+| 13 | [CR-0015](CR-0015/CR-0015.md) | AI readiness report, on demand for any folder: local scan against the Keel standard, model review of the gaps and of the AI files you choose, advice that becomes a change request or part of the baseline plan | R21 |
+| 14 | [CR-0016](CR-0016/CR-0016.md) | Discuss a change: a chat with the assistant, grounded in Keel's documents, that ends in a checked proposal; your Agree writes the change request package and keeps the discussion with it | R22 |
 
 Each folder has the change request, task files, scenarios and a `PROMPT.md` to paste into the coding agent.
 
 **After applying a change request:** remove its "(coming: CR-NNNN)" marks from `docs/user-guide.md` and update the Status section of the root `README.md`.
 
-## Requirement IDs after all eleven
+## Requirement IDs after all fourteen
 
 | ID | Requirement | Changed by |
 | --- | --- | --- |
@@ -32,12 +35,14 @@ Each folder has the change request, task files, scenarios and a `PROMPT.md` to p
 | REQ-005 | Plan needs Go, a scenario per requirement, every design topic decided, and (if set) a current clickable mock; setup mode while a startup check fails | CR-0006, CR-0007, CR-0009, CR-0012 |
 | REQ-006 | Handoff writes into the folder and merges with existing agent files; push optional | CR-0004, CR-0010 |
 | REQ-007 | Read-back from local git, including uncommitted edits | CR-0004 |
-| REQ-009 | Keys in the user config folder; Ollama is the default, local models listed | CR-0004, CR-0011 |
+| REQ-009 | Keys in the user config folder; Ollama is the default, local models listed; a Discussion model task | CR-0004, CR-0011, CR-0016 |
 | REQ-010 | Clickable mock prompt and versioned mock sets | CR-0009 |
-| REQ-012 | One project per folder with `.keel/`; four opening cases and baseline for existing projects | CR-0004 (new), CR-0010 |
+| REQ-012 | One project per folder with `.keel/`; four opening cases and baseline for existing projects; published as keel-sdlc; offers the AI readiness report | CR-0004 (new), CR-0010, CR-0014, CR-0015 |
 | REQ-013 | Design as decisions with options | CR-0007 (new) |
-| REQ-014 | Change requests across stages; the Changes page lists every request in `changes/` | CR-0003 (new) |
+| REQ-014 | Change requests across stages; the Changes page lists every request in `changes/`; accepted readiness advice becomes a draft request; a request can start from a discussion | CR-0003 (new), CR-0015, CR-0016 |
 | REQ-015 | Change packages from templates, Plan the change, changes index | CR-0013 (new) |
+| REQ-016 | AI readiness report on demand for any folder: scan, model review, advice, saved and compared | CR-0015 (new) |
+| REQ-017 | Discuss a change in a chat; a checked proposal; Agree writes the package; discussions saved and committed | CR-0016 (new) |
 
 ## Run them
 

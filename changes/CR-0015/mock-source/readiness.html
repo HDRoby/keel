@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keel — clickable mockup (Tailwind)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0">
+<style>
+*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.invisible{visibility:hidden}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.bottom-1\.5{bottom:.375rem}.left-1{left:.25rem}.right-3{right:.75rem}.top-1\.5{top:.375rem}.top-2{top:.5rem}.row-span-2{grid-row:span 2/span 2}.mx-2{margin-left:.5rem;margin-right:.5rem}.mx-auto{margin-left:auto;margin-right:auto}.-mb-px{margin-bottom:-1px}.-mt-1{margin-top:-.25rem}.mt-1{margin-top:.25rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-auto{margin-top:auto}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-1{height:.25rem}.h-1\.5{height:.375rem}.h-2{height:.5rem}.h-2\.5{height:.625rem}.h-4{height:1rem}.h-6{height:1.5rem}.h-7{height:1.75rem}.max-h-56{max-height:14rem}.min-h-14{min-height:3.5rem}.min-h-9{min-height:2.25rem}.min-h-screen{min-height:100vh}.w-1{width:.25rem}.w-12{width:3rem}.w-2{width:.5rem}.w-2\.5{width:.625rem}.w-20{width:5rem}.w-24{width:6rem}.w-4{width:1rem}.w-48{width:12rem}.w-6{width:1.5rem}.w-7{width:1.75rem}.w-full{width:100%}.min-w-0{min-width:0}.min-w-24{min-width:6rem}.max-w-3xl{max-width:48rem}.max-w-4xl{max-width:56rem}.max-w-\[1000px\]{max-width:1000px}.max-w-\[1100px\]{max-width:1100px}.max-w-\[900px\]{max-width:900px}.max-w-xl{max-width:36rem}.flex-1{flex:1 1 0%}.flex-\[1_1_180px\]{flex:1 1 180px}.flex-\[1_1_320px\]{flex:1 1 320px}.flex-\[1_1_380px\]{flex:1 1 380px}.flex-\[1_1_420px\]{flex:1 1 420px}.flex-\[999_1_520px\]{flex:999 1 520px}.flex-\[999_1_560px\]{flex:999 1 560px}.shrink-0{flex-shrink:0}.cursor-not-allowed{cursor:not-allowed}.cursor-pointer{cursor:pointer}.appearance-none{-webkit-appearance:none;-moz-appearance:none;appearance:none}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-cols-\[1\.3fr_1fr_100px_1\.8fr\]{grid-template-columns:1.3fr 1fr 100px 1.8fr}.grid-cols-\[1\.6fr_90px_90px_110px_1\.4fr\]{grid-template-columns:1.6fr 90px 90px 110px 1.4fr}.grid-cols-\[100px_1fr_110px\]{grid-template-columns:100px 1fr 110px}.grid-cols-\[250px_1fr\]{grid-template-columns:250px 1fr}.grid-cols-\[70px_1fr_180px_110px\]{grid-template-columns:70px 1fr 180px 110px}.grid-cols-\[90px_minmax\(0\2c 2\.4fr\)_200px_minmax\(0\2c 1fr\)_150px\]{grid-template-columns:90px minmax(0,2.4fr) 200px minmax(0,1fr) 150px}.grid-cols-\[minmax\(0\2c 320px\)_1fr_120px\]{grid-template-columns:minmax(0,320px) 1fr 120px}.grid-cols-\[repeat\(auto-fit\2c minmax\(220px\2c 1fr\)\)\]{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}.grid-rows-\[60px_1fr\]{grid-template-rows:60px 1fr}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.place-items-center{place-items:center}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-0\.5{gap:.125rem}.gap-1{gap:.25rem}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-2\.5{gap:.625rem}.gap-3{gap:.75rem}.gap-3\.5{gap:.875rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.gap-6{gap:1.5rem}.gap-x-6{-moz-column-gap:1.5rem;column-gap:1.5rem}.gap-y-2{row-gap:.5rem}.overflow-auto{overflow:auto}.overflow-hidden,.truncate{overflow:hidden}.truncate{text-overflow:ellipsis}.truncate,.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:.25rem}.rounded-\[10px\]{border-radius:10px}.rounded-card{border-radius:16px}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-md{border-radius:.375rem}.rounded-sm{border-radius:.125rem}.rounded-xl{border-radius:.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-b-\[3px\]{border-bottom-width:3px}.border-l-2{border-left-width:2px}.border-l-4{border-left-width:4px}.border-l-\[3px\]{border-left-width:3px}.border-r{border-right-width:1px}.border-t{border-top-width:1px}.border-dashed{border-style:dashed}.border-\[\#8fa8ff\]{--tw-border-opacity:1;border-color:rgb(143 168 255/var(--tw-border-opacity,1))}.border-\[\#e87d1e\]{--tw-border-opacity:1;border-color:rgb(232 125 30/var(--tw-border-opacity,1))}.border-\[\#f0f2f5\]{--tw-border-opacity:1;border-color:rgb(240 242 245/var(--tw-border-opacity,1))}.border-\[\#f5c2bd\]{--tw-border-opacity:1;border-color:rgb(245 194 189/var(--tw-border-opacity,1))}.border-black{--tw-border-opacity:1;border-color:rgb(0 0 0/var(--tw-border-opacity,1))}.border-k-bad{--tw-border-opacity:1;border-color:rgb(180 35 24/var(--tw-border-opacity,1))}.border-k-blue{--tw-border-opacity:1;border-color:rgb(51 102 255/var(--tw-border-opacity,1))}.border-k-blue-soft{--tw-border-opacity:1;border-color:rgb(235 240 255/var(--tw-border-opacity,1))}.border-k-line{--tw-border-opacity:1;border-color:rgb(224 229 232/var(--tw-border-opacity,1))}.border-k-line-2{--tw-border-opacity:1;border-color:rgb(174 177 185/var(--tw-border-opacity,1))}.border-k-link{--tw-border-opacity:1;border-color:rgb(123 79 214/var(--tw-border-opacity,1))}.border-k-muted{--tw-border-opacity:1;border-color:rgb(107 113 128/var(--tw-border-opacity,1))}.border-k-ok{--tw-border-opacity:1;border-color:rgb(0 133 86/var(--tw-border-opacity,1))}.border-k-warn{--tw-border-opacity:1;border-color:rgb(229 160 0/var(--tw-border-opacity,1))}.border-transparent{border-color:transparent}.bg-\[\#1a3380\]{--tw-bg-opacity:1;background-color:rgb(26 51 128/var(--tw-bg-opacity,1))}.bg-\[\#c2410c\]{--tw-bg-opacity:1;background-color:rgb(194 65 12/var(--tw-bg-opacity,1))}.bg-\[\#f0f2f5\]{--tw-bg-opacity:1;background-color:rgb(240 242 245/var(--tw-bg-opacity,1))}.bg-\[\#f2faf6\]{--tw-bg-opacity:1;background-color:rgb(242 250 246/var(--tw-bg-opacity,1))}.bg-\[\#f3ecff\]{--tw-bg-opacity:1;background-color:rgb(243 236 255/var(--tw-bg-opacity,1))}.bg-\[\#f3f6ff\]{--tw-bg-opacity:1;background-color:rgb(243 246 255/var(--tw-bg-opacity,1))}.bg-\[\#f6f7f9\]{--tw-bg-opacity:1;background-color:rgb(246 247 249/var(--tw-bg-opacity,1))}.bg-\[\#f7f9ff\]{--tw-bg-opacity:1;background-color:rgb(247 249 255/var(--tw-bg-opacity,1))}.bg-\[\#fafbfc\]{--tw-bg-opacity:1;background-color:rgb(250 251 252/var(--tw-bg-opacity,1))}.bg-\[\#fdf2e9\]{--tw-bg-opacity:1;background-color:rgb(253 242 233/var(--tw-bg-opacity,1))}.bg-\[\#fffaf0\]{--tw-bg-opacity:1;background-color:rgb(255 250 240/var(--tw-bg-opacity,1))}.bg-\[\#fffafa\]{--tw-bg-opacity:1;background-color:rgb(255 250 250/var(--tw-bg-opacity,1))}.bg-k-bad-soft{--tw-bg-opacity:1;background-color:rgb(253 236 234/var(--tw-bg-opacity,1))}.bg-k-blue{--tw-bg-opacity:1;background-color:rgb(51 102 255/var(--tw-bg-opacity,1))}.bg-k-blue-soft{--tw-bg-opacity:1;background-color:rgb(235 240 255/var(--tw-bg-opacity,1))}.bg-k-code{--tw-bg-opacity:1;background-color:rgb(30 31 36/var(--tw-bg-opacity,1))}.bg-k-line{--tw-bg-opacity:1;background-color:rgb(224 229 232/var(--tw-bg-opacity,1))}.bg-k-line-2{--tw-bg-opacity:1;background-color:rgb(174 177 185/var(--tw-bg-opacity,1))}.bg-k-link{--tw-bg-opacity:1;background-color:rgb(123 79 214/var(--tw-bg-opacity,1))}.bg-k-link-soft{--tw-bg-opacity:1;background-color:rgb(247 243 255/var(--tw-bg-opacity,1))}.bg-k-ok{--tw-bg-opacity:1;background-color:rgb(0 133 86/var(--tw-bg-opacity,1))}.bg-k-ok-soft{--tw-bg-opacity:1;background-color:rgb(230 246 236/var(--tw-bg-opacity,1))}.bg-k-page{--tw-bg-opacity:1;background-color:rgb(244 246 248/var(--tw-bg-opacity,1))}.bg-k-warn{--tw-bg-opacity:1;background-color:rgb(229 160 0/var(--tw-bg-opacity,1))}.bg-k-warn-soft{--tw-bg-opacity:1;background-color:rgb(255 244 224/var(--tw-bg-opacity,1))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.p-0\.5{padding:.125rem}.p-2{padding:.5rem}.p-3{padding:.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-1{padding-left:.25rem;padding-right:.25rem}.px-1\.5{padding-left:.375rem;padding-right:.375rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-2\.5{padding-left:.625rem;padding-right:.625rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-3\.5{padding-left:.875rem;padding-right:.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-\[15px\]{padding-left:15px;padding-right:15px}.py-0\.5{padding-top:.125rem;padding-bottom:.125rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-3\.5{padding-top:.875rem;padding-bottom:.875rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.py-\[7px\]{padding-top:7px;padding-bottom:7px}.py-px{padding-top:1px;padding-bottom:1px}.pb-2{padding-bottom:.5rem}.pb-3{padding-bottom:.75rem}.pl-3{padding-left:.75rem}.pl-8{padding-left:2rem}.pr-9{padding-right:2.25rem}.pt-1{padding-top:.25rem}.pt-4{padding-top:1rem}.text-left{text-align:left}.text-center{text-align:center}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[11px\]{font-size:11px}.text-\[13px\]{font-size:13px}.text-\[14px\]{font-size:14px}.text-\[16px\]{font-size:16px}.text-\[18px\]{font-size:18px}.text-\[20px\]{font-size:20px}.text-\[24px\]{font-size:24px}.text-\[28px\]{font-size:28px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-4{line-height:1rem}.leading-5{line-height:1.25rem}.leading-6{line-height:1.5rem}.leading-7{line-height:1.75rem}.leading-\[18px\]{line-height:18px}.leading-\[19px\]{line-height:19px}.leading-\[21px\]{line-height:21px}.leading-\[26px\]{line-height:26px}.tracking-wide{letter-spacing:.025em}.text-\[\#00512e\]{--tw-text-opacity:1;color:rgb(0 81 46/var(--tw-text-opacity,1))}.text-\[\#006b45\]{--tw-text-opacity:1;color:rgb(0 107 69/var(--tw-text-opacity,1))}.text-\[\#6b3fb3\]{--tw-text-opacity:1;color:rgb(107 63 179/var(--tw-text-opacity,1))}.text-\[\#7ee2a8\]{--tw-text-opacity:1;color:rgb(126 226 168/var(--tw-text-opacity,1))}.text-\[\#a9afbb\]{--tw-text-opacity:1;color:rgb(169 175 187/var(--tw-text-opacity,1))}.text-\[\#b35a00\]{--tw-text-opacity:1;color:rgb(179 90 0/var(--tw-text-opacity,1))}.text-\[\#b54708\]{--tw-text-opacity:1;color:rgb(181 71 8/var(--tw-text-opacity,1))}.text-\[\#c2410c\]{--tw-text-opacity:1;color:rgb(194 65 12/var(--tw-text-opacity,1))}.text-\[\#e6e8ec\]{--tw-text-opacity:1;color:rgb(230 232 236/var(--tw-text-opacity,1))}.text-\[\#e87d1e\]{--tw-text-opacity:1;color:rgb(232 125 30/var(--tw-text-opacity,1))}.text-black{--tw-text-opacity:1;color:rgb(0 0 0/var(--tw-text-opacity,1))}.text-k-bad{--tw-text-opacity:1;color:rgb(180 35 24/var(--tw-text-opacity,1))}.text-k-blue{--tw-text-opacity:1;color:rgb(51 102 255/var(--tw-text-opacity,1))}.text-k-blue-dark{--tw-text-opacity:1;color:rgb(36 71 179/var(--tw-text-opacity,1))}.text-k-body{--tw-text-opacity:1;color:rgb(37 40 45/var(--tw-text-opacity,1))}.text-k-line-2{--tw-text-opacity:1;color:rgb(174 177 185/var(--tw-text-opacity,1))}.text-k-link{--tw-text-opacity:1;color:rgb(123 79 214/var(--tw-text-opacity,1))}.text-k-link-text{--tw-text-opacity:1;color:rgb(91 52 176/var(--tw-text-opacity,1))}.text-k-muted{--tw-text-opacity:1;color:rgb(107 113 128/var(--tw-text-opacity,1))}.text-k-ok{--tw-text-opacity:1;color:rgb(0 133 86/var(--tw-text-opacity,1))}.text-k-ok-text{--tw-text-opacity:1;color:rgb(26 127 67/var(--tw-text-opacity,1))}.text-k-sec{--tw-text-opacity:1;color:rgb(67 73 82/var(--tw-text-opacity,1))}.text-k-warn-text{--tw-text-opacity:1;color:rgb(138 90 0/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.accent-\[\#3366ff\]{accent-color:#36f}.opacity-55{opacity:.55}.opacity-60{opacity:.6}.opacity-85{opacity:.85}.shadow-card{--tw-shadow:0 1px 3px hsla(223,9%,46%,.2),0 1px 16px hsla(223,9%,46%,.1);--tw-shadow-colored:0 1px 3px var(--tw-shadow-color),0 1px 16px var(--tw-shadow-color)}.shadow-card,.shadow-sm{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgba(0,0,0,.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color)}.outline{outline-style:solid}.ring-\[3px\]{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.ring-k-blue-soft{--tw-ring-opacity:1;--tw-ring-color:rgb(235 240 255/var(--tw-ring-opacity,1))}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.duration-100{transition-duration:.1s}.placeholder\:text-k-muted::-moz-placeholder{--tw-text-opacity:1;color:rgb(107 113 128/var(--tw-text-opacity,1))}.placeholder\:text-k-muted::placeholder{--tw-text-opacity:1;color:rgb(107 113 128/var(--tw-text-opacity,1))}.last\:border-0:last-child{border-width:0}.hover\:-translate-y-0\.5:hover{--tw-translate-y:-0.125rem;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:border-k-blue:hover{--tw-border-opacity:1;border-color:rgb(51 102 255/var(--tw-border-opacity,1))}.hover\:border-k-blue-dark:hover{--tw-border-opacity:1;border-color:rgb(36 71 179/var(--tw-border-opacity,1))}.hover\:border-k-line-2:hover{--tw-border-opacity:1;border-color:rgb(174 177 185/var(--tw-border-opacity,1))}.hover\:bg-k-bad-soft:hover{--tw-bg-opacity:1;background-color:rgb(253 236 234/var(--tw-bg-opacity,1))}.hover\:bg-k-blue:hover{--tw-bg-opacity:1;background-color:rgb(51 102 255/var(--tw-bg-opacity,1))}.hover\:bg-k-blue-dark:hover{--tw-bg-opacity:1;background-color:rgb(36 71 179/var(--tw-bg-opacity,1))}.hover\:bg-k-blue-soft:hover{--tw-bg-opacity:1;background-color:rgb(235 240 255/var(--tw-bg-opacity,1))}.hover\:bg-k-page:hover{--tw-bg-opacity:1;background-color:rgb(244 246 248/var(--tw-bg-opacity,1))}.hover\:text-k-blue:hover{--tw-text-opacity:1;color:rgb(51 102 255/var(--tw-text-opacity,1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.hover\:underline:hover{text-decoration-line:underline}.hover\:shadow-lg:hover{--tw-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color),0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.focus\:border-k-blue:focus{--tw-border-opacity:1;border-color:rgb(51 102 255/var(--tw-border-opacity,1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.focus\:ring-k-blue-mid\/60:focus{--tw-ring-color:rgba(133,163,255,.6)}
+
+  .ms { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; vertical-align: middle; width: 1em; overflow: hidden; }
+  @keyframes pulse2 { 0%,100% { opacity: .35 } 50% { opacity: 1 } }
+  .pulse2 { animation: pulse2 1.2s infinite; }
+</style>
+</head>
+<body class="bg-k-page text-k-body text-sm antialiased">
+<div id="app"></div>
+<script>
+'use strict';
+const S = {
+  rrKind: 'keel', rrPhase: 'idle', rrStep: 0, rrRead: {}, rrAdv: {}, rrDone: false,
+  route: 'startup', check: 'ollama', checking: false,
+  initCase: 'new', initPath: 'baseline', openFolders: {},
+  active: 'who', fields: null, reviewing: false,
+  specTab: 'design', dec: {}, scen: {},
+  hoTree: 'open', readme: 'open', written: false, pushed: false,
+  chFilter: 'open', copied: false, planned: false, crScen: {},
+  provider: 'local', ollama: 'up', tplSel: 'cr'
+};
+const esc = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const bold = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-black">$1</strong>');
+const I = (n, cls = '') => `<span class="ms ${cls}">${n}</span>`;
+const set = (patch) => { Object.assign(S, patch); render(); };
+
+/* ---------- small components ---------- */
+const TONES = {
+  blue: 'bg-k-blue-soft text-k-blue-dark', ok: 'bg-k-ok-soft text-k-ok-text', warn: 'bg-k-warn-soft text-k-warn-text',
+  bad: 'bg-k-bad-soft text-k-bad', gray: 'bg-[#f0f2f5] text-k-sec', link: 'bg-k-link-soft text-k-link-text', purple: 'bg-[#f3ecff] text-[#6b3fb3]'
+};
+const tag = (t, tone = 'gray') => `<span class="inline-flex items-center gap-1 rounded-full px-2 py-px text-xs leading-4 whitespace-nowrap ${TONES[tone]}">${t}</span>`;
+const btn = (label, { v = 'primary', act = '', icon = '', disabled = false, size = '' } = {}) => {
+  const base = 'inline-flex items-center gap-2 rounded-lg border text-sm leading-5 transition-colors duration-100 ' + (size === 'sm' ? 'px-3 py-1' : 'px-[15px] py-[7px] min-h-9');
+  const look = disabled ? 'bg-k-line border-transparent text-k-muted cursor-not-allowed'
+    : v === 'primary' ? 'bg-k-blue border-k-blue text-white hover:bg-k-blue-dark hover:border-k-blue-dark'
+    : v === 'secondary' ? 'bg-k-blue-soft border-k-blue-soft text-k-blue hover:bg-k-blue hover:text-white'
+    : v === 'outline' ? 'bg-white border-k-blue text-k-blue hover:bg-k-blue-soft'
+    : v === 'danger' ? 'bg-white border-k-bad text-k-bad hover:bg-k-bad-soft'
+    : 'bg-transparent border-transparent text-k-blue hover:bg-k-blue-soft px-2';
+  return `<button type="button" class="${base} ${look}" ${disabled ? 'disabled' : ''} ${act ? `data-act="${act}"` : ''}>${icon ? I(icon, 'text-[20px]') : ''}${label}</button>`;
+};
+const link = (label, act, tone = 'text-k-blue') => `<button type="button" data-act="${act}" class="text-xs font-medium ${tone} hover:underline">${label}</button>`;
+const card = (inner, cls = '') => `<section class="bg-white rounded-card shadow-card p-6 ${cls}">${inner}</section>`;
+const h2 = (t, meta = '') => `<div class="flex flex-col gap-1"><h2 class="text-lg leading-[26px] font-medium text-black">${t}</h2>${meta ? `<p class="text-xs leading-4 text-k-muted">${meta}</p>` : ''}</div>`;
+const notice = (kind, title, text) => {
+  const m = { info: ['info', 'border-k-blue bg-k-blue-soft', 'text-k-blue'], ok: ['check_circle', 'border-k-ok bg-k-ok-soft', 'text-k-ok'], warn: ['warning', 'border-[#e87d1e] bg-[#fdf2e9]', 'text-[#e87d1e]'], bad: ['error', 'border-k-bad bg-k-bad-soft', 'text-k-bad'] }[kind];
+  return `<div class="flex gap-3 rounded-lg border-l-4 px-4 py-3 ${m[1]}">${I(m[0], 'text-[20px] ' + m[2])}<div class="flex flex-col gap-1"><span class="font-medium text-black">${title}</span><span class="text-k-sec">${text}</span></div></div>`;
+};
+const field = (label, value, { hint = '', multi = false, rows = 3, ph = '', opt = '' } = {}) => `
+  <label class="flex flex-col gap-1.5">
+    ${label ? `<span class="text-sm text-k-body">${label}${opt ? ` <span class="text-xs text-k-muted">${opt}</span>` : ''}</span>` : ''}
+    ${multi ? `<textarea rows="${rows}" placeholder="${esc(ph)}" class="w-full rounded-lg border border-k-muted px-4 py-2 text-sm text-black placeholder:text-k-muted hover:border-k-blue focus:border-k-blue focus:outline-none focus:ring-2 focus:ring-k-blue-mid/60">${esc(value)}</textarea>`
+      : `<input value="${esc(value)}" placeholder="${esc(ph)}" class="w-full rounded-lg border border-k-muted px-4 py-2 text-sm text-black placeholder:text-k-muted hover:border-k-blue focus:border-k-blue focus:outline-none focus:ring-2 focus:ring-k-blue-mid/60">`}
+    ${hint ? `<span class="text-xs leading-4 text-k-muted">${hint}</span>` : ''}
+  </label>`;
+const select = (label, options, value, hint = '') => `
+  <label class="flex flex-col gap-1.5">
+    <span class="text-sm text-k-body">${label}</span>
+    <span class="relative"><select class="w-full appearance-none rounded-lg border border-k-muted bg-white px-4 py-2 pr-9 text-sm text-black hover:border-k-blue focus:border-k-blue focus:outline-none">${options.map((o) => `<option ${o === value ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>${I('expand_more', 'pointer-events-none absolute right-3 top-2 text-k-muted')}</span>
+    ${hint ? `<span class="text-xs leading-4 text-k-muted">${hint}</span>` : ''}
+  </label>`;
+const segmented = (items, cur, act) => `<div class="inline-flex rounded-lg bg-[#f0f2f5] p-0.5">${items.map(([v, l]) => `<button data-act="${act}:${v}" class="rounded-md px-3 py-1 text-[13px] leading-[18px] ${v === cur ? 'bg-white font-medium text-black shadow-sm' : 'text-k-muted'}">${l}</button>`).join('')}</div>`;
+const tabs = (items, cur, act) => `<div class="flex gap-6 border-b border-k-line">${items.map(([v, l, n]) => `<button data-act="${act}:${v}" class="-mb-px flex items-center gap-2 border-b-[3px] px-1 pb-3 pt-1 text-sm ${v === cur ? 'border-k-blue text-k-blue' : 'border-transparent text-black hover:text-k-blue'}">${l}${n !== undefined ? `<span class="rounded bg-[#1a3380] px-1 text-[11px] leading-4 text-white">${n}</span>` : ''}</button>`).join('')}</div>`;
+const mockbar = (items, cur, act) => `<div class="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-k-line-2 px-3 py-2 text-xs text-k-muted"><span>Mockup only, try:</span>${items.map(([v, l]) => `<button data-act="${act}:${v}" class="rounded-full border px-2.5 py-0.5 ${v === cur ? 'border-k-blue bg-k-blue-soft text-k-blue-dark' : 'border-k-line bg-white text-k-sec'}">${l}</button>`).join('')}</div>`;
+
+/* ---------- shell ---------- */
+const NAV = [
+  ['Project · Keel', 'lightbulb', [['setup', 'Project setup'], ['explore', 'Explore'], ['intent', 'Intent'], ['spec', 'Spec'], ['plan', 'Plan'], ['handoff', 'Handoff'], ['roadmap', 'Roadmap'], ['changes', 'Changes'], ['readiness', 'AI readiness']]],
+  ['Library (.keel)', 'folder', [['templates', 'Templates'], ['styles', 'Brainstorm styles'], ['standards', 'Standards']]],
+  ['Settings', 'settings', [['settings', 'Settings'], ['startup', 'Startup check']]]
+];
+const SETUP_NAV = [['Setup', 'build', [['startup', 'Startup check'], ['settings', 'Settings']]], ['Project · Keel (locked)', 'lock', []]];
+const INIT_NAV = [['This folder', 'folder', [['init', 'Initialise'], ['readiness', 'AI readiness']]]];
+const TITLES = { readiness: 'AI readiness report', startup: 'Startup check', open: 'Open Keel', init: 'Initialise', setup: 'Project setup', explore: 'Explore', intent: 'Intent', spec: 'Spec and feasibility', plan: 'Plan', handoff: 'Handoff', roadmap: 'Roadmap', changes: 'Changes', change: 'Change request', templates: 'Templates', styles: 'Brainstorm styles', standards: 'Standards', settings: 'Settings' };
+function shell(content) {
+  const blocked = S.route === 'startup' && S.check !== 'ok';
+  const groups = S.route === 'init' ? INIT_NAV : blocked ? SETUP_NAV : NAV;
+  const activeRoute = S.route === 'change' ? 'changes' : S.route;
+  const nav = groups.map(([g, ic, items]) => {
+    const groupActive = items.some(([id]) => id === activeRoute);
+    return `<div class="flex flex-col"><div class="flex items-center gap-2 px-4 py-2 font-medium ${groupActive ? 'text-k-blue' : 'text-k-body'}">${I(ic, 'text-[20px]')}${g}</div>
+      ${items.map(([id, l]) => `<a href="#${id}" class="relative mx-2 rounded-lg px-4 py-2 pl-8 ${id === activeRoute ? 'text-k-blue font-medium' : 'text-k-body hover:bg-k-page'}">${id === activeRoute ? '<span class="absolute left-1 top-1.5 bottom-1.5 w-1 rounded-full bg-k-blue"></span>' : ''}${l}</a>`).join('')}</div>`;
+  }).join('');
+  return `<div class="grid min-h-screen grid-cols-[250px_1fr] grid-rows-[60px_1fr]">
+    <nav class="row-span-2 flex flex-col gap-6 border-r border-k-line bg-white px-2 py-6">
+      <a href="#open" class="flex items-center gap-2 px-4"><span class="grid h-7 w-7 place-items-center rounded-lg bg-k-blue text-white">${I('sailing', 'text-[18px]')}</span><span class="text-lg font-bold text-black">Keel</span></a>
+      ${nav}
+      <div class="mt-auto px-4 text-xs text-k-muted">Tailwind rebuild of the mockup · <a href="#open" class="text-k-blue">all screens</a></div>
+    </nav>
+    <header class="flex flex-col justify-center gap-0.5 border-b border-k-line bg-white px-6"><span class="text-xs text-k-muted">Keel · ~/keel</span><span class="text-lg leading-[26px] text-black">${TITLES[S.route] || ''}</span></header>
+    <main class="min-w-0 p-6">${content}</main>
+  </div>`;
+}
+const pageHead = (meta, right = '', desc = '') => `<div class="flex flex-wrap items-center justify-between gap-4">
+  <div class="flex min-w-0 flex-1 flex-col gap-1"><div class="flex flex-wrap items-center gap-4"><h1 class="text-2xl font-bold leading-7 text-black">Keel</h1><span class="text-xs text-k-muted">${meta}</span><a href="#setup" class="inline-flex items-center gap-1 text-k-blue">${I('edit', 'text-[16px]')}Project setup</a></div>
+  ${desc ? `<p class="max-w-3xl text-k-muted">${desc}</p>` : ''}</div>${right}</div>`;
+const DESC = 'From an idea to an agent-ready project: brainstorm, intent, spec and plan, handoff to any coding agent, and read-back of its changes.';
+function stageBar(cur, reached = 'handoff', stale = '') {
+  const ids = ['explore', 'intent', 'spec', 'plan', 'handoff'], labels = ['1 · Explore', '2 · Intent', '3 · Spec', '4 · Plan', '5 · Handoff'];
+  const done = ['Brainstorm complete', 'Approved v3', 'Go · v9', 'Approved v10', 'Written · 2 changes to review'];
+  const locked = ['', 'Needs the required sections', 'Needs an approved intent', 'Needs a Go decision on the spec', 'Needs an approved plan'];
+  const ci = ids.indexOf(cur), ri = ids.indexOf(reached);
+  return `<nav class="flex flex-wrap gap-2 rounded-card bg-white p-2 shadow-card">${ids.map((id, i) => {
+    const isLocked = i > ri && i !== ci, active = i === ci, isStale = stale === id;
+    const cls = active ? 'bg-k-blue-soft text-k-blue border border-k-blue' : isLocked ? 'bg-k-page text-k-muted border border-dashed border-k-line-2 cursor-not-allowed' : 'text-k-body border border-transparent hover:bg-k-page';
+    const ic = active ? I('radio_button_checked', 'text-[20px] text-k-blue') : isLocked ? I('lock', 'text-[20px] text-k-muted') : isStale ? I('error', 'text-[20px] text-[#b35a00]') : I('check_circle', 'text-[20px] text-k-ok');
+    const note = isLocked ? locked[i] : isStale ? 'Out of date · CR-0003' : done[i];
+    return `<${isLocked ? 'div' : `a href="#${id}"`} class="flex min-h-14 min-w-0 flex-[1_1_180px] items-center gap-2 rounded-lg px-4 py-2 ${cls}">${ic}<span class="flex min-w-0 flex-col"><span class="font-medium">${labels[i]}</span><span class="text-xs ${isLocked ? '' : 'text-k-muted'}">${note}</span></span></${isLocked ? 'div' : 'a'}>`;
+  }).join('')}</nav>`;
+}
+
+/* ---------- screens ---------- */
+const SCREENS = {};
+
+SCREENS.open = () => `<div class="mx-auto flex max-w-4xl flex-col gap-6">
+  <div><h1 class="text-2xl font-bold text-black">Keel, rebuilt with Tailwind CSS only</h1><p class="mt-1 text-k-muted">The same screens as the clickable mockup, drawn with Tailwind utility classes and the mockup's colours. Pick a screen, or use the side menu.</p></div>
+  <div class="rounded-xl bg-k-code p-6 font-mono text-sm leading-6 text-[#e6e8ec]">
+    <div class="text-white">~ $ npx keel-sdlc ./keel</div><div class="text-[#a9afbb]">Folder ./keel does not exist. Create it? (Y/n) y</div>
+    <div class="text-[#a9afbb]">Startup check: settings OK · Ollama running, 4 models · test message answered</div>
+    <div class="text-[#7ee2a8]">Keel for /Users/roberto/keel: http://127.0.0.1:3000</div>
+  </div>
+  <div class="grid grid-cols-3 gap-4">${[
+    ['startup', 'fact_check', 'Startup check', 'Settings, model access, project config'], ['init', 'create_new_folder', 'Initialise', 'Four folder cases, what Keel creates'],
+    ['explore', 'forum', 'Explore', 'Sections with live comments'], ['intent', 'description', 'Intent', 'Assembled intent.md, approval'],
+    ['spec', 'architecture', 'Spec', 'Design decisions, scenarios, clickable mock'], ['plan', 'checklist', 'Plan', 'Tasks, versions, impact'],
+    ['handoff', 'outbox', 'Handoff', 'Files into the folder, read-back'], ['changes', 'change_circle', 'Changes', 'Every change request, status'],
+    ['change', 'difference', 'Change request', 'Impact, plan the change, package'], ['templates', 'library_books', 'Templates', 'Library grouped by kind'],
+    ['settings', 'settings', 'Settings', 'Ollama first, this project'], ['roadmap', 'map', 'Roadmap', 'Now, Next, Later'], ['readiness', 'health_and_safety', 'AI readiness report', 'On demand, any folder: report and advice']
+  ].map(([r, ic, t, d]) => `<a href="#${r}" class="flex flex-col gap-2 rounded-card bg-white p-5 shadow-card transition hover:-translate-y-0.5 hover:shadow-lg">${I(ic, 'text-[24px] text-k-blue')}<span class="font-medium text-black">${t}</span><span class="text-xs text-k-muted">${d}</span></a>`).join('')}</div>
+</div>`;
+
+SCREENS.startup = () => {
+  const C = {
+    first: [['bad', 'Your settings', 'No settings found in ~/.config/keel. This looks like the first run on this computer.', 'Fix: choose a model provider in Settings. Ollama is preselected.'], ['wait', 'Model provider', 'Checked once a provider is chosen.'], ['wait', 'Models for each task', 'Checked once a provider is chosen.'], ['ok', 'Project config', '.keel/config.yml is valid (format 2).']],
+    ollama: [['ok', 'Your settings', 'settings.json is valid. Provider: Ollama.'], ['bad', 'Model provider', 'Keel could not reach Ollama at http://localhost:11434 (connection refused).', 'Fix: start Ollama (open the app, or run ollama serve), then check again.'], ['wait', 'Models for each task', 'Checked once the provider answers.'], ['ok', 'Project config', '.keel/config.yml is valid (format 2).']],
+    config: [['ok', 'Your settings', 'settings.json is valid. Provider: Ollama.'], ['ok', 'Model provider', 'Ollama is running · 4 models.'], ['ok', 'Models for each task', 'Each task has a model; a test message answered.'], ['bad', 'Project config', '.keel/config.yml line 14 names a spec template that is not in .keel/templates.', 'Fix: choose an available template in Project setup, or restore the file from git.']],
+    ok: [['ok', 'Your settings', 'settings.json is valid. Provider: Ollama.'], ['ok', 'Model provider', 'Ollama is running · 4 models.'], ['ok', 'Models for each task', 'Each task has a model; a test message answered.'], ['ok', 'Project config', '.keel/config.yml is valid (format 2).']]
+  }[S.check];
+  const blocked = C.some((c) => c[0] === 'bad');
+  const look = { ok: ['check_circle', 'text-k-ok', tag('OK', 'ok'), 'border-k-line bg-white'], bad: ['error', 'text-k-bad', tag('Needs fixing', 'bad'), 'border-[#f5c2bd] bg-[#fffafa]'], wait: ['radio_button_unchecked', 'text-k-line-2', tag('Waiting'), 'border-k-line bg-white'] };
+  const title = { first: 'Set up Keel first', ollama: 'Keel cannot reach your model', config: 'This project’s config has a problem', ok: 'All set' }[S.check];
+  return `<div class="mx-auto flex max-w-3xl flex-col gap-6">
+    ${mockbar([['first', 'First run'], ['ollama', 'Ollama not running'], ['config', 'Config invalid'], ['ok', 'All OK']], S.check, 'check')}
+    <div><h1 class="text-2xl font-bold text-black">${title}</h1><p class="mt-1 text-k-muted">${blocked ? 'Everything that needs a model is paused until this is fixed. Your documents are safe.' : 'Your settings, model access and project config are fine.'}</p></div>
+    ${card(`<div class="flex flex-col gap-3"><div class="flex items-center justify-between">${h2('Startup check')}<span class="text-xs text-k-muted">Runs every time Keel starts · 0.4 s</span></div>
+      ${C.map(([st, t, txt, fix]) => { const L = look[st]; return `<div class="flex items-start gap-3 rounded-lg border px-4 py-3 ${L[3]} ${S.checking ? 'pulse2' : ''}">${I(L[0], 'text-[20px] ' + L[1])}<div class="flex flex-1 flex-col gap-0.5"><div class="flex items-center gap-2"><span class="font-medium text-black">${t}</span>${S.checking ? tag('Checking…', 'blue') : L[2]}</div><span class="text-[13px] text-k-sec">${txt}</span>${fix ? `<span class="text-xs text-k-body">${fix}</span>` : ''}</div></div>`; }).join('')}</div>`)}
+    ${blocked ? notice('warn', 'Keel is in setup mode', 'Only Settings is available until every check passes.') : ''}
+    <div class="flex flex-wrap items-center gap-3">${blocked ? `<a href="#${S.check === 'config' ? 'setup' : 'settings'}" class="inline-flex min-h-9 items-center gap-2 rounded-lg bg-k-blue px-[15px] py-[7px] text-white hover:bg-k-blue-dark">${I('settings', 'text-[20px]')}${S.check === 'config' ? 'Open Project setup' : 'Open Settings'}</a>` : `<a href="#handoff" class="inline-flex min-h-9 items-center rounded-lg bg-k-blue px-[15px] py-[7px] text-white">Continue</a>`}
+      ${btn(S.checking ? 'Checking…' : 'Check again', { v: 'outline', act: 'recheck' })}</div>
+  </div>`;
+};
+
+SCREENS.init = () => {
+  const exist = S.initCase !== 'new';
+  const facts = S.initCase === 'new' ? [['folder', 'Folder', 'Empty'], ['commit', 'Git', 'Not a repository'], ['code', 'Code', 'None'], ['smart_toy', 'AI agent files', 'None']]
+    : [['commit', 'Git', 'Repository · 412 commits'], ['code', 'Code', 'TypeScript · Next.js 15 · pnpm'], ['description', 'Docs', 'README.md · docs/'], ['science', 'Tests', 'Vitest · 86 files'], ['smart_toy', 'AI agent files', S.initCase === 'ai' ? 'AGENTS.md · CLAUDE.md · .cursor/rules' : 'None'], ['folder', 'Keel', 'Not set up']];
+  const tree = [
+    ['.keel/', 'folder', 'Config and libraries, committed with the project', 'Now', [['config.yml', 'always', 'Title, templates, style, standards, paths'], ['templates/', 'always', '7 templates you picked'], ['styles/challenger/SKILL.md', 'always', 'How the assistant comments'], ['standards/', 'opt', '4 standards selected'], ['agent-kit/', 'opt', '4 files selected'], ['cache/', 'always', 'Run lock, not committed']]],
+    ['docs/', 'folder', 'Intent, spec, plan, roadmap, decisions', 'As you approve', [['intent.md', 'always', 'What and why, REQ IDs'], ['spec.md', 'always', 'Requirements, design, scenarios, decision'], ['plan.md', 'always', 'Ordered tasks']]],
+    ['tasks/', 'folder', 'One file per task', 'As you approve', []],
+    ['AGENTS.md', 'always', 'Instructions any coding agent reads first', 'At handoff'],
+    ['.claude/agents/', 'folder', '3 subagents', 'At handoff', [['verifier.md', 'opt', 'Checks against the plan'], ['code-simplifier.md', 'opt', 'Simplifies after each task'], ['researcher.md', 'opt', 'Explores and reports']]]
+  ];
+  const when = (w) => tag(w, w === 'Now' ? 'blue' : w === 'At handoff' ? 'purple' : 'gray');
+  const row = (name, kind, aim, w, depth, kids) => {
+    const isF = kids && kids.length, open = S.openFolders[name];
+    const dot = kind === 'folder' ? 'rounded-sm bg-k-line-2' : kind === 'opt' ? 'rounded-full bg-[#c2410c]' : 'rounded-full bg-k-blue';
+    return `<div class="grid grid-cols-[minmax(0,320px)_1fr_120px] items-center gap-4 border-t border-[#f0f2f5] px-4 py-1.5">
+      <button ${isF ? `data-act="fold:${name}"` : ''} class="flex items-center gap-1.5 text-left" style="padding-left:${depth * 18}px">${I(isF ? (open ? 'expand_more' : 'chevron_right') : 'chevron_right', 'text-[16px] text-k-muted ' + (isF ? '' : 'invisible'))}<span class="h-2 w-2 ${dot}"></span><span class="font-mono text-xs ${kind === 'opt' ? 'text-[#c2410c]' : kind === 'folder' ? 'font-semibold' : 'text-black'}">${name}</span>${isF && !open ? `<span class="rounded-full bg-[#f0f2f5] px-1.5 text-[11px] text-k-muted">${kids.length} files</span>` : ''}</button>
+      <span class="text-xs text-k-sec">${aim}</span><span>${w ? when(w) : ''}</span></div>${isF && open ? kids.map((k) => row(k[0], k[1], k[2], '', depth + 1)).join('') : ''}`;
+  };
+  return `<div class="mx-auto flex max-w-4xl flex-col gap-6">
+    ${mockbar([['new', '1 · New folder'], ['existing', '3 · Existing, no AI'], ['ai', '4 · Existing, own AI setup']], S.initCase, 'initcase')}
+    <div><h1 class="text-2xl font-bold text-black">${exist ? 'Set up Keel for an existing project' : 'Initialise this folder'}</h1><p class="mt-1 text-k-muted">${exist ? 'This folder already has code. Keel can record what exists as a baseline, so your next change has something to trace against.' : 'This folder is empty. Describe the idea and pick the templates, style and standards; Keel copies them into .keel/.'}</p></div>
+    ${card(`<div class="flex flex-col gap-4"><div class="flex items-center justify-between">${h2('What Keel found')}${exist ? tag(S.initCase === 'ai' ? 'Existing project with its own AI setup' : 'Existing project, no AI files', S.initCase === 'ai' ? 'link' : 'warn') : tag('New project', 'blue')}</div>
+      <div class="grid grid-cols-2 gap-x-6 gap-y-2 rounded-lg bg-[#f6f7f9] px-4 py-3">${facts.map(([ic, l, v]) => `<div class="flex items-start gap-2">${I(ic, 'text-[18px] ' + (v === 'None' || v === 'Empty' || v === 'Not a repository' || v === 'Not set up' ? 'text-k-muted' : 'text-k-blue'))}<div class="flex flex-col"><span class="text-xs text-k-muted">${l}</span><span class="text-[13px] text-black">${v}</span></div></div>`).join('')}</div>
+      <span class="text-xs text-k-muted">Found by reading file names and manifests on this computer. Nothing was sent to a model and nothing was written.</span>
+      <div class="flex flex-wrap items-center gap-3 rounded-lg border border-k-line px-4 py-3">${I('health_and_safety', 'text-[20px] text-k-blue')}<div class="flex min-w-0 flex-1 flex-col"><span class="font-medium text-black">Want to know how ready this folder is for coding agents?</span><span class="text-xs text-k-muted">Optional. A report with advice on what to add and why. Uses your model; you choose which files it may read.</span></div><a href="#readiness" data-act="rrkind:${S.initCase === 'new' ? 'new' : S.initCase}" class="inline-flex items-center gap-2 rounded-lg border border-k-blue px-3 py-1 text-k-blue hover:bg-k-blue-soft">Check AI readiness</a></div>
+      ${exist ? `<div class="grid grid-cols-2 gap-3">${[['baseline', 'Record what exists, then plan the next change', true, 'Keel drafts a baseline from this folder; your next idea is a change request on top.'], ['feature', 'Treat the next feature as the project', false, 'The intent covers only the new feature; the code is context.']].map(([id, t, rec, d]) => `<button data-act="initpath:${id}" class="flex flex-col gap-1.5 rounded-lg border p-3 text-left ${S.initPath === id ? 'border-k-blue bg-k-blue-soft' : 'border-k-line bg-white hover:border-k-line-2'}"><span class="flex items-center justify-between gap-2"><span class="font-semibold text-black">${t}</span>${rec ? tag('Recommended', 'blue') : ''}</span><span class="text-[13px] text-k-sec">${d}</span></button>`).join('')}</div>` : ''}
+      ${S.initCase === 'ai' ? notice('warn', 'docs/ is already used by your documentation site', 'Keel will keep its documents in keel/docs, keel/tasks and keel/features.') : ''}
+    </div>`)}
+    ${card(`<div class="flex flex-col gap-3"><div class="flex items-center justify-between">${h2('Project folder')}${tag(I('folder', 'text-[14px]') + 'One project per folder')}</div>
+      <span class="font-mono text-sm text-black">/Users/roberto/${exist ? 'billing-portal' : 'expense-tracker'}</span>
+      <span class="text-k-sec">This is also the repository your coding agent builds in. Keel commits only its own files.</span>
+      ${exist ? '' : notice('info', 'Not a git repository yet', 'Keel will run git init here when you initialise.')}
+      <span class="text-xs text-k-muted">API keys and your personal settings stay in ~/.config/keel, never in this project.</span></div>`)}
+    ${card(`<div class="flex flex-col gap-4">${h2('What Keel creates in this folder', 'Open a folder to see what is inside. Only .keel/ is written now.')}
+      <div class="flex flex-wrap gap-4 text-xs text-k-sec"><span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm bg-k-blue"></span>Always created</span><span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm bg-[#c2410c]"></span>Depends on your selection</span><span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm bg-k-line-2"></span>Folder</span></div>
+      <div class="overflow-hidden rounded-lg border border-k-line"><div class="grid grid-cols-[minmax(0,320px)_1fr_120px] gap-4 bg-[#f6f7f9] px-4 py-2 text-xs font-medium text-k-muted"><span>Path</span><span>What it is for</span><span>When</span></div>
+      ${tree.map((t) => row(t[0], t[1], t[2], t[3], 0, t[4])).join('')}</div></div>`)}
+    ${card(`<div class="flex flex-col gap-4">${field('Working title', '', { ph: 'You can name it later', opt: 'Optional' })}${field('The idea in a sentence or two', '', { multi: true, ph: 'What is the problem, and who has it?' })}</div>`)}
+    ${card(`<div class="flex flex-col gap-4"><div class="flex items-center justify-between">${h2('Brainstorm style')}<a href="#styles" class="text-k-blue">Manage styles</a></div>
+      <div class="grid grid-cols-3 gap-4">${[['Challenger', 'Default · v1', 'Tests your assumptions.'], ['Coach', 'v1', 'Helps you put it into words.'], ['Market', 'v1', 'Searches similar products.']].map(([n, t, d], i) => `<div class="flex flex-col gap-2 rounded-lg border p-4 ${i === 0 ? 'border-k-blue bg-k-blue-soft' : 'border-k-line'}"><span class="flex justify-between"><span class="text-base font-medium">${n}</span><span class="text-xs text-k-muted">${t}</span></span><span class="text-k-sec">${d}</span></div>`).join('')}</div></div>`)}
+    <div class="flex gap-2"><a href="#explore" class="inline-flex min-h-9 items-center gap-2 rounded-lg bg-k-blue px-[15px] py-[7px] text-white hover:bg-k-blue-dark">${I('forum', 'text-[20px]')}${exist && S.initPath === 'baseline' ? 'Initialise and draft the baseline' : 'Initialise and start brainstorm'}</a>${btn('Cancel (nothing is written)', { v: 'text' })}</div>
+  </div>`;
+};
+
+const EX_DEFS = [['problem', 'Problem', true], ['who', 'Who it is for', true], ['outcome', 'Desired outcome', true], ['scope', 'Scope', false], ['reqs', 'Requirements', true], ['constraints', 'Constraints', false], ['questions', 'Open questions', false]];
+function exFields() {
+  if (S.fields) return S.fields;
+  S.fields = {
+    problem: { v: 'Ideas stall before anyone can build them. Coding agents build fast, but the idea still has to be turned into something they can use.', c: ['challenge', 'Ideas stall, but **where**? Before the spec, or between spec and code? Your **Desired outcome** ends at the plan.', 'Ideas wait for someone to write them up, and requirements pass through meetings before an engineer can plan.'] },
+    who: { v: 'Anyone with an idea.', c: ['link', '"Anyone" is hard to design for. Who is the **first** user? **Constraints** says single user first.', 'First: a single product-minded engineer. Later: product managers and anyone with an idea.'], linkTo: 'Constraints' },
+    outcome: { v: 'A versioned intent, spec and plan with traceable requirements, and a scaffold any coding agent can build from.', sug: true, c: ['suggest', 'I drafted this from **Problem** and **Who it is for**. Accept it or write your own.'] },
+    scope: { v: '', c: ['ask', 'Say what is clearly out. It saves arguments in the spec.'] },
+    reqs: { rows: [['REQ-001', 'Fill in the sections of an intent template, with an assistant that comments on them.'], ['REQ-002', 'Save intent.md with metadata: ID, author, dates, status, version.'], ['new', 'Read back the changes the coding agent makes, and accept or dismiss them.']], c: ['ok', '3 requirements, each testable. New rows get an ID when you draft.'] },
+    constraints: { v: 'Any LLM. Any coding agent. Single user first.', c: ['ok', 'Clear limits.'] },
+    questions: { v: '', c: ['ask', 'Anything still undecided? It goes to the spec as an open question.'] }
+  };
+  return S.fields;
+}
+const KIND = { challenge: ['Challenge', 'border-k-warn bg-[#fffaf0]', 'text-k-warn-text'], link: ['Links sections', 'border-k-link bg-k-link-soft', 'text-k-link-text'], suggest: ['Suggestion', 'border-k-blue bg-[#f3f6ff]', 'text-k-blue-dark'], ask: ['Question', 'border-k-blue bg-[#f3f6ff]', 'text-k-blue-dark'], ok: ['Looks good', 'border-k-ok bg-[#f2faf6]', 'text-[#006b45]'] };
+SCREENS.explore = () => {
+  const F = exFields();
+  const filled = (k) => k === 'reqs' ? F.reqs.rows.length > 0 : !!F[k].v && !F[k].sug;
+  const req = EX_DEFS.filter((d) => d[2]), done = req.filter((d) => filled(d[0])).length, ready = done === req.length;
+  const sections = EX_DEFS.map(([k, label, r]) => {
+    const f = F[k], kd = KIND[f.c[0]], active = S.active === k;
+    const comment = active ? `<div class="flex flex-col gap-2.5 rounded-md border-l-[3px] px-3.5 py-3 ${kd[1]}">
+        <span class="text-[11px] font-semibold uppercase tracking-wide ${kd[2]}">${kd[0]}${f.linkTo ? ' · ' + f.linkTo : ''}</span>
+        <p class="text-sm leading-[21px]">${bold(f.c[1])}</p>
+        ${f.c[2] && !f.applied ? `<div class="flex flex-col gap-1.5 rounded-md border border-dashed border-k-line-2 bg-white px-3 py-2"><span class="text-[13px]">${esc(f.c[2])}</span><div class="flex gap-4">${link('Apply', 'apply:' + k)}${link('Dismiss', 'dismiss:' + k, 'text-k-muted')}</div></div>` : ''}
+        ${f.applied ? '<span class="text-xs text-k-ok">Applied. You can still edit it below.</span>' : ''}
+        <input placeholder="Reply to the assistant and press Enter" class="w-full rounded-md border border-k-line bg-white px-2.5 py-1.5 text-[13px] focus:border-k-blue focus:outline-none">
+      </div>`
+      : `<button data-act="focus:${k}" class="flex w-full items-center gap-2.5 rounded border-l-[3px] px-3 py-1.5 text-left text-xs ${kd[1]}"><span class="shrink-0 text-[11px] font-semibold uppercase ${kd[2]}">${kd[0]}</span><span class="min-w-0 flex-1 truncate text-k-sec">${esc(f.c[1].replace(/\*\*/g, ''))}</span><span class="font-medium text-k-blue">Show</span></button>`;
+    const input = k === 'reqs'
+      ? `<div class="flex flex-col gap-2">${f.rows.map(([id, t]) => `<div class="flex items-center gap-2"><span class="w-20 shrink-0 font-mono text-xs ${id === 'new' ? 'italic text-k-muted' : 'font-semibold text-black'}">${id}</span><input value="${esc(t)}" class="min-w-0 flex-1 rounded-lg border border-k-muted px-3 py-1.5 text-sm hover:border-k-blue focus:border-k-blue focus:outline-none"><button class="h-7 w-7 text-k-muted">↑</button><button class="h-7 w-7 text-base text-k-muted">×</button></div>`).join('')}<div class="flex items-center gap-4"><button class="text-[13px] font-medium text-k-blue">+ Add requirement</button><span class="text-xs text-k-muted">2 with IDs from the last draft. New rows get REQ-003 onwards.</span></div></div>`
+      : `<div data-act="focus:${k}" class="${f.sug ? 'italic opacity-85' : ''}">${field('', f.v, { multi: true, ph: '' })}</div>${f.sug ? `<div class="flex items-center gap-4 -mt-1"><span class="text-xs text-k-blue-dark">Suggested by the assistant. It does not count until you accept it.</span>${link('Accept', 'accept:' + k)}${link('Clear', 'clear:' + k, 'text-k-muted')}</div>` : ''}`;
+    return `<div class="flex flex-col gap-2.5 rounded-[10px] border px-4 py-3.5 ${active ? 'border-k-blue ring-[3px] ring-k-blue-soft' : 'border-k-line'}">
+      <div class="flex items-center gap-2">${I(filled(k) ? 'check_circle' : 'radio_button_unchecked', 'text-[20px] ' + (filled(k) ? 'text-k-ok' : 'text-k-muted'))}<span class="text-base font-medium text-black">${label}</span><span class="text-xs text-k-muted">${r ? 'Required' : 'Optional'}</span>${S.reviewing && active ? '<span class="pulse2 text-xs text-k-blue">Reviewing…</span>' : ''}<span class="flex-1"></span>${!active && (k === 'outcome' || k === 'who') ? tag('New comment', f.c[0] === 'link' ? 'link' : 'blue') : ''}</div>
+      ${comment}${input}</div>`;
+  }).join('');
+  return `<div class="flex flex-col gap-6">
+    ${pageHead('PRJ-0001 · created 20/11/2026', ready ? `<a href="#intent" class="inline-flex min-h-9 items-center gap-2 rounded-lg bg-k-blue px-[15px] py-[7px] text-white">${I('description', 'text-[20px]')}Draft intent.md</a>` : btn('Draft intent.md', { disabled: true }), DESC)}
+    ${stageBar('explore', ready ? 'intent' : 'explore')}
+    <div class="mx-auto flex w-full max-w-[900px] flex-col gap-2"><span class="text-xs text-k-muted">Template: Standard intent · v4 · Style: Challenger · v1</span>
+    ${card(`<div class="flex flex-col gap-5"><div class="flex flex-wrap items-start justify-between gap-4"><div class="flex max-w-xl flex-col gap-1"><h2 class="text-lg font-medium text-black">Your idea, section by section</h2><p class="text-k-sec">Write in any order. When you leave a section or pause, the assistant reads the whole list and comments on each section. Reply under a comment and press Enter.</p></div>
+      <div class="flex flex-col items-end gap-1.5"><span class="font-medium text-black">${done} of ${req.length} required filled</span><div class="h-1.5 w-48 overflow-hidden rounded bg-k-line"><div class="h-1.5 rounded ${ready ? 'bg-k-ok' : 'bg-k-blue'}" style="width:${Math.round(100 * EX_DEFS.filter((d) => filled(d[0])).length / EX_DEFS.length)}%"></div></div><span class="text-xs text-k-muted">${ready ? 'You can draft the intent now' : 'Suggestions count once you accept them'}</span></div></div>
+      <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#f6f7f9] px-3 py-2 text-xs text-k-sec"><span class="flex items-center gap-2"><span class="h-2 w-2 rounded-full ${S.reviewing ? 'pulse2 bg-k-blue' : 'bg-k-ok'}"></span>${S.reviewing ? 'Reviewing all sections…' : 'Assistant reviewed all sections just now · 2 new comments on other sections'}</span>
+      <span class="flex gap-3">${['Challenge:bg-k-warn', 'Links sections:bg-k-link', 'Suggestion:bg-k-blue', 'Looks good:bg-k-ok'].map((x) => { const [l, c] = x.split(':'); return `<span class="flex items-center gap-1"><span class="h-2 w-2 rounded-sm ${c}"></span>${l}</span>`; }).join('')}</span></div>
+      ${sections}
+      <p class="text-xs text-k-muted">The assistant never rewrites your text on its own. Draft intent.md puts these sections into the template as they are, with no model call.</p></div>`)}</div>
+  </div>`;
+};
+
+SCREENS.intent = () => `<div class="flex flex-col gap-6">
+  <div class="flex flex-wrap items-center justify-between gap-4"><div class="flex items-center gap-4"><h1 class="text-2xl font-bold text-black">Keel</h1><span class="text-xs text-k-muted">PRJ-0001 · intent.md · INT-0001</span></div><div class="flex gap-2"><a href="#explore" class="inline-flex min-h-9 items-center rounded-lg border border-k-muted bg-white px-[15px] py-[7px]">Change in Explore</a><a href="#spec" class="inline-flex min-h-9 items-center gap-2 rounded-lg bg-k-blue px-[15px] py-[7px] text-white">${I('arrow_forward', 'text-[20px]')}Generate spec</a></div></div>
+  ${stageBar('intent')}
+  <div class="flex flex-wrap items-start gap-6">
+    <div class="flex min-w-0 flex-[999_1_560px] flex-col gap-2"><span class="text-xs text-k-muted">Template: Standard intent · v4</span>${card(`<div class="flex flex-col gap-4">
+      <div class="flex items-center gap-2 rounded-lg bg-[#f6f7f9] px-3 py-2 text-xs text-k-sec">${I('info', 'text-[16px] text-k-muted')}<span>Assembled from the sections you wrote in Explore, with no model call. Once approved, changes become a change request.</span></div>
+      ${tabs([['p', 'Preview'], ['m', 'Markdown'], ['r', 'Mock references']], 'p', 'none')}
+      <div class="grid grid-cols-3 gap-x-6 gap-y-2 rounded-lg bg-k-page p-4">${[['ID', 'INT-0001'], ['Project', 'PRJ-0001'], ['Status', 'Approved'], ['Version', '3'], ['Author', 'Roberto Basile'], ['Template', 'standard-intent@4']].map(([k, v]) => `<div class="flex flex-col"><span class="text-xs text-k-muted">${k}</span><span>${v}</span></div>`).join('')}</div>
+      <h2 class="text-xl font-bold text-black">Intent: Keel</h2>
+      ${[['Problem', 'Ideas wait for someone to write them up, and requirements pass through meetings before an engineer can plan. Coding agents build in hours, but the steps before the build still run at human speed.'], ['Who it is for', 'First: a single product-minded engineer. Later: product managers and anyone with an idea.'], ['Desired outcome', 'A versioned intent, spec and plan with traceable requirements, and a scaffold any coding agent can build from. Keel stops at the plan and reads the agent’s changes back.']].map(([h, t]) => `<div class="flex flex-col gap-1"><h3 class="text-base font-medium text-black">${h}</h3><p>${t}</p></div>`).join('')}
+      <div class="flex flex-col gap-1"><h3 class="text-base font-medium text-black">Requirements</h3>${['REQ-001 Template sections with live assistant comments', 'REQ-002 intent.md assembled from the sections', 'REQ-004 At least one scenario per requirement', 'REQ-005 Each stage unlocks only when the previous one is approved', 'REQ-014 Change requests across stages'].map((r) => `<div class="flex gap-2"><span class="font-mono text-xs font-semibold text-k-blue">${r.slice(0, 7)}</span><span>${r.slice(8)}</span></div>`).join('')}</div>
+    </div>`)}</div>
+    <div class="flex min-w-0 flex-[1_1_380px] flex-col gap-6">
+      ${card(`<div class="flex flex-col gap-3"><div class="flex items-center justify-between">${h2('Approval')}${tag(I('check', 'text-[14px]') + 'Approved', 'ok')}</div><p class="text-k-sec">Approved by Roberto Basile on 20/11/2026 at 14:02.</p>${notice('warn', 'A change request is open', '<a href="#change" class="font-medium text-k-blue">Review CR-0003</a>')}</div>`)}
+      ${card(`<div class="flex flex-col gap-3">${h2('Version history')}${[['Version 3 · approved', '22/11/2026', 'Requirements as a section; REQ-014 (CR-0003).'], ['Version 2 · approved', '20/11/2026', 'Read-back added (REQ-007).']].map(([v, d, w]) => `<div class="flex flex-col gap-0.5 border-b border-k-line pb-3"><div class="flex justify-between"><span class="font-medium text-black">${v}</span><span class="text-xs text-k-muted">${d}</span></div><span class="text-k-sec">${w}</span></div>`).join('')}</div>`)}
+    </div>
+  </div>
+</div>`;
+
+const TOPICS = [
+  ['form', 'Form', 'From the spec template', [['local', 'Local web app (npx keel-sdlc)', true, 'A local server that opens the browser on one folder.', 'Keys stay on the computer', 'No sharing yet', 'Fits Constraints: single user first', 1], ['vscode', 'VS Code extension', false, 'Keel inside the editor.', 'Close to the code', 'Product managers will not install it', 'Conflicts with Who it is for', 0]], 'local'],
+  ['stack', 'Language and framework', 'Found package.json in this folder', [['keep', 'Keep current: TypeScript, Next.js 16', true, 'The stack already here.', 'No rewrite', 'Yearly upgrades', 'Fits TypeScript conventions v3', 1], ['py', 'Python, FastAPI and React', false, 'API in Python, UI in React.', 'Good LLM libraries', 'Two languages; a rewrite', 'Breaks TypeScript conventions v3', 0]], 'keep'],
+  ['storage', 'Storage', 'From the spec template', [['git', 'Markdown files in git (this folder)', true, 'Documents as markdown files; lists read from the files.', 'History and diffs for free', 'Commits limited to Keel files', 'Fits Plain markdown v1', 1], ['db', 'A single database file', false, 'Everything in one embedded database.', 'Simple queries', 'Not readable without Keel', 'Breaks Plain markdown v1', 0]], 'git'],
+  ['models', 'Model access', 'From the spec template', [['sdk', 'Provider layer over official SDKs', true, 'Ollama by default; Anthropic, OpenAI, Azure, compatible servers.', 'Full control', 'Several adapters', 'Fits Constraints: any LLM', 1], ['proxy', 'LiteLLM proxy', false, 'A local proxy for all providers.', 'One adapter', 'A second runtime', 'Adds a Python service', 0], ['aisdk', 'Vercel AI SDK', false, 'One TypeScript library.', 'One adapter', 'Another dependency', 'Fits TypeScript conventions v3', 1]], '']
+];
+SCREENS.spec = () => {
+  const design = () => {
+    const decided = TOPICS.filter((t) => (S.dec[t[0]] ?? t[4])).length;
+    return `<div class="flex flex-col gap-4"><p class="text-k-sec">The design is a set of decisions. For each one the assistant proposes options from your requirements, constraints, standards and the code in this folder. Each choice is saved as a decision record.</p>
+      ${notice(decided === TOPICS.length ? 'ok' : 'warn', decided + ' of ' + TOPICS.length + ' decisions made', decided === TOPICS.length ? 'Each has a decision record in docs/decisions/.' : 'Generate plan needs every decision, and a scenario for every requirement.')}
+      ${TOPICS.map(([id, title, origin, opts, def]) => {
+        const chosen = S.dec[id] ?? def, editing = S.dec[id + ':edit'] || !chosen, pick = S.dec[id + ':pick'] ?? chosen ?? opts.find((o) => o[2])[0];
+        const o = opts.find((x) => x[0] === chosen);
+        return `<div class="flex flex-col gap-3 rounded-lg border px-4 py-3.5 ${editing ? 'border-k-blue ring-[3px] ring-k-blue-soft' : 'border-k-line'}">
+          <div class="flex items-center gap-2"><span class="text-base font-medium text-black">${title}</span><span class="text-xs text-k-muted">${origin}</span><span class="flex-1"></span>${chosen ? tag('Decided · ADR-00' + (5 + TOPICS.findIndex((t) => t[0] === id)), 'ok') : tag('To decide', 'warn')}</div>
+          ${!editing ? `<div class="flex items-center gap-2">${I('check_circle', 'text-[18px] text-k-ok')}<span class="font-medium text-black">${o[1]}</span><span class="flex-1"></span>${link('Change', 'decedit:' + id)}</div><span class="text-xs text-k-muted">Alternatives considered: ${opts.filter((x) => x[0] !== chosen).map((x) => x[1]).join(', ')}.</span>`
+          : `<div class="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3">${opts.map((x) => `<button data-act="decpick:${id}:${x[0]}" class="flex flex-col gap-1.5 rounded-lg border p-3 text-left ${pick === x[0] ? 'border-k-blue bg-k-blue-soft' : 'border-k-line bg-white hover:border-k-line-2'}"><span class="flex items-center justify-between gap-2"><span class="font-semibold text-black">${x[1]}</span>${x[2] ? tag('Recommended', 'blue') : ''}</span><span class="text-[13px] text-k-sec">${x[3]}</span><span class="text-xs text-[#006b45]">+ ${x[4]}</span><span class="text-xs text-k-warn-text">− ${x[5]}</span><span class="text-xs font-medium ${x[7] ? 'text-[#006b45]' : 'text-k-bad'}">${x[6]}</span></button>`).join('')}
+            <div class="flex flex-col gap-1.5 rounded-lg border border-dashed border-k-line-2 p-3"><span class="font-semibold text-black">Your own option</span><input placeholder="Describe the option you want" class="rounded-lg border border-k-muted px-3 py-1.5"><span class="text-xs text-k-muted">Not in the list? Write it here.</span></div></div>
+            <div class="flex items-center gap-3">${btn(chosen ? 'Save change' : 'Decide', { size: 'sm', act: 'decide:' + id })}<span class="text-xs text-k-muted">Saved as a decision record with the alternatives you did not pick.</span></div>`}
+        </div>`;
+      }).join('')}</div>`;
+  };
+  const scen = () => {
+    const G = [['REQ-001', 'Template sections with live comments', [['Explore shows the template sections with a comment on each', [['Given', 'an initialised folder using Standard intent v4'], ['When', 'I open Explore'], ['Then', 'each section has a comment from the assistant above it']]]]], ['REQ-003', 'Versioned, editable templates', []], ['REQ-005', 'Stage gating and approvals', [['Spec is locked until the intent is approved', [['Given', 'a draft intent'], ['When', 'I open the Spec stage'], ['Then', 'the stage is locked']]]]]];
+    return `<div class="flex flex-col gap-4">${notice('warn', '2 of 3 requirements have a scenario', 'REQ-003 has none yet. The plan needs at least one scenario per requirement.')}
+      ${G.map(([id, t, list]) => `<div class="flex flex-col gap-2.5 rounded-lg border px-4 py-3.5 ${list.length ? 'border-k-line' : 'border-[#f5c2bd]'}"><div class="flex items-center gap-2"><span class="rounded-full border border-k-blue px-2 text-xs text-k-blue">${id}</span><span class="font-medium text-black">${t}</span><span class="flex-1"></span>${list.length ? `<span class="text-xs text-k-muted">${list.length} scenario</span>` : tag('No scenario yet', 'bad')}</div>
+        ${list.map(([n, steps]) => `<div class="flex flex-col gap-1.5 border-l-2 border-k-line pl-3"><div class="flex items-center gap-2"><span class="font-medium text-black">${n}</span><span class="flex-1"></span>${link('Edit', 'none')}</div>${steps.map(([k, s]) => `<div class="flex gap-2"><span class="w-12 shrink-0 font-medium text-k-blue">${k}</span><span>${s}</span></div>`).join('')}</div>`).join('')}
+        <div class="flex gap-4">${link('+ Add scenario', 'none')}${id === 'REQ-005' ? link('Suggest a failure case', 'none') : ''}</div></div>`).join('')}</div>`;
+  };
+  const mock = () => `<div class="flex flex-col gap-4">${notice('warn', 'The mock set is out of date', 'Made from spec v8; the spec is v9. A current mock set is recommended before the plan.')}
+    <div class="flex flex-col gap-3 rounded-lg border border-k-line p-4"><span class="text-base font-medium text-black">1 · Make a clickable mock elsewhere</span><span class="text-[13px] text-k-sec">Keel writes a prompt from this spec for a model that builds clickable prototypes. Export the screens as PNG and HTML.</span>
+      <pre class="max-h-56 overflow-auto rounded-lg bg-k-code px-5 py-4 font-mono text-xs leading-[19px] text-[#e6e8ec]"># Clickable mock request: Keel (spec v9)
+Build a clickable prototype of the screens below, one screen per artboard, linked.
+## Screens
+01 · Open Keel on a folder (REQ-012)
+02 · Initialise this folder (REQ-003, REQ-011, REQ-012)
+03 · Explore (REQ-001, REQ-002)
+## When you export
+Name each file: spec-v9 · &lt;number&gt; · &lt;screen&gt; · &lt;REQ IDs&gt;.png</pre>
+      <div class="flex gap-3">${btn(S.copied ? 'Copied' : 'Copy prompt', { size: 'sm', act: 'copy' })}${btn('Download prompt', { v: 'outline', size: 'sm' })}</div></div>
+    <div class="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-k-line-2 bg-[#fafbfc] p-6 text-center">${I('upload_file', 'text-[28px] text-k-muted')}<span>Drop the exported PNG files here, with their HTML sources</span><span class="text-xs text-k-muted">Keel matches each file to a screen and its requirements from the file name.</span></div></div>`;
+  const reqs = () => `<div class="overflow-hidden rounded-lg border border-k-line"><div class="grid grid-cols-[100px_1fr_110px] gap-3 border-b border-black bg-white px-4 py-2.5 text-sm font-semibold"><span>ID</span><span>Requirement</span><span>Source</span></div>${[['REQ-001', 'Template sections with live assistant comments', 'Intent'], ['REQ-002', 'intent.md assembled from the sections', 'Intent'], ['REQ-004', 'Scenarios per requirement', 'Intent'], ['REQ-005', 'Stage gating and approvals', 'Intent'], ['REQ-013', 'Design as decisions with options', 'Spec'], ['REQ-014', 'Change requests across stages', 'Spec']].map(([i, t, s]) => `<div class="grid grid-cols-[100px_1fr_110px] gap-3 border-b border-k-line px-4 py-2.5 hover:bg-k-page"><span class="font-medium text-k-blue">${i}</span><span>${t}</span><span>${tag(s, s === 'Intent' ? 'blue' : 'gray')}</span></div>`).join('')}</div>`;
+  const body = { reqs, design, scen, mock }[S.specTab]();
+  return `<div class="flex flex-col gap-6">
+    <div class="flex flex-wrap items-center justify-between gap-4"><div class="flex items-center gap-4"><h1 class="text-2xl font-bold text-black">Keel</h1><span class="text-xs text-k-muted">PRJ-0001 · spec.md · SPC-0001 v9</span></div>${btn('Generate plan', { disabled: true })}</div>
+    ${stageBar('spec')}
+    ${card(`<div class="flex flex-col gap-4">${tabs([['reqs', 'Requirements', 14], ['design', 'Design'], ['scen', 'Acceptance scenarios', 2], ['mock', 'Clickable mock']], S.specTab, 'spectab')}${body}</div>`)}
+  </div>`;
+};
+
+SCREENS.plan = () => `<div class="flex flex-col gap-6">
+  <div class="flex items-center gap-4"><h1 class="text-2xl font-bold text-black">Keel</h1><span class="text-xs text-k-muted">PRJ-0001 · plan.md · PLN-0001 v10</span></div>
+  ${stageBar('plan', 'handoff', 'plan')}
+  ${notice('warn', 'Out of date · CR-0003', 'Intent v3 adds REQ-014. Update the plan from the change request, or confirm it is still valid. <a href="#change" class="font-medium text-k-blue">Open CR-0003</a>')}
+  ${card(`<div class="flex flex-col gap-4">${h2('Tasks', 'In order. Each task has its own file in tasks/.')}
+    <div class="overflow-hidden rounded-lg border border-k-line"><div class="grid grid-cols-[70px_1fr_180px_110px] gap-3 border-b border-black px-4 py-2.5 font-semibold"><span>Task</span><span>Title</span><span>Requirements</span><span>Status</span></div>
+    ${[['T1', 'Document store', 'REQ-002', 'done'], ['T6', 'Stage gates and approvals', 'REQ-005', 'done'], ['R10', 'Sections with live comments', 'REQ-001, REQ-002', 'done'], ['R18', 'Change requests across stages', 'REQ-014', 'done'], ['R13', 'Every screen looks like the mockup', '—', 'doing'], ['R19', 'Complete change packages', 'REQ-015', 'todo']].map(([t, n, r, s]) => `<div class="grid grid-cols-[70px_1fr_180px_110px] items-center gap-3 border-b border-k-line px-4 py-2.5 hover:bg-k-page"><span class="font-mono text-xs font-semibold">${t}</span><span>${n}</span><span class="font-mono text-xs text-k-blue-dark">${r}</span><span>${tag(s, s === 'done' ? 'ok' : s === 'doing' ? 'blue' : 'gray')}</span></div>`).join('')}</div></div>`)}
+</div>`;
+
+SCREENS.handoff = () => {
+  const st = (k) => k === 'here' ? tag('In folder') : k === 'add' ? tag(S.written ? 'Written' : 'New', S.written ? 'ok' : 'blue') : k === 'conflict' ? tag(S.readme === 'open' ? 'Conflict' : 'Kept yours', S.readme === 'open' ? 'warn' : 'gray') : '';
+  const files = [[0, 'folder', 'keel/', 'your repository', ''], [1, 'folder', '.keel/', 'config, templates, styles, standards', 'here'], [1, 'folder', 'docs/', 'written as you approve each document', 'here'], [1, 'folder', 'tasks/', 'one file per task', 'here'], [1, 'description', 'AGENTS.md', 'Instructions any agent reads first', 'add'], [1, 'description', 'CLAUDE.md', 'Points to AGENTS.md', 'add'], [1, 'description', 'README.md', 'Already in your repository', 'conflict'], [1, 'folder', '.claude/skills/', 'Standards as skills', 'add'], [1, 'folder', 'features/', '7 scenarios with failing stubs', 'add'], [1, 'folder', 'src/', 'your code (Keel does not touch it)', '']];
+  return `<div class="flex flex-col gap-6">
+    <div class="flex items-center gap-4"><h1 class="text-2xl font-bold text-black">Keel</h1><span class="text-xs text-k-muted">PRJ-0001 · handoff from plan v10 · /Users/roberto/keel</span></div>
+    ${stageBar('handoff')}
+    <div class="flex flex-wrap items-start gap-6">
+      ${card(`<div class="flex flex-col gap-3">${h2('Files in this folder', 'Your documents are already here. Handoff adds the agent files and commits only those.')}
+        <div class="flex flex-col">${files.map(([d, ic, n, note, s]) => `<div class="flex items-center gap-2 py-0.5" style="padding-left:${d * 20}px">${I(ic, 'text-[16px] ' + (ic === 'folder' ? 'text-k-muted' : 'text-k-blue'))}<span class="font-mono text-xs text-black">${n}</span><span class="flex-1 truncate text-xs text-k-muted">${note}</span>${st(s)}</div>`).join('')}</div></div>`, 'flex-[1_1_420px] min-w-0')}
+      <div class="flex min-w-0 flex-[999_1_520px] flex-col gap-6">
+        ${card(`<div class="flex flex-col gap-4"><div class="flex items-center justify-between">${h2('Write to this folder')}${S.written ? tag(I('check', 'text-[14px]') + 'Written · Keel commit 4f2a9c1', 'ok') : tag('Not written yet')}</div>
+          ${S.readme === 'open' ? notice('warn', 'README.md is already here and Keel did not write it', `Keel never overwrites a file it did not write without asking.<div class="mt-2 flex gap-2">${btn('Keep mine', { v: 'outline', size: 'sm', act: 'readme:mine' })}${btn('Use Keel’s', { v: 'outline', size: 'sm', act: 'readme:keel' })}</div>`) : ''}
+          <div class="flex gap-2">${btn(S.written ? 'Written' : 'Write 6 files to folder', { act: 'write', disabled: S.readme === 'open' || S.written })}${btn('Download as zip', { v: 'text' })}</div>
+          <div class="flex items-center justify-between border-t border-k-line pt-4"><div class="flex flex-col"><span class="text-base font-medium text-black">Push (optional)</span><span class="text-xs text-k-muted">origin · github.com/roberto/keel · ${S.pushed ? 'up to date' : S.written ? '1 commit to push' : 'nothing to push'}</span></div>${btn('Push to origin', { v: 'outline', act: 'push', disabled: !S.written || S.pushed })}</div></div>`)}
+        ${card(`<div class="flex flex-col gap-4"><div class="flex items-center justify-between">${h2('Read-back from this folder', 'Checked 1 min ago from local git · commits and uncommitted edits')}${btn('Check now', { v: 'outline', icon: 'refresh' })}</div>
+          ${[['docs/plan.md', 'The agent split T9 into T9a and T9b. REQ-007 maps to both.', 'Commit 8d1e07b · by coding agent', 'Accept as plan v11'], ['tasks/T2.md', 'Added a note on file names.', 'Uncommitted edit in the working tree', 'Accept']].map(([f, s, m, a]) => `<div class="flex flex-col gap-2 rounded-lg border border-k-line p-4"><div class="flex items-center justify-between"><span class="font-mono text-xs text-black">${f}</span>${tag('Pending', 'warn')}</div><span>${s}</span><span class="text-xs text-k-muted">${m}</span><div class="flex gap-2">${btn(a, { size: 'sm' })}${btn('Dismiss', { v: 'text', size: 'sm' })}</div></div>`).join('')}</div>`)}
+      </div></div></div>`;
+};
+
+const CRS = [
+  ['CR-0004', 'One project per folder, with a .keel folder', 'applied', 9, 9, 'REQ-006, 007, 009, 012'], ['CR-0005', 'Explore: sections with live comments', 'applied', 1, 1, 'REQ-001, 002'],
+  ['CR-0003', 'Change requests across stages, and this page', 'applied', 1, 1, 'REQ-014, 005, 008'], ['CR-0006', 'Edit acceptance scenarios', 'applied', 1, 1, 'REQ-004, 005'],
+  ['CR-0007', 'Design as decisions with options', 'applied', 1, 1, 'REQ-013, 005'], ['CR-0008', 'Make every screen look like the mockup', 'progress', 3, 6, '—'],
+  ['CR-0009', 'Clickable mock made elsewhere', 'blocked:CR-0008', 0, 1, 'REQ-010, 005'], ['CR-0010', 'Opening a folder: four cases', 'blocked:CR-0009', 0, 1, 'REQ-012, 006'],
+  ['CR-0011', 'Ollama is the default provider', 'blocked:CR-0010', 0, 1, 'REQ-009'], ['CR-0012', 'Startup check and setup mode', 'blocked:CR-0011', 0, 1, 'REQ-009, 012, 005'],
+  ['CR-0013', 'Change packages as complete as hand-written ones', 'blocked:CR-0012', 0, 1, 'REQ-015, 003, 014'], ['CR-0014', 'Publish as keel-sdlc, without SQLite', 'blocked:CR-0013', 0, 1, 'REQ-012, 002, 008']
+];
+SCREENS.changes = () => {
+  const list = CRS.filter((c) => S.chFilter === 'all' || (S.chFilter === 'open' ? c[2] !== 'applied' : c[2] === 'applied'));
+  const status = (s) => s === 'applied' ? tag('Applied', 'ok') : s === 'progress' ? tag('In progress', 'blue') : tag('Approved · waiting for ' + s.split(':')[1]);
+  return `<div class="flex flex-col gap-6">
+    <div class="flex flex-wrap items-end justify-between gap-4"><div class="flex flex-col gap-1"><h1 class="text-2xl font-bold text-black">Changes</h1><p class="max-w-3xl text-k-muted">Every change request for this project, read from the changes/ folder. Status comes from each request’s header and the status of its tasks.</p></div>${btn('New change request', { icon: 'add' })}</div>
+    ${card(`<div class="flex flex-wrap items-center gap-4">${I('play_circle', 'text-[28px] text-k-blue')}<div class="flex min-w-0 flex-1 flex-col"><span class="text-xs text-k-muted">Next to apply</span><span class="text-base font-medium text-black">CR-0008 · Make every screen look like the mockup · 3 of 6 steps left</span><span class="text-[13px] text-k-sec">Paste its prompt into your coding agent. Keel follows the progress through the tasks and commits.</span></div>${btn(S.copied ? 'Copied' : 'Copy prompt for the agent', { act: 'copy' })}</div>`)}
+    ${card(`<div class="flex flex-col gap-4"><div class="flex items-center justify-between">${segmented([['open', 'Open'], ['applied', 'Applied'], ['all', 'All']], S.chFilter, 'chf')}<span class="text-xs text-k-muted">${CRS.filter((c) => c[2] !== 'applied').length} open · ${CRS.filter((c) => c[2] === 'applied').length} applied · read from changes/ just now</span></div>
+      <div class="overflow-hidden rounded-lg border border-k-line"><div class="grid grid-cols-[90px_minmax(0,2.4fr)_200px_minmax(0,1fr)_150px] gap-3 bg-[#f6f7f9] px-4 py-2.5 text-xs font-medium text-k-muted"><span>ID</span><span>Change</span><span>Status</span><span>Requirements</span><span>Tasks</span></div>
+      ${list.map(([id, t, s, d, n, r]) => `<a href="#change" class="grid grid-cols-[90px_minmax(0,2.4fr)_200px_minmax(0,1fr)_150px] items-center gap-3 border-t border-[#f0f2f5] px-4 py-2.5 hover:bg-k-page"><span class="font-mono text-xs font-semibold text-k-blue">${id}</span><span class="font-medium text-black">${t}</span><span>${status(s)}</span><span class="font-mono text-xs text-k-blue-dark">${r}</span><span class="flex flex-col gap-1"><span class="text-xs text-k-sec">${d} of ${n} done</span><span class="h-1 overflow-hidden rounded bg-k-line"><span class="block h-1 ${d === n ? 'bg-k-ok' : 'bg-k-blue'}" style="width:${Math.round(100 * d / n)}%"></span></span></span></a>`).join('')}</div></div>`)}
+  </div>`;
+};
+
+SCREENS.change = () => {
+  const SC = [['A hand-written change request is listed with its status', 'REQ-014'], ['Changing an approved intent raises a change request', 'REQ-014'], ['Approved changes mark later documents out of date', 'REQ-005']];
+  return `<div class="flex flex-col gap-6">
+    <div class="flex flex-wrap items-center justify-between gap-4"><div class="flex flex-col gap-1"><div class="flex items-center gap-4"><h1 class="text-2xl font-bold text-black">CR-0003 · Change requests across stages</h1>${tag('In progress', 'warn')}</div><span class="text-xs text-k-muted">Intent v2 → v3 · changes/CR-0003/CR-0003.md · <a href="#changes" class="text-k-blue">All change requests</a></span></div></div>
+    <div class="flex flex-wrap items-start gap-6"><div class="flex min-w-0 flex-[999_1_560px] flex-col gap-6">
+      ${card(`<div class="flex flex-col gap-3">${h2('1 · What changed in the intent')}<div class="rounded-lg bg-k-ok-soft px-3 py-1 font-mono text-xs text-[#00512e]">+ REQ-014 Change requests: flag later documents as out of date, show impact, approve, and send a change package to the agent</div></div>`)}
+      ${card(`<div class="flex flex-col gap-3">${h2('3 · Impact on later documents', 'By requirement. Choose what to do with each one.')}${[['spec.md v8', 'REQ-014 is new: requirement entry and design note.'], ['plan.md v10', 'New tasks for change requests.'], ['Acceptance scenarios', 'Scenarios for REQ-014.']].map(([d, w]) => `<div class="flex flex-col gap-2 rounded-lg border border-k-line p-3"><div class="flex justify-between"><span class="font-medium text-black">${d}</span>${tag('Out of date', 'warn')}</div><span class="text-k-sec">${w}</span><div class="flex gap-2">${btn('Update', { size: 'sm' })}${btn('Still valid', { v: 'outline', size: 'sm' })}${btn('Later', { v: 'text', size: 'sm' })}</div></div>`).join('')}</div>`)}
+      ${card(`<div class="flex flex-col gap-3.5"><div class="flex items-center justify-between">${h2('4 · Plan the change')}${S.planned ? tag('2 tasks · 3 scenarios suggested', 'blue') : tag('Not planned yet')}</div>
+        <p class="text-k-sec">The assistant breaks the change into new tasks, suggests scenarios, and names the files each task will touch from the code map (file and folder names only).</p>
+        ${!S.planned ? `<div class="flex items-center gap-3">${btn('Plan the change', { v: 'outline', act: 'plan' })}<span class="text-xs text-k-muted">One model call.</span></div>` : `
+        <span class="font-medium text-black">New tasks</span>
+        ${[['R18', 'Change requests: store, statuses and the Changes page', 'REQ-014', 'src/lib/changes/store.ts (new) · src/app/(project)/changes/page.tsx (new)'], ['R19', 'Impact by requirement and out-of-date flags', 'REQ-014 · REQ-005', 'src/lib/changes/impact.ts (new) · src/components/ui/StageBar.tsx']].map(([i, t, r, f]) => `<div class="flex flex-col gap-1 rounded-lg border border-k-line px-3 py-2.5"><div class="flex items-center gap-2"><span class="font-mono text-xs font-semibold">${i}</span><span class="font-medium text-black">${t}</span><span class="font-mono text-xs text-k-blue-dark">${r}</span><span class="flex-1"></span>${link('Edit', 'none')}</div><span class="font-mono text-[11px] text-k-muted">Likely: ${f}</span></div>`).join('')}
+        <span class="font-medium text-black">Suggested scenarios</span>
+        ${SC.map(([n, r]) => { const v = S.crScen[n]; return `<div class="flex flex-wrap items-center gap-2 rounded-lg px-3 py-2 ${v === 'accepted' ? 'border border-k-line' : v === 'cleared' ? 'border border-k-line opacity-55' : 'border border-dashed border-[#8fa8ff] bg-[#f7f9ff] italic'}"><span class="text-[13px] text-black">${n}</span><span class="font-mono text-[11px] text-k-blue-dark">${r}</span><span class="flex-1"></span>${!v ? link('Accept', 'scacc:' + n) + link('Clear', 'sccl:' + n, 'text-k-muted') : ''}${tag(v === 'accepted' ? 'Accepted' : v === 'cleared' ? 'Cleared' : 'Suggested', v === 'accepted' ? 'ok' : v ? 'gray' : 'blue')}</div>`; }).join('')}
+        <span class="font-medium text-black">Linked</span>
+        ${[['gavel', 'text-k-link', 'Decision record ADR-0014 "Change request format" is created by this change.'], ['photo_library', 'text-k-blue', 'Mock screens for REQ-014: 6b Changes, 6b2 Change request detail.'], ['account_tree', 'text-k-blue', 'Suggested depends_on: CR-0005.'], ['warning', 'text-[#b54708]', 'REQ-014 is also named as new in CR-0013. Renumber that one?']].map(([ic, c, t]) => `<div class="flex items-start gap-2 text-[13px]">${I(ic, 'text-[18px] ' + c)}<span>${t}</span></div>`).join('')}`}</div>`)}
+    </div><div class="flex min-w-0 flex-[1_1_380px] flex-col gap-6">
+      ${card(`<div class="flex flex-col gap-3"><div class="flex items-center justify-between">${h2('2 · Approve intent v3')}${tag('Approved', 'ok')}</div><p class="text-k-sec">Significant change: requirements added. Approved by Roberto Basile.</p></div>`)}
+      ${card(`<div class="flex flex-col gap-3">${h2('5 · Change package for the agent', 'Written from the change request, prompt and task templates.')}
+        ${[['description', 'CR-0003.md', 'change-request@2'], ['terminal', 'PROMPT.md', 'prompt@1'], ['task', 'tasks/R18.md', S.planned ? 'task@2' : 'after planning'], ['task', 'tasks/R19.md', S.planned ? 'task@2' : 'after planning'], ['list', 'changes/README.md', 'index rewritten']].map(([ic, n, note]) => `<div class="flex items-center gap-2">${I(ic, 'text-[16px] text-k-blue')}<span class="font-mono text-xs text-black">${n}</span><span class="text-xs text-k-muted">${note}</span></div>`).join('')}
+        ${btn('Write the package to changes/CR-0003', { disabled: !S.planned })}</div>`)}
+    </div></div></div>`;
+};
+
+SCREENS.roadmap = () => `<div class="flex flex-col gap-6">
+  <div class="flex items-end justify-between"><div><h1 class="text-2xl font-bold text-black">Roadmap</h1><p class="text-xs text-k-muted">PRJ-0001 · docs/roadmap.md · every change saved as a new version</p></div>${btn('Add idea', { icon: 'add' })}</div>
+  <div class="grid grid-cols-3 gap-6">${[['Now', 'Read-only, from the spec and plan', [['Brainstorm, intent, spec and plan', 'REQ-001 to REQ-005'], ['Change requests across stages', 'REQ-014 · CR-0003'], ['Screens matching the mockup', 'CR-0008 · in progress']]], ['Next', 'Approved direction, not started', [['Clickable mock prompts', 'CR-0009'], ['Ollama as the default', 'CR-0011']]], ['Later', 'Ideas, not scheduled', [['Multi-user roles', ''], ['Maintain stage', 'Own folder · parked']]]].map(([h, d, items]) => card(`<div class="flex flex-col gap-3"><div class="flex items-center justify-between">${h2(h, d)}<span class="text-xs text-k-muted">${items.length}</span></div>${items.map(([t, m]) => `<div class="flex flex-col gap-1 rounded-lg border border-k-line p-3"><span class="font-medium text-black">${t}</span>${m ? `<span class="text-xs text-k-muted">${m}</span>` : ''}</div>`).join('')}</div>`, 'p-5')).join('')}</div>
+</div>`;
+
+const TPL = { cr: ['Change request', 'v2', 'changes/CR-NNNN/CR-NNNN.md', [['Why', 1], ['What changes', 1], ['Requirement changes', 1], ['Impact by requirement', 1], ['Decisions', 0], ['Done when', 1]]], prompt: ['Prompt for the coding agent', 'v1', 'changes/CR-NNNN/PROMPT.md', [['Read first', 1], ['Steps', 1], ['Rules', 1], ['Report', 1]]], task: ['Task', 'v2', 'tasks/<ID>.md', [['Goal', 1], ['Scenarios that prove it', 1], ['Files that are likely to change', 0], ['As built', 0]]], intent: ['Standard intent', 'v4', 'docs/intent.md', [['Problem', 1], ['Who it is for', 1], ['Desired outcome', 1], ['Requirements', 1], ['Open questions', 0]]], spec: ['Requirements and design spec', 'v3', 'docs/spec.md', [['Requirements', 1], ['Design decisions', 1], ['Acceptance scenarios', 1], ['Feasibility', 1]]] };
+SCREENS.templates = () => {
+  const groups = [['Intent templates', ['intent']], ['Spec templates', ['spec']], ['Change requests · request, prompt, tasks and index', ['cr', 'prompt', 'task']]];
+  const t = TPL[S.tplSel];
+  return `<div class="flex flex-col gap-6"><div><h1 class="text-2xl font-bold text-black">Templates</h1><p class="text-k-muted">Templates define the metadata and sections of every document. They live in .keel/templates and are versioned with the project.</p></div>
+    <div class="flex flex-wrap items-start gap-6">${card(`<div class="flex flex-col gap-5">${groups.map(([g, ids]) => `<div class="flex flex-col gap-2"><div class="flex items-center justify-between"><span class="text-xs font-medium uppercase tracking-wide text-k-muted">${g}</span>${link('+ Create', 'none')}</div>${ids.map((id) => `<button data-act="tpl:${id}" class="flex flex-col gap-0.5 rounded-lg px-4 py-2 text-left ${S.tplSel === id ? 'bg-k-blue-soft' : 'hover:bg-k-page'}"><span class="flex justify-between"><span class="font-medium ${S.tplSel === id ? 'text-k-blue' : 'text-black'}">${TPL[id][0]}</span><span class="text-xs text-k-muted">${TPL[id][1]}</span></span><span class="text-xs text-k-muted">Default · used by ${id === 'cr' ? 13 : 3} documents</span></button>`).join('')}</div>`).join('')}</div>`, 'flex-[1_1_320px] p-5')}
+    ${card(`<div class="flex flex-col gap-4"><div class="flex items-center justify-between">${h2(t[0] + ' · ' + t[1], t[2])}${btn('Edit', { v: 'outline', size: 'sm' })}</div>${notice('info', 'Can’t be removed: used by documents in this folder', 'Move those documents to another template first.')}
+      <div class="overflow-hidden rounded-lg border border-k-line">${t[3].map(([s, r]) => `<div class="flex items-center justify-between border-b border-k-line px-4 py-2.5"><span class="text-black">${s}</span>${tag(r ? 'Required' : 'Optional', r ? 'blue' : 'gray')}</div>`).join('')}</div></div>`, 'flex-[999_1_520px] min-w-0')}</div></div>`;
+};
+
+SCREENS.settings = () => `<div class="mx-auto flex max-w-[1100px] flex-col gap-6">
+  <div class="flex items-end justify-between"><div><h1 class="text-2xl font-bold text-black">Settings</h1><p class="text-k-muted">Your keys and models stay on this computer. Project settings live in .keel/config.yml.</p></div>${btn('Save settings')}</div>
+  <div><h2 class="text-xl font-bold text-black">You, on this computer</h2><p class="font-mono text-xs text-k-muted">~/.config/keel · never committed</p></div>
+  ${card(`<div class="flex flex-col gap-4"><div class="flex items-center justify-between">${h2('Model provider', S.provider === 'local' ? 'The default. Runs on this computer: free, private, no key.' : 'Your own key. Usage is billed by the provider.')}${S.provider === 'local' ? tag(S.ollama === 'up' ? 'Running · 4 models' : 'Not running', S.ollama === 'up' ? 'ok' : 'warn') : tag('Not tested')}</div>
+    <div class="grid grid-cols-2 gap-4"><label class="flex flex-col gap-1.5"><span>Provider</span><span class="relative"><select data-change="provider" class="w-full appearance-none rounded-lg border border-k-muted bg-white px-4 py-2 pr-9 hover:border-k-blue">${[['local', 'Ollama (on this computer)'], ['anthropic', 'Anthropic'], ['openai', 'OpenAI'], ['azure', 'Azure OpenAI']].map(([v, l]) => `<option value="${v}" ${S.provider === v ? 'selected' : ''}>${l}</option>`).join('')}</select>${I('expand_more', 'pointer-events-none absolute right-3 top-2 text-k-muted')}</span></label>
+    ${S.provider === 'local' ? field('Server address', 'http://localhost:11434', { hint: 'No API key needed: nothing leaves this computer.' }) : field('API key', '••••••••••••••••4f2a', { hint: 'Stored encrypted in ~/.config/keel.' })}</div>
+    ${S.provider === 'local' ? (S.ollama === 'up' ? `<div class="overflow-hidden rounded-lg border border-k-line"><div class="grid grid-cols-[1.6fr_90px_90px_110px_1.4fr] gap-3 bg-[#f6f7f9] px-3 py-2 text-xs font-medium text-k-muted"><span>Model</span><span>Size</span><span>Parameters</span><span>Context</span><span>Good for</span></div>${[['qwen3:32b', '20 GB', '32B', '40K', 'Spec and plan; feasibility', 1], ['gpt-oss:20b', '14 GB', '20B', '128K', 'Long documents', 1], ['gemma3:12b', '8.1 GB', '12B', '128K', 'Section comments', 1], ['llama3.2:3b', '2.0 GB', '3B', '128K', 'Too small for the spec', 0]].map(([m, s, p, c, g, ok]) => `<div class="grid grid-cols-[1.6fr_90px_90px_110px_1.4fr] items-center gap-3 border-t border-[#f0f2f5] px-3 py-2 text-[13px]"><span class="font-mono text-xs text-black">${m}</span><span class="text-k-sec">${s}</span><span class="text-k-sec">${p}</span><span class="text-k-sec">${c}</span><span class="text-xs ${ok ? 'text-[#006b45]' : 'text-k-warn-text'}">${g}</span></div>`).join('')}</div>` : notice('warn', 'Ollama is not running', 'Start Ollama (open the app, or run ollama serve), then check again.')) : ''}
+    <div class="flex items-center gap-4">${btn(S.provider === 'local' ? 'Check again' : 'Test connection', { v: 'outline' })}${S.provider === 'local' ? link(S.ollama === 'up' ? 'Mockup: show “Ollama not running”' : 'Mockup: show running', 'ollama', 'text-k-muted') : ''}</div>
+    <h3 class="mt-2 text-base font-medium text-black">Model per task</h3><div class="grid grid-cols-2 gap-4">${select('Section comments', ['gemma3:12b · 12B', 'qwen3:32b · 32B'], 'gemma3:12b · 12B')}${select('Spec and plan', ['qwen3:32b · 32B', 'gpt-oss:20b · 20B'], 'qwen3:32b · 32B')}${select('Feasibility review', ['qwen3:32b · 32B'], 'qwen3:32b · 32B')}${field('Author name', 'Roberto Basile', { hint: 'From git config user.name' })}</div></div>`)}
+  <div><h2 class="text-xl font-bold text-black">This project</h2><p class="font-mono text-xs text-k-muted">/Users/roberto/keel/.keel/config.yml · committed with the project</p></div>
+  ${card(`<div class="flex flex-col gap-4"><div class="flex items-center justify-between">${h2('Templates for new documents')}<a href="#templates" class="text-k-blue">Manage templates</a></div><div class="grid grid-cols-2 gap-4">${select('Intent', ['Standard intent · v4'], '')}${select('Spec', ['Requirements and design spec · v3'], '')}${select('Plan', ['Implementation plan · v2'], '')}${select('Brainstorm style', ['Challenger · v1'], '')}${select('Task', ['Task · v2 (with As built)'], '')}${select('Change request', ['Change request · v2'], '')}${select('Prompt for the coding agent', ['Prompt for the coding agent · v1'], '')}${select('Changes index (changes/README.md)', ['Changes index · v1'], '')}</div></div>`)}
+  ${card(`<div class="flex flex-col gap-4">${h2('Folder, git and read-back')}<div class="grid grid-cols-3 gap-4">${field('Documents folder', 'docs')}${field('Tasks folder', 'tasks')}${field('Scenarios folder', 'features')}</div><div class="grid grid-cols-2 gap-4">${select('Commits', ['Commit Keel’s files automatically', 'Write files, I commit myself'], '')}${select('Check this folder for agent changes', ['Every minute and when I switch back to Keel'], '')}${select('Clickable mock before the plan', ['Recommended: warn if missing or out of date', 'Required', 'Off'], '', 'Applies when the Form decision has a UI')}${select('Code map for planning changes', ['File and folder names only (default)', 'Off', 'Names plus files I choose each time'], '')}</div></div>`)}
+</div>`;
+
+
+/* ---------- AI readiness report (on demand, any project type) ---------- */
+const RR = {
+  keel: {
+    label: 'Keel project', tone: 'blue', path: '/Users/roberto/keel',
+    found: 'Set up with Keel · AGENTS.md, CLAUDE.md, 3 subagents, 5 skills · Vitest, Playwright-bdd · CI on GitHub Actions',
+    files: [['AGENTS.md', true, ''], ['CLAUDE.md', true, ''], ['.claude/agents/ (3 files)', true, ''], ['.claude/skills/ (5 files)', true, ''], ['.keel/standards/ (4 files)', false, '']],
+    areas: [
+      ['Agent instructions', 'partly', 'AGENTS.md is complete, but one command is out of date.', 'AGENTS.md · package.json', 'model'],
+      ['Project knowledge', 'ready', 'Intent, spec, plan and 17 decision records, all current.', 'docs/ · docs/decisions/', 'rule'],
+      ['Verification', 'ready', 'Unit and BDD tests run in CI. Every requirement has a scenario.', 'features/ · .github/workflows/ci.yml', 'rule'],
+      ['Conventions', 'ready', '4 standards, each also a skill for the agent.', '.keel/standards/ · .claude/skills/', 'rule'],
+      ['Agent tooling', 'partly', 'The verifier subagent does not run the BDD scenarios.', '.claude/agents/verifier.md', 'model'],
+      ['Safety', 'partly', '.env.local is not covered by .gitignore.', '.gitignore', 'rule']
+    ],
+    mapping: null,
+    advice: [
+      ['a1', 'Fix the end-to-end command in AGENTS.md', 'AGENTS.md tells the agent to run npm run e2e, but package.json names it test:e2e. An agent following AGENTS.md will fail at the last check and may skip it.', 'AGENTS.md line 41 · package.json scripts', 'High', 'Small', 'Agent instructions', 'model', 'add'],
+      ['a2', 'Add .env*.local to .gitignore', 'Next.js reads keys from .env.local. Without the rule, a key could be committed by mistake.', '.gitignore · next.config.ts', 'High', 'Small', 'Safety', 'rule', 'add'],
+      ['a3', 'Let the verifier run the BDD scenarios', 'The verifier checks the unit tests only, so a task can be marked done while its scenario still fails.', '.claude/agents/verifier.md · features/', 'Medium', 'Small', 'Agent tooling', 'model', 'add']
+    ],
+    history: [['22/11/2026', 'This report', '3 ready · 3 partly · 0 missing'], ['02/11/2026', 'readiness-2026-11-02.md', '2 ready · 3 partly · 1 missing'], ['15/10/2026', 'readiness-2026-10-15.md', '1 ready · 2 partly · 3 missing']],
+    next: 'Create change request CR-0015'
+  },
+  existing: {
+    label: 'Existing project, no AI files', tone: 'warn', path: '/Users/roberto/billing-portal',
+    found: 'TypeScript · Next.js 15 · pnpm · Vitest (86 files) · README.md, docs/ · no AI agent files',
+    files: [['README.md', true, ''], ['docs/architecture.md', false, '']],
+    areas: [
+      ['Agent instructions', 'missing', 'No file tells a coding agent how to build, test or name things.', 'none found', 'rule'],
+      ['Project knowledge', 'partly', 'The README explains setup. Nothing records why the main choices were made.', 'README.md · docs/', 'model'],
+      ['Verification', 'partly', '86 test files, but CI runs lint only.', '.github/workflows/lint.yml', 'rule'],
+      ['Conventions', 'ready', 'ESLint and Prettier are configured.', '.eslintrc.json · .prettierrc', 'rule'],
+      ['Agent tooling', 'missing', 'No subagents or skills.', 'none found', 'rule'],
+      ['Safety', 'ready', '.env files are ignored. No keys found in tracked file names.', '.gitignore', 'rule']
+    ],
+    mapping: null,
+    advice: [
+      ['b1', 'Add AGENTS.md', 'An agent has to guess the package manager and commands today. Keel can draft it from package.json scripts and the README, so it starts correct.', 'package.json · pnpm-lock.yaml · README.md', 'High', 'Small', 'Agent instructions', 'rule', 'add'],
+      ['b2', 'Run the tests in CI', 'Agents change many files at once; tests that only run locally will be skipped sooner or later.', '.github/workflows/lint.yml · vitest.config.ts', 'High', 'Medium', 'Verification', 'rule', 'add'],
+      ['b3', 'Record the main decisions as a baseline', 'The README says the app moved from Express to Next.js but not why. An agent may undo a choice it does not know was deliberate.', 'README.md "History" section', 'Medium', 'Medium', 'Project knowledge', 'model', 'add'],
+      ['b4', 'Add a verifier subagent', 'Checks each task against its scenarios before it is marked done.', 'none found', 'Medium', 'Small', 'Agent tooling', 'rule', 'add'],
+      ['b5', 'Turn the ESLint config into a standard', 'The agent then reads the same rules as the linter, instead of learning them from errors.', '.eslintrc.json', 'Low', 'Small', 'Conventions', 'rule', 'ignore']
+    ],
+    history: [], next: 'Add to the baseline plan'
+  },
+  ai: {
+    label: 'Existing project with its own AI setup', tone: 'link', path: '/Users/roberto/billing-portal',
+    found: 'TypeScript · Next.js 15 · pnpm · AGENTS.md, CLAUDE.md, .cursor/rules (4), .github/copilot-instructions.md, .cursor/mcp.json',
+    files: [['AGENTS.md', true, ''], ['CLAUDE.md', true, ''], ['.cursor/rules/*.mdc (4 files)', true, ''], ['.github/copilot-instructions.md', true, ''], ['.cursor/mcp.json', false, 'May contain keys: never sent']],
+    areas: [
+      ['Agent instructions', 'partly', 'Three files give instructions, and two of them disagree.', 'CLAUDE.md · .github/copilot-instructions.md', 'model'],
+      ['Project knowledge', 'partly', 'Good README; no requirements or decision records.', 'README.md · docs/', 'rule'],
+      ['Verification', 'ready', 'Vitest in CI on every pull request.', '.github/workflows/ci.yml', 'rule'],
+      ['Conventions', 'ready', '4 Cursor rules cover naming, tests and API style.', '.cursor/rules/', 'rule'],
+      ['Agent tooling', 'partly', 'The rules work in Cursor only; other agents do not see them.', '.cursor/rules/', 'model'],
+      ['Safety', 'missing', '.cursor/mcp.json holds a value named apiKey and is tracked by git.', '.cursor/mcp.json', 'rule']
+    ],
+    mapping: [
+      ['AGENTS.md', 'AGENTS.md', 'Keep', 'Keel adds its own section at the end, between markers.'],
+      ['CLAUDE.md', 'Points to AGENTS.md', 'Point to', 'Its pnpm and test notes move into AGENTS.md first.'],
+      ['.github/copilot-instructions.md', 'Points to AGENTS.md', 'Point to', 'It says npm; the project uses pnpm.'],
+      ['.cursor/rules/*.mdc', '.keel/standards/', 'Adopt', 'Copied as standards, so every agent gets them. The originals stay.'],
+      ['docs/ (documentation site)', 'keel/docs', 'Keep', 'Keel keeps its documents in keel/ to avoid a clash.']
+    ],
+    advice: [
+      ['c1', 'Remove the key from .cursor/mcp.json', 'The file is tracked by git, so the key is in the history. Move it to an environment variable and rotate the key.', '.cursor/mcp.json · git ls-files', 'High', 'Small', 'Safety', 'rule', 'add'],
+      ['c2', 'Make AGENTS.md the single source', 'CLAUDE.md says pnpm and Copilot instructions say npm. Agents will install with the wrong tool and change the lockfile.', 'CLAUDE.md line 3 · copilot-instructions.md line 8', 'High', 'Small', 'Agent instructions', 'model', 'add'],
+      ['c3', 'Adopt the Cursor rules as standards', 'They are good rules, but only Cursor reads them.', '.cursor/rules/naming.mdc and 3 more', 'Medium', 'Small', 'Agent tooling', 'model', 'adopt'],
+      ['c4', 'Record requirements and decisions as a baseline', 'Gives the next change something to trace against.', 'README.md · docs/', 'Medium', 'Medium', 'Project knowledge', 'rule', 'add']
+    ],
+    history: [], next: 'Add to the baseline plan'
+  },
+  new: {
+    label: 'New, empty folder', tone: 'gray', path: '/Users/roberto/expense-tracker',
+    found: 'Empty folder · not a git repository',
+    files: [],
+    areas: [['Agent instructions', 'missing', 'Nothing yet.', 'none found', 'rule'], ['Project knowledge', 'missing', 'Nothing yet.', 'none found', 'rule'], ['Verification', 'missing', 'Nothing yet.', 'none found', 'rule'], ['Conventions', 'missing', 'Nothing yet.', 'none found', 'rule'], ['Agent tooling', 'missing', 'Nothing yet.', 'none found', 'rule'], ['Safety', 'missing', 'No .gitignore yet.', 'none found', 'rule']],
+    mapping: null,
+    advice: [['d1', 'Initialise the folder with Keel', 'Everything above is created by Keel as you go: .keel/ now, documents as you approve them, agent files at handoff. Running this report again after handoff shows what is left.', 'empty folder', 'High', 'Small', 'All areas', 'rule', 'add']],
+    history: [], next: 'Initialise this folder'
+  }
+};
+const RATE = { ready: ['Ready', 'ok', 'check_circle', 'text-k-ok'], partly: ['Partly', 'warn', 'error', 'text-[#b35a00]'], missing: ['Missing', 'bad', 'cancel', 'text-k-bad'] };
+const RR_STEPS = ['Scan the folder (names only, no model)', 'Agent instructions', 'Project knowledge', 'Verification', 'Conventions', 'Agent tooling', 'Safety', 'Check every advice against the scan'];
+SCREENS.readiness = () => {
+  const D = RR[S.rrKind];
+  const tick = (f) => S.rrRead[S.rrKind + f[0]] ?? f[1];
+  const nRead = D.files.filter((f) => !f[2] && tick(f)).length;
+  const head = `<div class="flex flex-wrap items-start justify-between gap-4"><div class="flex max-w-3xl flex-col gap-1"><div class="flex flex-wrap items-center gap-3"><h1 class="text-2xl font-bold text-black">AI readiness report</h1>${tag(D.label, D.tone)}</div>
+    <p class="text-k-muted">Checks how ready this folder is for coding agents, and suggests what to add and why. Runs only when you ask. Works for any folder: new, existing, with or without AI files, and Keel projects.</p><span class="font-mono text-xs text-k-muted">${D.path}</span></div>
+    ${S.rrPhase === 'done' ? btn('Run again', { v: 'outline', icon: 'refresh', act: 'rrrun' }) : ''}</div>`;
+  const setupCard = card(`<div class="flex flex-col gap-5">${h2('Run the check')}
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2 rounded-lg border border-k-line p-4"><span class="flex items-center gap-2 font-medium text-black">${I('folder_open', 'text-[20px] text-k-blue')}1 · Scan this folder</span><span class="text-[13px] text-k-sec">Reads file names and manifests and compares them with the Keel standard. No model call; nothing leaves this computer.</span><span class="text-xs text-k-muted">Found: ${D.found}</span></div>
+      <div class="flex flex-col gap-2 rounded-lg border border-k-line p-4"><span class="flex items-center gap-2 font-medium text-black">${I('smart_toy', 'text-[20px] text-k-blue')}2 · Model review</span><span class="text-[13px] text-k-sec">Explains each gap for this project, puts the advice in order and reviews the AI files you choose below.</span><span class="text-xs text-k-muted">Model: qwen3:32b · Ollama, on this computer · from Settings, “Feasibility review”</span></div>
+    </div>
+    ${D.files.length ? `<div class="flex flex-col gap-2"><span class="font-medium text-black">Files the model may read</span><span class="text-xs text-k-muted">Without a tick, only the file name is sent.</span>
+      <div class="flex flex-col rounded-lg border border-k-line">${D.files.map((f) => `<label class="flex items-center gap-3 border-b border-[#f0f2f5] px-4 py-2 last:border-0 ${f[2] ? 'opacity-60' : 'cursor-pointer hover:bg-k-page'}"><input type="checkbox" ${f[2] ? 'disabled' : ''} ${!f[2] && tick(f) ? 'checked' : ''} data-act="rrread:${f[0]}" class="h-4 w-4 accent-[#3366ff]"><span class="font-mono text-xs text-black">${f[0]}</span>${f[2] ? `<span class="text-xs text-k-bad">${f[2]}</span>` : ''}</label>`).join('')}</div></div>` : notice('info', 'Nothing to read in this folder', 'The check runs on file names only.')}
+    <div class="flex flex-wrap items-center gap-3 rounded-lg bg-[#f6f7f9] px-4 py-3 text-[13px] text-k-sec">${I('upload', 'text-[18px] text-k-muted')}<span>Sent to the model: <strong class="text-black">file and folder names</strong>${nRead ? ` and <strong class="text-black">${nRead} item${nRead > 1 ? 's' : ''} you ticked</strong>` : ''}. Never keys, .env files or files you did not tick.</span></div>
+    <div class="flex items-center gap-3">${btn('Run the check', { icon: 'play_arrow', act: 'rrrun' })}<span class="text-xs text-k-muted">About ${D.files.length ? '40' : '15'} s with this model · ${RR_STEPS.length - 2} short calls, one per area</span></div></div>`);
+  const runCard = card(`<div class="flex flex-col gap-3">${h2('Checking…')}${RR_STEPS.map((s, i) => { const st = i < S.rrStep ? 'done' : i === S.rrStep ? 'now' : 'wait'; return `<div class="flex items-center gap-3 ${st === 'wait' ? 'text-k-muted' : 'text-black'}">${st === 'done' ? I('check_circle', 'text-[20px] text-k-ok') : st === 'now' ? I('progress_activity', 'text-[20px] text-k-blue pulse2') : I('radio_button_unchecked', 'text-[20px] text-k-line-2')}<span>${s}</span>${i === 0 && st === 'done' ? '<span class="text-xs text-k-muted">0.3 s · no model</span>' : ''}${i > 0 && i < 7 && st === 'now' ? '<span class="text-xs text-k-blue">qwen3:32b</span>' : ''}</div>`; }).join('')}
+    <span class="text-xs text-k-muted">You can leave this page; the report is saved when it finishes.</span></div>`);
+  if (S.rrPhase !== 'done') return `<div class="mx-auto flex max-w-[1000px] flex-col gap-6">${mockbar([['keel', 'Keel project'], ['existing', 'Existing, no AI'], ['ai', 'Own AI setup'], ['new', 'New folder']], S.rrKind, 'rrkind')}${head}${S.rrPhase === 'running' ? runCard : setupCard}</div>`;
+
+  const counts = ['ready', 'partly', 'missing'].map((r) => [r, D.areas.filter((a) => a[1] === r).length]);
+  const act = (a) => S.rrAdv[a[0]] ?? a[8];
+  const chosen = D.advice.filter((a) => act(a) !== 'ignore').length;
+  const src = (s) => s === 'model' ? tag(I('smart_toy', 'text-[13px]') + 'Model review', 'purple') : tag(I('rule', 'text-[13px]') + 'Scan', 'gray');
+  return `<div class="mx-auto flex max-w-[1100px] flex-col gap-6">
+    ${mockbar([['keel', 'Keel project'], ['existing', 'Existing, no AI'], ['ai', 'Own AI setup'], ['new', 'New folder']], S.rrKind, 'rrkind')}
+    ${head}
+    ${card(`<div class="flex flex-wrap items-center gap-6"><div class="flex gap-3">${counts.map(([r, n]) => `<div class="flex min-w-24 flex-col items-center rounded-lg px-4 py-2 ${r === 'ready' ? 'bg-k-ok-soft' : r === 'partly' ? 'bg-k-warn-soft' : 'bg-k-bad-soft'}"><span class="text-2xl font-bold ${RATE[r][3]}">${n}</span><span class="text-xs text-k-sec">${RATE[r][0]}</span></div>`).join('')}</div>
+      <div class="flex min-w-0 flex-1 flex-col gap-1"><span class="text-base font-medium text-black">${D.advice.length} piece${D.advice.length > 1 ? 's' : ''} of advice · ${D.advice.filter((a) => a[4] === 'High').length} high impact</span><span class="text-xs text-k-muted">22/11/2026 17:40 · scan 0.3 s · model review with qwen3:32b, 38 s · read ${nRead} of ${D.files.length} ticked items</span><span class="text-xs text-k-muted">Saved to <span class="font-mono">.keel/reports/readiness-2026-11-22.md</span>${S.rrKind === 'keel' ? ' · committed' : ' · committed when the folder is initialised'}</span></div>
+      ${btn('Open as markdown', { v: 'text', icon: 'description' })}</div>`)}
+    <div class="grid grid-cols-3 gap-4">${D.areas.map(([n, r, t, ev, s]) => `<div class="flex flex-col gap-2 rounded-card bg-white p-5 shadow-card"><div class="flex items-center gap-2">${I(RATE[r][2], 'text-[20px] ' + RATE[r][3])}<span class="font-medium text-black">${n}</span><span class="flex-1"></span>${tag(RATE[r][0], RATE[r][1])}</div><span class="text-[13px] text-k-sec">${t}</span><span class="font-mono text-[11px] text-k-muted">${ev}</span>${s === 'model' ? '<span class="text-[11px] text-[#6b3fb3]">Found by the model review</span>' : ''}</div>`).join('')}</div>
+    ${D.mapping ? card(`<div class="flex flex-col gap-4">${h2('Your AI files and the Keel standard', 'Nothing is overwritten. Each choice is applied only when you accept the advice below.')}
+      <div class="overflow-hidden rounded-lg border border-k-line"><div class="grid grid-cols-[1.3fr_1fr_100px_1.8fr] gap-3 bg-[#f6f7f9] px-4 py-2 text-xs font-medium text-k-muted"><span>Your file</span><span>Keel equivalent</span><span>Proposal</span><span>Note</span></div>
+      ${D.mapping.map(([a, b, p, n]) => `<div class="grid grid-cols-[1.3fr_1fr_100px_1.8fr] items-center gap-3 border-t border-[#f0f2f5] px-4 py-2"><span class="font-mono text-xs text-black">${a}</span><span class="font-mono text-xs text-k-sec">${b}</span><span>${tag(p, p === 'Keep' ? 'gray' : p === 'Adopt' ? 'ok' : 'blue')}</span><span class="text-xs text-k-sec">${n}</span></div>`).join('')}</div></div>`) : ''}
+    ${card(`<div class="flex flex-col gap-4"><div class="flex items-center justify-between">${h2('Advice', 'In order of impact. Every item names the files it is based on; advice the scan could not confirm is dropped.')}<span class="text-xs text-k-muted">Add: Keel creates or changes it · Adopt: keep yours, Keel uses it · Ignore: hidden next time</span></div>
+      ${D.advice.map((a, i) => { const v = act(a); return `<div class="flex flex-col gap-2 rounded-lg border px-4 py-3.5 ${v === 'ignore' ? 'border-k-line opacity-60' : 'border-k-line'}">
+        <div class="flex flex-wrap items-center gap-2"><span class="grid h-6 w-6 place-items-center rounded-full bg-k-blue-soft text-xs font-semibold text-k-blue-dark">${i + 1}</span><span class="text-base font-medium text-black">${a[1]}</span>${tag(a[6])}<span class="flex-1"></span>${segmented([['add', 'Add'], ['adopt', 'Adopt'], ['ignore', 'Ignore']], v, 'rradv-' + a[0])}</div>
+        <p class="pl-8 text-k-body">${a[2]}</p>
+        <div class="flex flex-wrap items-center gap-2 pl-8">${tag('Impact: ' + a[4], a[4] === 'High' ? 'bad' : a[4] === 'Medium' ? 'warn' : 'gray')}${tag('Effort: ' + a[5])}${src(a[7])}<span class="font-mono text-[11px] text-k-muted">Based on: ${a[3]}</span></div></div>`; }).join('')}
+      <div class="flex flex-wrap items-center gap-3 border-t border-k-line pt-4">${btn(D.next + ` (${chosen})`, { disabled: !chosen, act: 'rrnext' })}<span class="text-xs text-k-muted">${S.rrKind === 'keel' ? 'Accepted advice becomes one change request with a task per item, ready for your coding agent.' : S.rrKind === 'new' ? 'Opens Initialise.' : 'Accepted advice goes into the baseline plan; Keel writes the files at handoff.'}</span></div>
+      ${S.rrDone ? notice('ok', S.rrKind === 'keel' ? 'CR-0015 created as a draft' : 'Added to the baseline plan', S.rrKind === 'keel' ? `${chosen} tasks, one per advice item. <a href="#changes" class="font-medium text-k-blue">Open Changes</a>` : `${chosen} items. They appear in Plan once the baseline is drafted.`) : ''}</div>`)}
+    ${card(`<div class="flex flex-col gap-3">${h2('Earlier reports', 'Stored in .keel/reports. Compare to see what improved.')}${D.history.length ? D.history.map(([d, f, c], i) => `<div class="flex items-center gap-4 border-b border-[#f0f2f5] pb-2 last:border-0"><span class="w-24 text-xs text-k-muted">${d}</span><span class="font-mono text-xs ${i ? 'text-k-blue' : 'text-black'}">${f}</span><span class="flex-1 text-[13px] text-k-sec">${c}</span>${i ? link('Compare', 'none') : tag('Latest', 'blue')}</div>`).join('') : '<span class="text-[13px] text-k-muted">This is the first report for this folder.</span>'}</div>`)}
+  </div>`;
+};
+
+const simple = (title, text) => `<div class="flex flex-col gap-6"><h1 class="text-2xl font-bold text-black">${title}</h1>${card(`<p class="text-k-sec">${text}</p><p class="mt-3 text-xs text-k-muted">This screen is not rebuilt in the Tailwind version yet. The original clickable mockup has it.</p>`)}</div>`;
+SCREENS.setup = () => simple('Project setup', 'Change the title, description, templates, brainstorm style or standards. Saved to .keel/config.yml as a Keel commit.');
+SCREENS.styles = () => simple('Brainstorm styles', 'Versioned skill files in .keel/styles: Challenger, Coach, Cost and value, Market, Engineering-first.');
+SCREENS.standards = () => simple('Standards', 'Conventions and guidelines in .keel/standards that the spec, plan and code are checked against.');
+
+/* ---------- render and events ---------- */
+function render() {
+  const fn = SCREENS[S.route] || SCREENS.open;
+  document.getElementById('app').innerHTML = shell(fn());
+}
+function route() { const r = location.hash.slice(1); S.route = SCREENS[r] ? r : 'open'; render(); window.scrollTo(0, 0); }
+window.addEventListener('hashchange', route);
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const [a, b, c] = el.dataset.act.split(':');
+  const F = S.fields;
+  if (a.startsWith('rradv-')) { S.rrAdv[a.slice(6)] = b; render(); return; }
+  switch (a) {
+    case 'check': set({ check: b }); break;
+    case 'recheck': set({ checking: true }); setTimeout(() => set({ checking: false, check: 'ok' }), 1200); break;
+    case 'initcase': set({ initCase: b }); break;
+    case 'initpath': set({ initPath: b }); break;
+    case 'fold': S.openFolders[b] = !S.openFolders[b]; render(); break;
+    case 'focus': if (S.active !== b) { set({ active: b }); } break;
+    case 'apply': F[b].v = F[b].c[2]; F[b].applied = true; set({ reviewing: true }); setTimeout(() => { F[b].c = ['ok', 'Specific, and it lines up with the other sections.']; set({ reviewing: false }); }, 1200); break;
+    case 'dismiss': F[b].c = [F[b].c[0], F[b].c[1]]; render(); break;
+    case 'accept': F[b].sug = false; set({ reviewing: true }); setTimeout(() => { F[b].c = ['ok', 'Specific and testable.']; set({ reviewing: false }); }, 1200); break;
+    case 'clear': F[b].v = ''; F[b].sug = false; F[b].c = ['ask', 'What does better look like?']; render(); break;
+    case 'spectab': set({ specTab: b }); break;
+    case 'decedit': S.dec[b + ':edit'] = true; render(); break;
+    case 'decpick': S.dec[b + ':pick'] = c; render(); break;
+    case 'decide': { const t = TOPICS.find((x) => x[0] === b); S.dec[b] = S.dec[b + ':pick'] ?? S.dec[b] ?? t[4] ?? t[3].find((o) => o[2])[0]; S.dec[b + ':edit'] = false; render(); break; }
+    case 'copy': set({ copied: true }); break;
+    case 'readme': set({ readme: b }); break;
+    case 'write': set({ written: true }); break;
+    case 'push': set({ pushed: true }); break;
+    case 'chf': set({ chFilter: b }); break;
+    case 'plan': set({ planned: true }); break;
+    case 'scacc': S.crScen[el.dataset.act.slice(6)] = 'accepted'; render(); break;
+    case 'sccl': S.crScen[el.dataset.act.slice(5)] = 'cleared'; render(); break;
+    case 'tpl': set({ tplSel: b }); break;
+    case 'rrkind': set({ rrKind: b, rrPhase: S.rrPhase === 'done' ? 'done' : 'idle', rrDone: false }); break;
+    case 'rrread': { const k = S.rrKind + el.dataset.act.slice(7); const f = RR[S.rrKind].files.find((x) => S.rrKind + x[0] === k); S.rrRead[k] = !(S.rrRead[k] ?? f[1]); render(); break; }
+    case 'rrrun': { set({ rrPhase: 'running', rrStep: 0, rrDone: false }); const tickStep = () => { if (S.route !== 'readiness') { S.rrPhase = 'done'; return; } if (S.rrStep >= RR_STEPS.length - 1) { set({ rrPhase: 'done' }); return; } set({ rrStep: S.rrStep + 1 }); setTimeout(tickStep, 350); }; setTimeout(tickStep, 350); break; }
+    case 'rrnext': if (S.rrKind === 'new') { location.hash = 'init'; } else set({ rrDone: true }); break;
+    case 'ollama': set({ ollama: S.ollama === 'up' ? 'down' : 'up' }); break;
+  }
+});
+document.addEventListener('change', (e) => { if (e.target.dataset.change === 'provider') set({ provider: e.target.value }); });
+route();
+</script>
+</body>
+</html>

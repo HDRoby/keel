@@ -19,9 +19,144 @@ a{color:#3366ff}a:hover{color:#2447b3}
 <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Navigation" groups="{{groups}}" active-id="init" brand="{{brand}}" header-bar="{{headerBar}}">
 <div style="box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 24px; font-family: var(--font-body, Arial); color: var(--text-body, #25282d); max-width: 960px;">
   <div style="display: flex; flex-direction: column; gap: 4px;">
-    <h1 style="margin: 0; font-size: 24px; line-height: 28.13px; font-weight: 700; color: var(--text-primary, #000);">Initialise this folder</h1>
-    <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--text-muted, #6b7180);">This folder has no .keel/ yet. Describe the idea and pick the templates, brainstorm style and standards. Keel copies them into .keel/ in this folder, so they are versioned with the project.</p>
+    <h1 style="margin: 0; font-size: 24px; line-height: 28.13px; font-weight: 700; color: var(--text-primary, #000);">{{pageTitle}}</h1>
+    <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--text-muted, #6b7180);">{{introText}}</p>
   </div>
+
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 8px 12px; border: 1px dashed #b6bcc6; border-radius: 8px; font-size: 12px; line-height: 16px; color: #6b7180;">
+    <span>Mockup only, try the four cases:</span>
+    <sc-for list="{{caseTabs}}" as="ct" hint-placeholder-count="4">
+      <button type="button" onClick="{{ct.pick}}" style="{{ct.style}}">{{ct.label}}</button>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{showFound}}" hint-placeholder-val="{{ true }}">
+    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;">
+          <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">What Keel found</h2>
+          <span style="{{caseTagStyle}}">{{caseTag}}</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; padding: 12px 14px; border-radius: 8px; background: #f6f7f9;">
+          <sc-for list="{{facts}}" as="fc" hint-placeholder-count="6">
+            <div style="display: flex; align-items: flex-start; gap: 8px; min-width: 0;">
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{fc.icon}}" size="4" color="{{fc.color}}"></x-import>
+              <div style="display: flex; flex-direction: column; min-width: 0;">
+                <span style="font-size: 12px; line-height: 16px; color: #6b7180;">{{fc.label}}</span>
+                <span style="font-size: 13px; line-height: 19px; color: #000;">{{fc.value}}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <span style="font-size: 12px; line-height: 16px; color: #6b7180;">Found by reading file names and manifests on this computer. Nothing was sent to a model and nothing was written.</span>
+
+        <sc-if value="{{hasPaths}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">How do you want to start?</span>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+              <sc-for list="{{paths}}" as="pa" hint-placeholder-count="2">
+                <button type="button" onClick="{{pa.pick}}" style="{{pa.style}}">
+                  <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                    <span style="font-size: 14px; line-height: 20px; font-weight: 600; color: #000; text-align: left;">{{pa.name}}</span>
+                    <span style="{{pa.recStyle}}">Recommended</span>
+                  </span>
+                  <span style="font-size: 13px; line-height: 18px; color: #434952; text-align: left;">{{pa.desc}}</span>
+                  <span style="font-size: 12px; line-height: 16px; color: #006b45; text-align: left;">+ {{pa.pro}}</span>
+                  <span style="font-size: 12px; line-height: 16px; color: #8a5a00; text-align: left;">− {{pa.con}}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{showBaseline}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 1px solid #e0e5e8; border-radius: 8px;">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Draft the baseline from this folder</span>
+              <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; line-height: 18px; color: #25282d; cursor: pointer;">
+                <input type="checkbox" checked="{{readWithModel}}" onChange="{{toggleRead}}">
+                Let the assistant read these files
+              </label>
+            </div>
+            <span style="font-size: 13px; line-height: 19px; color: #434952;">The assistant drafts the intent, the "as built" requirements and the design decisions as suggestions you accept or change. Only the files ticked below are sent to your model provider.</span>
+            <sc-if value="{{readWithModel}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; border: 1px solid #e0e5e8; border-radius: 8px; overflow: hidden;">
+                <sc-for list="{{baseFiles}}" as="bf" hint-placeholder-count="6">
+                  <label style="display: grid; grid-template-columns: 24px minmax(0, 1fr) minmax(0, 1.2fr) 70px; gap: 10px; align-items: center; padding: 6px 12px; border-top: 1px solid #f0f2f5; font-size: 13px; line-height: 18px; cursor: pointer;">
+                    <input type="checkbox" checked="{{bf.on}}" onChange="{{bf.toggle}}">
+                    <span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #000;">{{bf.path}}</span>
+                    <span style="color: #6b7180; font-size: 12px;">{{bf.why}}</span>
+                    <span style="color: #6b7180; font-size: 12px; text-align: right;">{{bf.size}}</span>
+                  </label>
+                </sc-for>
+              </div>
+              <span style="font-size: 12px; line-height: 16px; color: #6b7180;">{{baseSummary}}</span>
+            </sc-if>
+            <sc-if value="{{notReading}}" hint-placeholder-val="{{ false }}">
+              <span style="font-size: 12px; line-height: 16px; color: #6b7180;">Nothing will be read. You fill in the baseline sections yourself in Explore; the detected stack is still offered as "Keep current".</span>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{showAgentFiles}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 1px solid #e0e5e8; border-radius: 8px;">
+            <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Your existing AI setup</span>
+            <span style="font-size: 13px; line-height: 19px; color: #434952;">Keel uses what is already here and merges with it at handoff. It never replaces these files.</span>
+            <div style="display: flex; flex-direction: column; border: 1px solid #e0e5e8; border-radius: 8px; overflow: hidden;">
+              <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 12px; padding: 8px 12px; background: #f6f7f9; font-size: 12px; line-height: 16px; font-weight: 500; color: #6b7180;">
+                <span>Found</span><span>What Keel does with it</span>
+              </div>
+              <sc-for list="{{agentFiles}}" as="af" hint-placeholder-count="5">
+                <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 12px; align-items: start; padding: 8px 12px; border-top: 1px solid #f0f2f5; font-size: 13px; line-height: 19px;">
+                  <span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #000;">{{af.path}}</span>
+                  <span style="color: #25282d;">{{af.action}}</span>
+                </div>
+              </sc-for>
+            </div>
+            <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000; padding-top: 4px;">Rules found in your agent files, proposed as project standards</span>
+            <sc-for list="{{rules}}" as="ru" hint-placeholder-count="5">
+              <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; line-height: 19px; color: #25282d; cursor: pointer;">
+                <input type="checkbox" checked="{{ru.on}}" onChange="{{ru.toggle}}">
+                <span style="flex: 1 1 auto;">{{ru.text}}</span>
+                <span style="font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: #6b7180;">{{ru.from}}</span>
+              </label>
+            </sc-for>
+            <span style="font-size: 12px; line-height: 16px; color: #6b7180;">{{rulesSummary}}</span>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="warning" title="docs/ is already used by your documentation site" standalone="{{yes}}">Keel will keep its documents in keel/docs, keel/tasks and keel/features instead. You can change this in Settings later.</x-import>
+          </div>
+        </sc-if>
+      </div>
+    </x-import>
+  </sc-if>
+
+  <sc-if value="{{isKeelCase}}" hint-placeholder-val="{{ false }}">
+    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;">
+          <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">This folder already uses Keel</h2>
+          <span style="font-size: 12px; line-height: 16px; padding: 1px 8px; border-radius: 999px; background: #e6f6ec; color: #1a7f43;">Keel · PRJ-0001 · Plan v4 approved</span>
+        </div>
+        <span style="font-size: 14px; line-height: 20px; color: #434952;">Keel checked the folder before opening it.</span>
+        <sc-for list="{{keelChecks}}" as="kc" hint-placeholder-count="4">
+          <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; background: #f6f7f9;">
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{kc.icon}}" size="5" color="{{kc.color}}"></x-import>
+            <div style="display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto;">
+              <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{kc.title}}</span>
+              <span style="font-size: 13px; line-height: 19px; color: #434952;">{{kc.text}}</span>
+            </div>
+          </div>
+        </sc-for>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <a href="Handoff.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">Upgrade the config and open Handoff</a>
+          <a href="Handoff.dc.html" style="display: inline-flex; align-items: center; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #6b7180; border-radius: 8px; color: #25282d; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">Review the 2 changes first</a>
+        </div>
+        <span style="font-size: 12px; line-height: 16px; color: #6b7180;">You normally do not see this screen: Keel opens a Keel folder at its current stage and shows these checks only when something needs attention.</span>
+      </div>
+    </x-import>
+  </sc-if>
+
+  <sc-if value="{{showForm}}" hint-placeholder-val="{{ true }}">
+  <div style="display: flex; flex-direction: column; gap: 24px;">
 
   <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
     <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -29,9 +164,14 @@ a{color:#3366ff}a:hover{color:#2447b3}
         <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Project folder</h2>
         <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="gray" icon="folder">One project per folder</x-import>
       </div>
-      <span style="font-family: ui-monospace, Menlo, monospace; font-size: 14px; line-height: 20px; color: #000;">/Users/roberto/keel</span>
+      <span style="font-family: ui-monospace, Menlo, monospace; font-size: 14px; line-height: 20px; color: #000;">{{folderPath}}</span>
       <span style="font-size: 14px; line-height: 20px; color: #434952;">This is also the repository your coding agent builds in. Keel writes its documents to docs/, tasks/ and features/, and commits only its own files.</span>
-      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="info" title="Not a git repository yet" standalone="{{yes}}">Keel will run git init here when you initialise.</x-import>
+      <sc-if value="{{isNewCase}}" hint-placeholder-val="{{ true }}">
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="info" title="Not a git repository yet" standalone="{{yes}}">Keel will run git init here when you initialise.</x-import>
+      </sc-if>
+      <sc-if value="{{isExistingCase}}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 13px; line-height: 19px; color: #434952;">Git repository on branch main. Keel commits only its own files; your code and your uncommitted changes are left alone.</span>
+      </sc-if>
       <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">API keys and your personal settings stay in your user folder (~/.config/keel), never in this project.</span>
     </div>
   </x-import>
@@ -219,16 +359,18 @@ a{color:#3366ff}a:hover{color:#2447b3}
   </x-import>
 
   <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-    <a href="NewIdea.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">
+    <a href="{{primaryHref}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">
       <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="forum" size="5"></x-import>
-      Initialise and start brainstorm
+      {{primaryLabel}}
     </a>
     <a href="Main.dc.html" style="display: inline-flex; align-items: center; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border-radius: 8px; color: #25282d; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">Cancel (nothing is written)</a>
   </div>
+  </div>
+  </sc-if>
 </div>
 </x-import>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2100}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2700}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -242,6 +384,33 @@ class Component extends DCLogic {
       { id: 'std', name: 'Standard intent · v3', tag: 'Default', desc: 'For most ideas. The assistant covers users, scope and constraints as well as the problem.', sections: 'Problem*, Who it is for*, Desired outcome*, Scope, Constraints, Open questions' },
       { id: 'light', name: 'Lightweight intent · v1', tag: '3 sections', desc: 'For small changes. A short brainstorm that goes straight to requirements.', sections: 'Problem*, Outcome*, Requirements*' }
     ];
+    const kase = st.kase || 'new';
+    const path = st.path || 'baseline';
+    const off = st.off || {};
+    const ruleOff = st.ruleOff || {};
+    const pillC = (bg, fg) => 'font-size: 12px; line-height: 16px; padding: 1px 8px; border-radius: 999px; background: ' + bg + '; color: ' + fg + ';';
+    const FACTS = {
+      'new': [['folder', '#6b7180', 'Folder', 'Empty'], ['commit', '#6b7180', 'Git', 'Not a repository'], ['code', '#6b7180', 'Code', 'None'], ['smart_toy', '#6b7180', 'AI agent files', 'None']],
+      'existing': [['commit', '#3366ff', 'Git', 'Repository · 412 commits · 3 contributors'], ['code', '#3366ff', 'Code', 'TypeScript · Next.js 15 · pnpm'], ['description', '#3366ff', 'Docs', 'README.md · docs/ (documentation site)'], ['science', '#3366ff', 'Tests', 'Vitest · 86 test files'], ['smart_toy', '#6b7180', 'AI agent files', 'None'], ['folder', '#6b7180', 'Keel', 'Not set up']],
+      'ai': [['commit', '#3366ff', 'Git', 'Repository · 412 commits · 3 contributors'], ['code', '#3366ff', 'Code', 'TypeScript · Next.js 15 · pnpm'], ['description', '#3366ff', 'Docs', 'README.md · docs/ (documentation site)'], ['science', '#3366ff', 'Tests', 'Vitest · 86 test files'], ['smart_toy', '#7b4fd6', 'AI agent files', 'AGENTS.md · CLAUDE.md · .cursor/rules · specs/ (Spec Kit)'], ['folder', '#6b7180', 'Keel', 'Not set up']]
+    };
+    const CASE = {
+      'new': { tag: 'New project', tagStyle: pillC('#e8eeff', '#2447b3'), title: 'Initialise this folder', intro: 'This folder is empty. Describe the idea and pick the templates, brainstorm style and standards. Keel copies them into .keel/ in this folder, so they are versioned with the project.', path: '/Users/roberto/expense-tracker' },
+      'keel': { tag: '', tagStyle: '', title: 'Opening Keel', intro: 'This folder already has .keel/.', path: '/Users/roberto/keel' },
+      'existing': { tag: 'Existing project, no AI files', tagStyle: pillC('#fff4e0', '#8a5a00'), title: 'Set up Keel for an existing project', intro: 'This folder already has code but no Keel and no AI agent files. Keel can record what exists as a baseline, so your next change has something to trace against.', path: '/Users/roberto/billing-portal' },
+      'ai': { tag: 'Existing project with its own AI setup', tagStyle: pillC('#f7f3ff', '#5b34b0'), title: 'Set up Keel for an existing project', intro: 'This folder already has code and its own AI agent files. Keel can use them as a starting point and merge with them, instead of replacing anything.', path: '/Users/roberto/billing-portal' }
+    }[kase];
+    const BASE = [
+      ['README.md', 'Problem and who it is for', '6 KB'], ['package.json', 'Stack and scripts', '2 KB'], ['src/app/ (route names only)', 'Screens and features', '1 KB'],
+      ['docs/architecture.md', 'Design decisions', '9 KB'], ['src/lib/billing/invoice.ts', 'Main domain logic (sample)', '14 KB'], ['tests/ (test names only)', 'Behaviour as built', '3 KB']
+    ].concat(kase === 'ai' ? [['specs/002-refunds/spec.md', 'Existing spec (Spec Kit)', '11 KB'], ['AGENTS.md', 'Conventions', '4 KB']] : []);
+    const baseFiles = BASE.map((b) => ({ path: b[0], why: b[1], size: b[2], on: !off[b[0]], toggle: () => this.setState({ off: Object.assign({}, off, { [b[0]]: !off[b[0]] }) }) }));
+    const kb = BASE.filter((b) => !off[b[0]]).reduce((t, b) => t + parseInt(b[2], 10), 0);
+    const RULES = [['Use pnpm, never npm or yarn', 'AGENTS.md'], ['Tests with Vitest, next to the code', 'AGENTS.md'], ['No default exports', '.cursor/rules'], ['Server actions validate input with zod', '.cursor/rules'], ['Money is stored in cents as integers', 'CLAUDE.md']];
+    const rules = RULES.map((r) => ({ text: r[0], from: r[1], on: !ruleOff[r[0]], toggle: () => this.setState({ ruleOff: Object.assign({}, ruleOff, { [r[0]]: !ruleOff[r[0]] }) }) }));
+    const pathStyle = (on) => 'display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 8px; cursor: pointer; font-family: inherit; text-align: left; ' + (on ? 'background: #ebf0ff; border: 1px solid #3366ff;' : 'background: #ffffff; border: 1px solid #e0e5e8;');
+    const existingCase = kase === 'existing' || kase === 'ai';
+    const baselinePath = existingCase && path === 'baseline';
     const fsInfo = (() => {
       const std = st.std || { security: true, ts: true, api: true, bdd: true, mine: false };
       const kit = st.kit || { verifier: true, simplifier: true, researcher: true, review: true };
@@ -281,7 +450,7 @@ class Component extends DCLogic {
       };
       add(0, '.keel/', 'Keel\'s config and libraries for this project, committed with it', 'folder', 'now');
       add(1, 'config.yml', 'Title, description, chosen templates, style and standards, folder paths, read-back state', 'always', 'now');
-      add(1, '.gitignore', 'Keeps .keel/cache/ out of git', 'always', 'now');
+      add(1, '.gitignore', 'Keeps .keel/cache/ (the run lock) out of git', 'always', 'now');
       add(1, 'templates/', 'The template versions you picked below, one per document kind', 'folder', 'now');
       add(2, 'intent/' + intentFile, 'Sections the brainstorm fills and the intent is checked against', 'always', 'now');
       add(2, 'spec/' + specFile, 'Shape of the spec and the feasibility review', 'always', 'now');
@@ -299,7 +468,7 @@ class Component extends DCLogic {
       if (kit.review) add(2, 'review@1.md', 'Template for REVIEW.md', 'optional', 'now');
       add(1, 'brainstorm/', 'Brainstorm transcripts, saved as you chat', 'folder', 'approve');
       add(1, 'mocks/', 'Mock references you attach (images, PDF, HTML)', 'optional', 'approve');
-      add(1, 'cache/', 'Search index. Not committed, rebuilt when needed', 'always', 'now', { muted: true });
+      add(1, 'cache/', 'Run lock for this folder. Not committed', 'always', 'now', { muted: true });
       add(0, 'docs/', 'The project documents, next to your code', 'folder', 'approve');
       add(1, 'intent.md', 'What and why: problem, outcome, requirements with REQ IDs', 'always', 'approve');
       add(1, 'spec.md', 'Requirements, approach, feasibility and the decision', 'always', 'approve');
@@ -356,6 +525,47 @@ class Component extends DCLogic {
     return {
       yes: true,
       three: 3,
+      caseTabs: [['new', '1 · New folder'], ['keel', '2 · Uses Keel'], ['existing', '3 · Existing, no AI'], ['ai', '4 · Existing, own AI setup']].map((c) => ({ label: c[1], pick: () => this.setState({ kase: c[0] }), style: 'border: 1px solid ' + (kase === c[0] ? '#3366ff' : '#e0e5e8') + '; background: ' + (kase === c[0] ? '#ebf0ff' : '#ffffff') + '; color: ' + (kase === c[0] ? '#2447b3' : '#434952') + '; border-radius: 999px; padding: 2px 10px; font: inherit; font-size: 12px; line-height: 16px; cursor: pointer;' })),
+      pageTitle: CASE.title,
+      introText: CASE.intro,
+      folderPath: CASE.path,
+      showFound: kase !== 'keel',
+      isKeelCase: kase === 'keel',
+      showForm: kase !== 'keel',
+      isNewCase: kase === 'new',
+      isExistingCase: existingCase,
+      caseTag: CASE.tag,
+      caseTagStyle: CASE.tagStyle,
+      facts: FACTS[kase === 'keel' ? 'new' : kase].map((x) => ({ icon: x[0], color: x[1], label: x[2], value: x[3] })),
+      hasPaths: existingCase,
+      paths: [
+        { id: 'baseline', name: 'Record what exists, then plan the next change', rec: true, desc: 'Keel drafts a baseline intent and spec from this folder: requirements "as built" and the current stack as decisions. You trim and approve it, then your next idea is a change request on top.', pro: 'Impact by requirement works from the first change', con: 'A short review of the baseline first' },
+        { id: 'feature', name: 'Treat the next feature as the project', rec: false, desc: 'The intent covers only the new feature. The existing code is context and constraints for the assistant.', pro: 'Fastest start', con: 'Later changes have no baseline to trace against' }
+      ].map((p) => ({ name: p.name, desc: p.desc, pro: p.pro, con: p.con, recStyle: p.rec ? pillC('#e8eeff', '#2447b3') : 'display: none;', style: pathStyle(path === p.id), pick: () => this.setState({ path: p.id }) })),
+      showBaseline: existingCase,
+      readWithModel: st.read !== false,
+      notReading: st.read === false,
+      toggleRead: () => this.setState({ read: st.read === false }),
+      baseFiles: baseFiles,
+      baseSummary: BASE.filter((b) => !off[b[0]]).length + ' of ' + BASE.length + ' files, about ' + kb + ' KB, sent once to your model provider. Keel keeps no copy outside this folder.',
+      showAgentFiles: kase === 'ai',
+      agentFiles: [
+        { path: 'AGENTS.md', action: 'Kept. At handoff Keel adds only its own block, between keel:start and keel:end markers.' },
+        { path: 'CLAUDE.md', action: 'Kept. Keel adds one line pointing to AGENTS.md if it is not there yet.' },
+        { path: '.cursor/rules/ (3 files)', action: 'Kept. Rules found in them are proposed as project standards below.' },
+        { path: 'specs/ (2 Spec Kit specs)', action: 'Used to draft the baseline. Their 14 requirements get REQ IDs; the original IDs stay as aliases.' },
+        { path: '.claude/agents/reviewer.md', action: 'Kept. A Keel subagent with the same name would show as a conflict at handoff.' }
+      ],
+      rules: rules,
+      rulesSummary: rules.filter((r) => r.on).length + ' of ' + rules.length + ' rules will be saved as one project standard in .keel/standards/project-conventions/SKILL.md.',
+      keelChecks: [
+        { icon: 'upgrade', color: '#3366ff', title: 'Config from an older Keel', text: '.keel/config.yml is format 1; this Keel uses format 2. Upgrading adds the new settings with their defaults, as one Keel commit.' },
+        { icon: 'sync', color: '#b54708', title: '2 changes since the last run', text: 'The coding agent committed a change to docs/plan.md, and tasks/T2.md has an uncommitted edit. They are waiting in Read-back.' },
+        { icon: 'check_circle', color: '#008556', title: 'All documents found', text: 'intent.md, spec.md, plan.md and 9 task files match .keel/config.yml.' },
+        { icon: 'check_circle', color: '#008556', title: 'Templates and standards present', text: 'Every template and standard version used by the documents is in .keel/.' }
+      ],
+      primaryHref: baselinePath ? 'Explore.dc.html' : 'NewIdea.dc.html',
+      primaryLabel: baselinePath ? 'Initialise and draft the baseline' : 'Initialise and start brainstorm',
       choiceNotes: fsInfo.notes,
       fsRows: fsInfo.rows,
       fsSummary: fsInfo.summary,
