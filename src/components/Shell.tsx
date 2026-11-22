@@ -53,19 +53,6 @@ export function Topbar({ title }: { title: string }) {
   );
 }
 
-/** Page heading: a title with small meta text, a description, and actions on the right. */
-export function PageHead({ title, meta, description, actions }: { title: string; meta?: ReactNode; description?: ReactNode; actions?: ReactNode }) {
-  return (
-    <div className="page-head">
-      <div>
-        <h1>{title}{meta && <span className="meta">{meta}</span>}</h1>
-        {description && <p>{description}</p>}
-      </div>
-      {actions && <div className="actions">{actions}</div>}
-    </div>
-  );
-}
-
 /** Error text from a form action, shown inside the page. */
 export function ErrorAlert({ error }: { error?: string }) {
   return error ? <Notice kind="danger" role="alert">{error}</Notice> : null;
