@@ -6,9 +6,9 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 13
+version: 14
 template: implementation-plan@2
-from_spec: SPC-0001@12
+from_spec: SPC-0001@13
 ---
 
 # Plan: Keel v0.1
@@ -84,8 +84,15 @@ Runs after CR-0005 (R10); CR-0006 builds on it.
 | --- | --- | --- | --- |
 | R14 | Clickable mock prompt and mock sets | REQ-010, REQ-005 | mock-references |
 
+## Rework for CR-0010
+
+| Task | Title | Requirements | Scenarios |
+| --- | --- | --- | --- |
+| R15 | Opening a folder: four cases | REQ-012, REQ-006 | opening-a-folder |
+
 ## Version history
 
+- v14: task R15 for CR-0010.
 - v13: task R14 for CR-0009.
 - v12: task R13, UI consistency (CR-0008).
 - v11: task R12 for CR-0007.

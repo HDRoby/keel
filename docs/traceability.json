@@ -3,8 +3,8 @@
   "generated": "2026-11-20",
   "from": {
     "intent": "INT-0001@4",
-    "spec": "SPC-0001@12",
-    "plan": "PLN-0001@13"
+    "spec": "SPC-0001@13",
+    "plan": "PLN-0001@14"
   },
   "requirements": {
     "REQ-001": {
@@ -78,6 +78,7 @@
     },
     "REQ-006": {
       "tasks": [
+        "R15",
         "R7",
         "R8",
         "T8a",
@@ -86,18 +87,24 @@
       "scenarios": [
         "features/handoff.feature › Handoff writes the agent files into the project folder",
         "features/handoff.feature › Handoff does not overwrite a file Keel did not write",
-        "features/handoff.feature › Pushing uses the folder's own remote"
+        "features/handoff.feature › Pushing uses the folder's own remote",
+        "features/opening-a-folder.feature › Handoff keeps the existing AGENTS.md"
       ]
     },
     "REQ-012": {
       "tasks": [
         "R1",
+        "R15",
         "R2",
         "R3",
         "R4",
         "R9"
       ],
       "scenarios": [
+        "features/opening-a-folder.feature › An empty folder starts a new project",
+        "features/opening-a-folder.feature › A Keel folder with an old config offers an upgrade",
+        "features/opening-a-folder.feature › An existing project is offered a baseline",
+        "features/opening-a-folder.feature › Rules in existing agent files are proposed as a standard",
         "features/project-folder.feature › Opening a folder without .keel offers to initialise it",
         "features/project-folder.feature › Initialising creates the .keel folder",
         "features/project-folder.feature › A folder that is not a git repository becomes one",
@@ -236,6 +243,16 @@
       ],
       "features": [
         "features/mock-references.feature"
+      ]
+    },
+    "R15": {
+      "title": "Opening a folder: four cases",
+      "requirements": [
+        "REQ-012",
+        "REQ-006"
+      ],
+      "features": [
+        "features/opening-a-folder.feature"
       ]
     },
     "R18": {
@@ -590,6 +607,31 @@
       "feature": "features/mock-references.feature",
       "scenario": "A required mock set locks the plan",
       "requirement": "REQ-010"
+    },
+    {
+      "feature": "features/opening-a-folder.feature",
+      "scenario": "An empty folder starts a new project",
+      "requirement": "REQ-012"
+    },
+    {
+      "feature": "features/opening-a-folder.feature",
+      "scenario": "A Keel folder with an old config offers an upgrade",
+      "requirement": "REQ-012"
+    },
+    {
+      "feature": "features/opening-a-folder.feature",
+      "scenario": "An existing project is offered a baseline",
+      "requirement": "REQ-012"
+    },
+    {
+      "feature": "features/opening-a-folder.feature",
+      "scenario": "Rules in existing agent files are proposed as a standard",
+      "requirement": "REQ-012"
+    },
+    {
+      "feature": "features/opening-a-folder.feature",
+      "scenario": "Handoff keeps the existing AGENTS.md",
+      "requirement": "REQ-006"
     },
     {
       "feature": "features/project-folder.feature",
