@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { raiseScenarioChange } from '../changes/scenarios';
+import { acceptAllSuggestions, suggestions, uncovered } from '../scenarios/store';
 import { describe, expect, it } from 'vitest';
 import { saveModelChoice } from '../settings/settings';
 import { ensureSeed } from '../seed';
@@ -74,7 +76,7 @@ describe('generateSpec', () => {
     expect(await generateSpec(store, 'requirements-and-design-spec@2', silent)).toMatchObject({ error: 'locked', message: 'Needs an approved intent' });
   });
 
-  it('writes spec.md and features/<slug>.feature that trace back to the intent', async () => {
+  it('writes spec.md, and proposes one scenario per requirement as a suggestion that traces once accepted', async () => {
     const store = await approvedIntent();
     const calls: string[] = [];
     const writer: Writer = async (task, messages) => {
@@ -89,8 +91,13 @@ describe('generateSpec', () => {
     expect(spec.value.body).toContain('## Feasibility review\n\nText for feasibility.');
     expect(spec.value.body).toContain('## Standards applied\n\nNone selected for this project.');
     expect(calls.filter((c) => c === 'feasibility')).toHaveLength(1);
-    const trace = buildTrace(store.root);
-    expect(trace.requirements['REQ-002']?.scenarios).toEqual(['features/approvals.feature › Export the log']);
+    // Suggestions only: nothing in features/ until accepted (CR-0006).
+    expect(buildTrace(store.root).requirements['REQ-002']?.scenarios).toEqual([]);
+    expect(suggestions(store.root).map((s) => [s.req, s.name])).toEqual([['REQ-001', 'Record an approval'], ['REQ-002', 'Export the log']]);
+    expect(uncovered(store.root)).toEqual(['REQ-001', 'REQ-002']);
+    await acceptAllSuggestions(store, raiseScenarioChange);
+    expect(buildTrace(store.root).requirements['REQ-002']?.scenarios).toEqual(['features/export-the-log.feature › Export the log']);
+    expect(uncovered(store.root)).toEqual([]);
     expect(await generateSpec(store, 'requirements-and-design-spec@2', writer)).toMatchObject({ error: 'already-exists' });
   });
 
@@ -125,19 +132,20 @@ describe('generatePlan', () => {
     const store = await approvedIntent();
     expect(await generatePlan(store, silent)).toMatchObject({ error: 'locked', message: 'Needs a Go decision' });
     await generateSpec(store, 'requirements-and-design-spec@2', silent);
+    await acceptAllSuggestions(store, raiseScenarioChange);   // the first draft's scenarios, accepted (CR-0006)
     await recordDecision(store, { decision: 'go', by: 'Ada', reason: 'Worth it.', consequences: '' });
     const writer: Writer = async (_task, messages) => (messages[0]?.content.startsWith('Split') ? 'T1 | Approval flow | REQ-001, REQ-002' : undefined);
     const plan = await generatePlan(store, writer);
     if (!plan.ok) throw new Error(plan.message);
     expect(plan.value.header).toMatchObject({ id: 'PLN-0001', from_spec: 'SPC-0001@1', template: 'implementation-plan@2' });
-    expect(plan.value.body).toContain('| T1 | Approval flow | REQ-001, REQ-002 | approvals |');
+    expect(plan.value.body).toContain('| T1 | Approval flow | REQ-001, REQ-002 | export-the-log, record-an-approval |');
     const task = readDocument(store, 'tasks/T1.md');
     expect(task).toMatchObject({ ok: true, value: { header: { id: 'T1', status: 'todo', plan: 'PLN-0001@1', requirements: ['REQ-001', 'REQ-002'] } } });
     const text = readFileSync(join(store.root, 'tasks/T1.md'), 'utf8');
     expect(text).toContain('# T1 · Approval flow');
-    expect(text).toContain('- `features/approvals.feature` › Record an approval');
+    expect(text).toContain('- `features/record-an-approval.feature` › Record an approval');
     const trace = buildTrace(store.root);
-    expect(trace.tasks.T1).toMatchObject({ requirements: ['REQ-001', 'REQ-002'], features: ['features/approvals.feature'] });
+    expect(trace.tasks.T1).toMatchObject({ requirements: ['REQ-001', 'REQ-002'], features: ['features/export-the-log.feature', 'features/record-an-approval.feature'] });
     expect(await generatePlan(store, writer)).toMatchObject({ error: 'already-exists' });
   });
 });

@@ -1,6 +1,7 @@
 'use server';
 // Change request actions (REQ-014, task R18): raise, submit, approve, reject, size, the decision on each affected
 // document, and the change package. Each refuses during a merge or rebase (R5), with the reason on the page.
+import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { approveChange, decideImpact, rejectChange, setChangeSize, submitChange, writePackage } from '@/lib/changes/flow';
@@ -21,6 +22,8 @@ async function guard(cr?: string): Promise<void> {
 }
 
 function back(cr: string | undefined, result: Result<unknown>, notice?: string): never {
+  // Same address when there is no notice: make the page read the request again.
+  revalidatePath('/changes', 'layout');
   redirect(result.ok ? `${page(cr)}${notice ? `?notice=${encodeURIComponent(notice)}` : ''}` : `${page(cr)}?error=${encodeURIComponent(result.message)}`);
 }
 

@@ -13,11 +13,12 @@ import { readDocument } from '@/lib/store/documents';
 import { templateOptions } from '@/lib/templates/library';
 import { requirementIds } from '@/lib/trace/index';
 import { loadStage, type StageProps } from '../stage';
+import { ScenariosPanel } from './scenarios-panel';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SpecPage({ searchParams }: StageProps) {
-  const { error } = await searchParams;
+  const { error, notice, tab, edit, add } = await (searchParams as Promise<{ error?: string; notice?: string; tab?: string; edit?: string; add?: string }>);
   const page = await loadStage('spec');
   const { store, reviewer } = page;
   const spec = readDocument(store, 'docs/spec.md');
@@ -45,13 +46,17 @@ export default async function SpecPage({ searchParams }: StageProps) {
 
   return (
     <StageLayout page={page} error={error} meta={spec.ok ? `${page.project.id} · spec.md · ${spec.value.header.id}` : undefined}>
+      {notice && <p role="status" className="notice">{notice}</p>}
       {spec.ok ? (
+        <>
         <DocumentReview home={store.root} document="spec" doc={spec.value} reviewer={reviewer}
           before={<Conflicts document="spec" conflicts={conflictsOf(spec.value)} />}
           after={spec.value.header.status === 'draft'
             ? <RegenerateForm document="spec">Regenerating writes the spec again from the current intent and standards.</RegenerateForm>
             : undefined}
           aside={<>{decision}<MockReferences document="spec" references={listMocks(dir)} requirements={requirementIds(dir)} /></>} />
+        <ScenariosPanel root={dir} tab={tab === 'gherkin' ? 'gherkin' : 'scenarios'} edit={edit} add={add} approved={spec.value.header.status === 'approved'} />
+        </>
       ) : (
         <div className="columns">
           <form action={generateSpecAction} aria-label="Generate spec" className="card stack">

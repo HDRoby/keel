@@ -1,3 +1,5 @@
+import { raiseScenarioChange } from '../changes/scenarios';
+import { acceptAllSuggestions } from '../scenarios/store';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -21,6 +23,7 @@ async function approvedPlan() {
   await createDocument(store, { kind: 'intent', title: 'Demo', template: 'standard-intent@3', body: '## Requirements\n\n- REQ-001 Show the run command\n' });
   await review(store, 'intent', { action: 'approve', by: 'Ada', comment: '' });
   await generateSpec(store, 'requirements-and-design-spec@2', silent);
+  await acceptAllSuggestions(store, raiseScenarioChange);   // the first draft's scenarios, accepted (CR-0006)
   await recordDecision(store, { decision: 'go', by: 'Ada', reason: 'Yes', consequences: '' });
   await generatePlan(store, silent);
   await review(store, 'plan', { action: 'approve', by: 'Ada', comment: '' });
