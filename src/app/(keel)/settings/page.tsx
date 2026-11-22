@@ -13,6 +13,7 @@ import { Card } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
 import { MetaGrid } from '@/components/ui/MetaGrid';
 import { Notice } from '@/components/ui/Notice';
+import { ChangeTemplatesForm } from '@/components/ChangeTemplatesForm';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Tag } from '@/components/ui/Tag';
 import css from './settings.module.css';
@@ -189,6 +190,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             ]} />
           ) : <p className={css.hint}>This folder is not initialised yet.</p>}
         </Card>
+        {project.ok && <ChangeTemplatesForm root={store.root} project={project.value} back="/settings" />}
         {project.ok && (
           <Card title="Clickable mock before the plan" meta="Applies only when the Form decision has a UI (a web, desktop or mobile app).">
             <form action={saveMockGateAction} aria-label="Clickable mock before the plan" className={css.inlineForm}>

@@ -17,6 +17,15 @@ import { readDocument, saveDocument } from '../store/documents';
 import { commitFiles } from '../store/git';
 import { today } from '../store/workspace';
 import { buildTrace, impactOf } from '../trace/index';
+import matter from 'gray-matter';
+import { fillSections } from '../brainstorm/sections';
+import { handoffCommands } from '../handoff/scaffold';
+import { buildFeature, type Keyword } from '../scenarios/gherkin';
+import { readProject } from '../store/workspace';
+import { chosenTemplate } from '../templates/library';
+import { renderTemplate } from '../templates/render';
+import { CHANGES_INDEX, writeChangesIndex } from './index-file';
+import { readPlan } from './plan';
 import { readChange, setChangeStatus, updateKeelChange, type ChangeRequest, type ImpactDecision } from './store';
 
 export type FlowError = 'not-found' | 'wrong-status' | 'not-keel' | 'repo-busy' | 'failed';
@@ -71,6 +80,7 @@ export async function approveChange(store: Store, id: string, by: string): Promi
   await settleDesignChange(store, id, true);   // a design decision changed after approval (CR-0007)
   const extra = { approved_by: by.trim() || 'owner', approved_on: today(store), ...(cr.value.origin === 'keel' && cr.value.size === 'minor' ? { impact: [] } : {}) };
   const saved = await setChangeStatus(store, cr.value, 'approved', cr.value.origin === 'keel' ? extra : {});
+  if (saved.ok) await writeChangesIndex(store);
   return saved.ok ? saved : failed(saved);
 }
 
@@ -86,6 +96,7 @@ export async function rejectChange(store: Store, id: string): Promise<Result<Cha
   await settlePending(store, id, false);
   await settleDesignChange(store, id, false);
   const saved = await setChangeStatus(store, cr.value, 'rejected');
+  if (saved.ok) await writeChangesIndex(store);
   return saved.ok ? saved : failed(saved);
 }
 
@@ -113,11 +124,61 @@ export async function decideImpact(store: Store, id: string, document: string, d
   }
   const impact = cr.value.impact.map((i) => (i.document === document ? { ...i, decision } : i));
   const saved = await updateKeelChange(store, cr.value, { impact }, undefined, `${id}: ${document} ${decision === 'updated' ? 'updated' : decision === 'valid' ? 'still valid' : 'later'}`);
+  if (saved.ok) await writeChangesIndex(store);   // resolving the last document applies a request without tasks
   return saved.ok ? saved : fail('failed', saved.message);
 }
 
-/** The files of the change package: PROMPT.md, the affected task files and the scenarios, inside the request's folder. */
+/**
+ * The files of the change package, inside the request's folder (CR-0013): PROMPT.md from the prompt template, a task
+ * file per planned task from the task template, the accepted scenarios as a feature file, and the linked decision
+ * records and mock screens. Before the change is planned: the affected task files and scenarios as they are.
+ */
 export function packageFiles(store: Pick<Store, 'root'>, cr: ChangeRequest): { path: string; content: string }[] {
+  const plan = readPlan(store.root, cr.id);
+  if (!plan) return unplannedPackage(store, cr);
+  const project = readProject(store.root);
+  const chosen = project.ok ? project.value.templates : {};
+  const accepted = plan.scenarios.filter((s) => s.state === 'accepted');
+  const slug = cr.title.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || cr.id.toLowerCase();
+  const featurePath = `features/${slug}.feature`;
+  const feature = accepted.length ? buildFeature({
+    tags: [], name: cr.title, description: [`From ${cr.id}.`],
+    scenarios: accepted.map((s) => ({ tags: [`@${s.req}`], name: s.name, steps: s.steps.map((x) => ({ keyword: x.keyword as Keyword, text: x.text })) })),
+  }) : undefined;
+  const taskTemplate = chosenTemplate(store.root, 'task', chosen);
+  const tasks = plan.tasks.map((t) => {
+    const scenarios = accepted.filter((s) => t.requirements.includes(s.req)).map((s) => `- \`${featurePath}\` › ${s.name} (@${s.req})`);
+    const body = taskTemplate ? fillSections(renderTemplate(taskTemplate.content, { task_id: t.id, title: t.title }).body, {
+      Goal: [t.goal || t.title],
+      'Scenarios that prove it': [scenarios.join('\n') || 'None accepted yet: add them in Keel before handing off.'],
+      Data: [t.data || 'None.'],
+      'Files that are likely to change': [t.files.map((f) => (f.startsWith('To be decided') ? f : `- \`${f}\``)).join('\n')],
+      Steps: [t.steps.map((x, i) => `${i + 1}. ${x}`).join('\n') || 'One step.'],
+      Notes: [[...plan.linked.decisions.map((d) => `- Decision record: \`${d}\``), ...plan.linked.mocks.map((m) => `- Mock screen: \`${m}\``)].join('\n') || 'None.'],
+      'Questions for the owner': ['(none yet)'],
+    }) : `# ${t.id} · ${t.title}\n\n## Goal\n\n${t.goal}\n\n## As built\n\n`;
+    const content = matter.stringify(`\n${body}`, { id: t.id, change: cr.id, requirements: t.requirements, status: 'todo', ...(taskTemplate ? { template: taskTemplate.ref } : {}) });
+    return { path: `${cr.folder}/tasks/${t.id}.md`, content };
+  });
+  const ids = plan.tasks.map((t) => t.id);
+  const promptTemplate = chosenTemplate(store.root, 'change-prompt', chosen);
+  const touchesScreens = plan.tasks.some((t) => t.files.some((f) => /(^|\/)(app|components|pages|views|ui)\//.test(f))) && existsSync(join(store.root, 'docs', 'ui-guide.md'));
+  const linked = [...plan.linked.decisions.map((d) => `- Decision record: \`${d}\``), ...plan.linked.mocks.map((m) => `- Mock screen (current set): \`${m}\``)];
+  const prompt = promptTemplate
+    ? renderTemplate(promptTemplate.content, {
+      cr_id: cr.id, after: cr.dependsOn.at(-1) ?? 'the previous change request', task_ids: ids.length > 1 ? `${ids.slice(0, -1).join(', ')} and ${ids.at(-1)}` : ids[0] ?? 'the tasks',
+      verify_command: handoffCommands(store).verify, ui_guide: touchesScreens ? ', then `docs/ui-guide.md`' : '', big_change_note: '',
+    }).body.trimEnd()
+    : `# Prompt for the coding agent\n\nImplement ${cr.id} in \`${cr.folder}/\`. Commit each task as \`<task ID>: <task title>\`.`;
+  return [
+    { path: `${cr.folder}/PROMPT.md`, content: `${prompt}${linked.length ? `\n\n## Linked\n\n${linked.join('\n')}` : ''}\n` },
+    ...tasks,
+    ...(feature ? [{ path: `${cr.folder}/${featurePath}`, content: feature }] : []),
+  ];
+}
+
+/** Before the change is planned: a short prompt with the affected task files and scenarios as they are. */
+function unplannedPackage(store: Pick<Store, 'root'>, cr: ChangeRequest): { path: string; content: string }[] {
   const trace = buildTrace(store.root);
   const impact = impactOf(trace, cr.requirements);
   const tasks = impact.tasks.map((t) => ({ path: `tasks/${t.id}.md`, from: join(store.root, 'tasks', `${t.id}.md`) })).filter((t) => existsSync(t.from));
@@ -149,6 +210,11 @@ export async function writePackage(store: Store, id: string): Promise<Result<str
     mkdirSync(join(store.root, file.path, '..'), { recursive: true });
     writeFileAtomic(join(store.root, file.path), file.content);
   }
-  await commitFiles(store.root, [cr.value.folder], `Change package for ${id}`);
+  // The request's header lists the package, and changes/README.md follows: all in one Keel commit.
+  const requestFile = join(store.root, cr.value.file);
+  const parsed = matter(readFileSync(requestFile, 'utf8'), {});
+  writeFileAtomic(requestFile, matter.stringify(parsed.content, { ...parsed.data, package: files.map((f) => f.path.slice(cr.value.folder.length + 1)) }));
+  const indexed = await writeChangesIndex(store, { commit: false });
+  await commitFiles(store.root, [cr.value.folder, ...(indexed ? [CHANGES_INDEX] : [])], `Change package for ${id}`);
   return ok(files.map((f) => f.path));
 }

@@ -35,7 +35,7 @@ const MAX_FILES = 10_000;
 const MAX_SHARE = 100 * 1024;
 
 /** The folder's files, relative, without the skipped folders; stops at MAX_FILES. */
-function walk(root: string): { files: string[]; truncated: boolean } {
+export function walk(root: string): { files: string[]; truncated: boolean } {
   const files: string[] = [];
   const stack = [root];
   while (stack.length && files.length < MAX_FILES) {
@@ -113,4 +113,9 @@ export function scanFolder(root: string): FolderScan {
 /** The text of the files the user agreed to share, each capped, for the baseline draft. */
 export function readShared(root: string, paths: string[], offered: ShareableFile[]): { path: string; text: string }[] {
   return paths.filter((p) => offered.some((o) => o.path === p)).map((path) => ({ path, text: readFileSync(join(root, path), 'utf8').slice(0, MAX_SHARE) }));
+}
+
+/** The code map for planning a change (CR-0013): file and folder names only, without Keel's own folders, capped. */
+export function codeMap(root: string, max = 2000): string[] {
+  return walk(root).files.filter((f) => !f.startsWith('.keel/') && !f.startsWith('changes/') && !f.startsWith('.github/')).sort().slice(0, max);
 }

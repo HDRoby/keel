@@ -10,6 +10,8 @@ const SCENARIO_MARKER = 'Answer with one scenario as JSON and nothing else.';
 const DESIGN_MARKER = 'Answer with the design topics as JSON and nothing else.';
 const BASELINE_MARKER = 'Answer with the baseline as JSON and nothing else.';
 const STARTUP_MARKER = 'Keel startup check: answer briefly.';
+const CHANGE_DRAFT_MARKER = 'Answer with the change request sections as JSON and nothing else.';
+const PLAN_MARKER = 'Answer with the change plan as JSON and nothing else.';
 
 export function fakeReply(standsFor: RealProviderId, messages: ChatMessage[]): string {
   const label = PROVIDERS.find((p) => p.id === standsFor)?.label ?? standsFor;
@@ -18,6 +20,8 @@ export function fakeReply(standsFor: RealProviderId, messages: ChatMessage[]): s
   if (messages[0]?.role === 'system' && messages[0].content.includes(SCENARIO_MARKER)) return JSON.stringify(fakeFailureCase(last));
   if (messages[0]?.role === 'system' && messages[0].content.includes(DESIGN_MARKER)) return JSON.stringify(fakeDesign(last));
   if (messages[0]?.role === 'system' && messages[0].content.includes(BASELINE_MARKER)) return JSON.stringify(fakeBaseline(last));
+  if (messages[0]?.role === 'system' && messages[0].content.includes(CHANGE_DRAFT_MARKER)) return JSON.stringify(fakeChangeDraft(last));
+  if (messages[0]?.role === 'system' && messages[0].content.includes(PLAN_MARKER)) return JSON.stringify(fakePlan(last));
   if (messages[0]?.role === 'system' && messages[0].content.includes('Answer with a fit line as JSON and nothing else.')) return JSON.stringify({ kind: 'follows', text: 'Fits the requirements; no standard is broken' });
   return `Reply from ${label}: I read "${last}".`;
 }
@@ -141,12 +145,65 @@ export function fakeBaseline(userMessage: string): Record<string, unknown> {
   return { sections, requirements: bullets };
 }
 
+/** A change request draft from the title and reason. */
+export function fakeChangeDraft(userMessage: string): Record<string, unknown> {
+  let input: { title?: string; reason?: string } = {};
+  try {
+    input = JSON.parse(userMessage) as typeof input;
+  } catch {
+    return {};
+  }
+  return {
+    why: input.reason || `${input.title ?? 'This'} is needed.`,
+    what_changes: `1. ${input.title ?? 'The change'}.`,
+    done_when: '- npm run verify passes.\n- The behaviour above works as described.',
+  };
+}
+
+/**
+ * A change plan: one task named after the request, with the code-map files whose path shares words with the request
+ * and its requirements, and one scenario per requirement.
+ */
+export function fakePlan(userMessage: string): Record<string, unknown> {
+  let input: { request?: { title?: string; body?: string }; requirements?: Record<string, string>; codeMap?: string[] } = {};
+  try {
+    input = JSON.parse(userMessage) as typeof input;
+  } catch {
+    return { tasks: [] };
+  }
+  const title = input.request?.title ?? 'The change';
+  const requirements = input.requirements ?? {};
+  const stop = new Set(['with', 'from', 'that', 'this', 'into', 'when', 'each', 'they', 'their', 'keel', 'show', 'make', 'change', 'changes', 'request', 'today', 'should', 'work', 'there', 'only', 'none', 'written', 'drafted']);
+  const why = /^## (?:Why|Reason)\s*\n([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(input.request?.body ?? '')?.[1] ?? '';
+  const wordsOf = (text: string) => [...new Set(text.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 3 && !stop.has(w)))];
+  const titleWords = wordsOf(title);
+  const otherWords = wordsOf(`${why} ${Object.values(requirements).join(' ')}`).filter((w) => !titleWords.includes(w));
+  // The title's words count most, in the file's own name more than in its folders; tests and fixtures are left out.
+  const score = (path: string) => {
+    const name = path.toLowerCase().split('/').at(-1) ?? '';
+    const hit = (w: string, inName: number, inPath: number) => (name.includes(w.replace(/s$/, '')) ? inName : path.toLowerCase().includes(w.replace(/s$/, '')) ? inPath : 0);
+    return titleWords.reduce((n, w) => n + hit(w, 4, 2), 0) + otherWords.reduce((n, w) => n + hit(w, 1, 0), 0);
+  };
+  const files = (input.codeMap ?? []).filter((f) => !/\.(test|spec)\.|(^|\/)(fixtures|__tests__)\//.test(f))
+    .map((f) => [f, score(f)] as const).filter(([, n]) => n > 1).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 6).map(([f]) => f);
+  return {
+    tasks: [{
+      title, goal: `${title}, as the change request describes.`, requirements: Object.keys(requirements),
+      data: 'None.', steps: ['Write the failing scenarios first.', `Implement: ${title}.`, 'Keep the checks green.'], files,
+    }],
+    scenarios: Object.entries(requirements).map(([req, statement]) => ({
+      req, name: `${(statement || title).split(/[.;:]/)[0]?.slice(0, 100) ?? title} works`,
+      steps: [{ keyword: 'Given', text: 'the project as it is' }, { keyword: 'When', text: `the change "${title.slice(0, 120)}" is in place` }, { keyword: 'Then', text: (statement || 'it behaves as described').slice(0, 200) }],
+    })),
+  };
+}
+
 export function createFakeProvider(standsFor: RealProviderId, env: Record<string, string | undefined> = process.env): ChatProvider {
   return {
     id: 'fake',
     async *stream(messages) {
       const log = env.KEEL_FAKE_LOG?.trim();
-      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : messages[0]?.content.includes(SCENARIO_MARKER) ? 'scenario' : messages[0]?.content.includes(DESIGN_MARKER) ? 'design' : messages[0]?.content.includes(BASELINE_MARKER) ? 'baseline' : messages[0]?.content.includes(STARTUP_MARKER) ? 'health' : 'chat'}\n`);
+      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : messages[0]?.content.includes(SCENARIO_MARKER) ? 'scenario' : messages[0]?.content.includes(DESIGN_MARKER) ? 'design' : messages[0]?.content.includes(BASELINE_MARKER) ? 'baseline' : messages[0]?.content.includes(STARTUP_MARKER) ? 'health' : messages[0]?.content.includes(CHANGE_DRAFT_MARKER) ? 'change' : messages[0]?.content.includes(PLAN_MARKER) ? 'plan' : 'chat'}\n`);
       for (const word of fakeReply(standsFor, messages).split(/(?<= )/)) yield word;
     },
   };

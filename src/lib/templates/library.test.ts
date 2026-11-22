@@ -48,7 +48,9 @@ describe('library', () => {
     expect(ensureLibrary(store.root, SEED)).toEqual({ ok: true, value: 0 });
     const templates = listTemplates(store.root);
     expect(templates.find((t) => t.id === 'standard-intent')).toMatchObject({ name: 'Standard intent v4', group: 'intent', versions: [3, 4] });
-    expect(templates.find((t) => t.id === 'task')?.group).toBe('plan');
+    expect(templates.find((t) => t.id === 'task')?.group).toBe('change');
+    expect(templates.find((t) => t.id === 'prompt')).toMatchObject({ group: 'change', kind: 'change-prompt', versions: [1] });
+    expect(templates.find((t) => t.id === 'change-request')?.versions).toEqual([1, 2]);
     expect(templates.find((t) => t.id === 'verifier')?.group).toBe('agent-kit');
     expect(templates[0]?.group).toBe('intent');
   });

@@ -3,7 +3,9 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import Link from 'next/link';
-import { newChangeAction } from './actions';
+import { newChangeAction, renumberRequirementAction } from './actions';
+import { idClashes } from '@/lib/changes/links';
+import { Tag } from '@/components/ui/Tag';
 import { CopyButton } from '@/components/CopyButton';
 import { ChangeStatus } from '@/components/ChangeStatus';
 import { Icon } from '@/components/Icons';
@@ -40,6 +42,7 @@ export default async function ChangesPage({ searchParams }: { searchParams: Prom
   const rows = all.map((cr) => ({ cr, status: computeStatus(cr, all) }))
     .filter(({ status }) => filter === 'all' || (filter === 'applied' ? status.kind === 'applied' : status.kind !== 'applied' && status.kind !== 'rejected'));
   const next = nextToApply(all);
+  const clashes = idClashes(store.root, all);
   const prompt = next?.hasPrompt ? readFileSync(join(store.root, next.folder, 'PROMPT.md'), 'utf8') : '';
 
   return (
@@ -51,6 +54,17 @@ export default async function ChangesPage({ searchParams }: { searchParams: Prom
         <ErrorAlert error={error} />
         {notice && <Notice kind="success" role="status">{notice}</Notice>}
 
+        {clashes.map((c) => {
+          const later = all.find((x) => x.id === c.later);
+          return (
+            <Notice key={c.req} kind="warning" role="note" label="Requirement ID clash" title={`Requirement ID clash: ${c.message}`}
+              actions={later?.origin === 'keel' ? (
+                <form action={renumberRequirementAction}><input type="hidden" name="id" value={c.later} /><input type="hidden" name="from" value={c.req} /><input type="hidden" name="to" value={c.next} /><Button type="submit" small>Use {c.next} in {c.later}</Button></form>
+              ) : undefined}>
+              {later?.origin === 'keel' ? `The later request, ${c.later}, can take the next free ID, ${c.next}.` : `The later request, ${c.later}, was written by hand: change its ID to ${c.next} in its file.`}
+            </Notice>
+          );
+        })}
         <Card label="Next to apply" title="Next to apply" actions={next?.hasPrompt ? <CopyButton text={prompt} label="Copy prompt for the agent" /> : undefined}>
           {next ? (
             <p className={css.flat}><Link href={`/changes/${next.id}`}><strong>{next.id}</strong> · {next.title}</Link>
@@ -68,7 +82,7 @@ export default async function ChangesPage({ searchParams }: { searchParams: Prom
                 rows={rows.map(({ cr, status }) => ({ key: cr.id, label: cr.id, cells: [
                   <Link key="id" href={`/changes/${cr.id}`}><code>{cr.id}</code></Link>,
                   <span key="t" className={css.cell}><Link href={`/changes/${cr.id}`}>{cr.title}</Link><span className={css.muted}>{meta(cr)}</span></span>,
-                  <ChangeStatus key="s" status={status} />,
+                  <span key="s" className={css.cell}><ChangeStatus status={status} />{clashes.filter((c) => c.ids.includes(cr.id)).map((c) => <Tag key={c.req} tone="warn">ID clash · {c.req}</Tag>)}</span>,
                   cr.requirements.join(', ') || '—',
                   progressLabel(cr),
                   cr.origin === 'keel' ? 'Keel' : 'Written by hand',

@@ -6,6 +6,8 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import matter from 'gray-matter';
+import { changeBody, type ChangeDraft } from './body';
+import { writeChangesIndex } from './index-file';
 import { z } from 'zod';
 import { fail, ok, type Result } from '../result';
 import { writeFileAtomic } from '../store/atomic';
@@ -238,7 +240,8 @@ export interface NewChange {
   requirements?: string[];
   dependsOn?: string[];
   impact?: ImpactRecord[];
-  body?: string;                    // the request's markdown; a "What changed / Reason" body otherwise
+  body?: string;                    // the request's markdown; otherwise written from the change request template
+  draft?: ChangeDraft;              // the assistant's Why, What changes and Done when (CR-0013)
   extra?: Record<string, unknown>;
 }
 
@@ -267,8 +270,12 @@ export async function createChange(store: Store, input: NewChange): Promise<Resu
   const id = formatChangeId(nextNumber(store.root));
   const folder = `${CHANGES_DIR}/${id}`;
   mkdirSync(join(store.root, folder), { recursive: true });
-  writeFileAtomic(join(store.root, folder, `${id}.md`), matter.stringify(`\n${input.body ?? defaultBody(input)}`, header(store, id, input, project.ok ? project.value.author : 'Keel')));
+  // The body: the caller's, or the chosen change request template (CR-0013), or the plain one for older projects.
+  const fromTemplate = input.body === undefined ? changeBody(store, { id, title: input.title, reason: input.reason, requirements: input.requirements ?? [], impact: input.impact ?? [], ...(input.draft ? { draft: input.draft } : {}) }) : undefined;
+  const fields = header(store, id, { ...input, extra: { ...(fromTemplate ? { template: fromTemplate.template } : {}), ...input.extra } }, project.ok ? project.value.author : 'Keel');
+  writeFileAtomic(join(store.root, folder, `${id}.md`), matter.stringify(`\n${input.body ?? fromTemplate?.body ?? defaultBody(input)}`, fields));
   await commitFiles(store.root, [folder], `Raise ${id}: ${input.title.trim()}`);
+  await writeChangesIndex(store);   // changes/README.md (CR-0013)
   const made = readChange(store.root, id);
   return made ? ok(made) : fail('invalid-input', `${id} could not be read back`);
 }

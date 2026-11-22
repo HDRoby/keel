@@ -93,7 +93,11 @@ describe('createChange and setChangeStatus', () => {
     await initialiseProject(store, { title: 'Demo', author: 'Ada' });
     const made = await createChange(store, { title: 'Export as PDF', reason: 'Finance asked.', affects: ['INT-0001@1'] });
     expect(made).toMatchObject({ ok: true, value: { id: 'CR-0001', status: 'draft', origin: 'keel', affects: ['INT-0001@1'] } });
-    expect(readFileSync(join(store.root, 'changes/CR-0001/CR-0001.md'), 'utf8')).toContain('## Reason\n\nFinance asked.');
+    const raised = readFileSync(join(store.root, 'changes/CR-0001/CR-0001.md'), 'utf8');
+    // Written from the change request template (CR-0013): Why from the reason, the other sections still to write.
+    expect(raised).toContain('template: change-request@2');
+    expect(raised).toContain('## Why\n\nFinance asked.');
+    expect(raised).toContain('## What changes\n\n_Not written yet._');
     expect(await createChange(store, { title: ' ', reason: '' })).toMatchObject({ error: 'invalid-input' });
     // A request written by hand, with its own formatting.
     const hand = '---\nid: CR-0002\ntitle: By hand\nstatus: waiting   \nrequirements: [REQ-001]\n---\n\n# By hand\n\nKeep   this   spacing.\n';

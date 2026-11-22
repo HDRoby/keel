@@ -9,6 +9,7 @@ import { StyleCards, TemplateCards, withSections } from '@/components/SetupCards
 import css from '@/components/SetupCards.module.css';
 import { ErrorAlert, Topbar } from '@/components/Shell';
 import { StandardsPicker } from '@/components/StandardsPicker';
+import { ChangeTemplatesForm } from '@/components/ChangeTemplatesForm';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { LinkButton } from '@/components/ui/LinkButton';
@@ -23,8 +24,8 @@ import { templateOptions } from '@/lib/templates/library';
 
 export const dynamic = 'force-dynamic';
 
-export default async function SetupPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { error } = await searchParams;
+export default async function SetupPage({ searchParams }: { searchParams: Promise<{ error?: string; saved?: string }> }) {
+  const { error, saved } = await searchParams;
   const store = serverStore();
   const session = readExplore(store);
   if (!session.ok) notFound();
@@ -39,6 +40,7 @@ export default async function SetupPage({ searchParams }: { searchParams: Promis
         <PageHeader title="Project setup"
           description={<>{project.ok ? `${project.value.title} · ${project.value.id} · ` : ''}<code>{store.root}</code>. Change the templates, brainstorm style or standards. Saved to <code>.keel/config.yml</code> and committed as a Keel commit.</>} />
         <ErrorAlert error={error} />
+        {saved && <Notice kind="success" role="status">Saved.</Notice>}
         {pastExplore && (
           <Notice kind="info" title="The project is past Explore">A new template or style only affects a reopened brainstorm; approved documents keep the ones they were made with.</Notice>
         )}
@@ -63,6 +65,7 @@ export default async function SetupPage({ searchParams }: { searchParams: Promis
             <ButtonLink href="/explore" variant="text">Cancel</ButtonLink>
           </div>
         </form>
+        {project.ok && <ChangeTemplatesForm root={store.root} project={project.value} back="/setup" />}
       </main>
     </>
   );

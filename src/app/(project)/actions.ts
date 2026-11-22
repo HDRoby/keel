@@ -30,7 +30,8 @@ import { draftBaseline } from '@/lib/baseline/draft';
 import { upgradeConfig } from '@/lib/config/migrate';
 import { scanFolder } from '@/lib/repo/scan';
 import { conventionsStandard, CONVENTIONS_FILE, CONVENTIONS_REF, rulesFromAgentFiles } from '@/lib/standards/from-agent-files';
-import { VERSIONED_REF } from '@/lib/templates/library';
+import { parseTemplateRef, readTemplate, VERSIONED_REF } from '@/lib/templates/library';
+import { readProject, updateConfig } from '@/lib/store/workspace';
 
 const ref = z.string().regex(VERSIONED_REF);
 const name = z.string().trim().min(1).max(120);
@@ -85,6 +86,29 @@ export async function startAction(form: FormData): Promise<void> {
   // The sidebar in the root layout shows the project now, not "Not initialised".
   revalidatePath('/', 'layout');
   redirect(at('explore'));
+}
+
+const changeTemplatesForm = z.strictObject({
+  back: z.enum(['/settings', '/setup']),
+  task: ref, change: ref, 'change-prompt': ref, 'changes-index': ref,
+  codeMap: z.enum(['off', 'names', 'files']),
+  changesIndex: z.enum(['auto', 'off']),
+});
+
+/** Templates for change packages, the code map and the changes index (CR-0013), saved in .keel/config.yml. */
+export async function saveChangeTemplatesAction(form: FormData): Promise<void> {
+  const input = changeTemplatesForm.safeParse(formFields(form));
+  if (!input.success) redirect('/settings?error=Invalid+request');
+  const { back, codeMap, changesIndex, ...chosen } = input.data;
+  const store = serverStore();
+  const unknown = Object.values(chosen).filter((r) => {
+    const parsed = parseTemplateRef(r);
+    return !parsed || !readTemplate(store.root, parsed.id, parsed.version).ok;
+  });
+  if (unknown.length) redirect(`${back}?error=${encodeURIComponent(`Unknown template ${unknown.join(', ')}`)}`);
+  const project = readProject(store.root);
+  const saved = await updateConfig(store, { templates: { ...(project.ok ? project.value.templates : {}), ...chosen }, code_map: codeMap, changes_index: changesIndex }, 'Keel: Templates for change requests');
+  redirect(saved.ok ? `${back}?saved=1` : `${back}?error=${encodeURIComponent(saved.message)}`);
 }
 
 /** Opening a Keel folder with an older config (CR-0010): upgrade it in one Keel commit, after the user agrees. */

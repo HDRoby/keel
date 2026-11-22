@@ -31,8 +31,8 @@ describe('buildTrace', () => {
 describe('impact', () => {
   it('lists the tasks and scenarios linked to changed requirements', () => {
     const impact = impactOf(buildTrace(REPO), ['REQ-003']);
-    expect(impact.tasks.map((t) => t.id)).toEqual(['T1', 'T2']);
-    expect(impact.scenarios.map((s) => s.label)).toEqual(['features/templates.feature › A template used by a project cannot be removed']);
+    expect(impact.tasks.map((t) => t.id)).toEqual(['R19', 'T1', 'T2']);
+    expect(impact.scenarios.map((s) => s.label)).toEqual(['features/change-packages.feature › Change templates are chosen in Settings', 'features/templates.feature › A template used by a project cannot be removed']);
   });
 
   it('tells changed, added and removed requirements apart', () => {
