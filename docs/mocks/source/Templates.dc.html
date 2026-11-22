@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keel · Templates</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/softwareone/tokens.css">
+<link rel="stylesheet" href="ds/softwareone/components/bundle.css">
+<script src="ds/softwareone/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#3366ff}a:hover{color:#2447b3}
+</style>
+</helmet>
+<x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Navigation" groups="{{groups}}" active-id="templates" brand="{{brand}}" header-bar="{{headerBar}}">
+<div style="box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 24px; font-family: var(--font-body, Arial); color: var(--text-body, #25282d); max-width: 1400px;">
+  <sc-if value="{{hasBack}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 8px; background: #ebf0ff;">
+      <a href="{{backHref}}" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="arrow_back" size="5"></x-import>
+        Back to {{backLabel}}
+      </a>
+      <span style="font-size: 12px; line-height: 14.4px; color: #434952;">You came here from {{backLabel}}. Your choices there are kept. This bar does not appear when you open this page from the side menu or from Settings.</span>
+    </div>
+  </sc-if>
+  <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <h1 style="margin: 0; font-size: 24px; line-height: 28.13px; font-weight: 700; color: var(--text-primary, #000);">Templates</h1>
+      <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--text-muted, #6b7180);">Templates define the metadata and sections of every document. They live in .keel/templates in this folder and are versioned with the project, so each document records the template it was built from.</p>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card" style="flex: 1 1 360px; min-width: 0;">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <sc-for list="{{groupsT}}" as="g" hint-placeholder-count="5">
+          <div style="display: flex; flex-direction: column; gap: 8px; padding-bottom: 16px; border-bottom: 1px solid #e0e5e8;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="font-size: 12px; line-height: 14.4px; font-weight: 500; color: #6b7180; text-transform: uppercase;">{{g.label}}</span>
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="text" icon="{{addIcon}}" on-click="{{g.create}}">New</x-import>
+            </div>
+            <sc-for list="{{g.items}}" as="t" hint-placeholder-count="1">
+              <button type="button" onClick="{{t.pick}}" style="{{t.style}}">
+                <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                  <span style="font-size: 14px; line-height: 20px; font-weight: 500; text-align: left;">{{t.name}}</span>
+                  <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{t.version}}</span>
+                </span>
+                <span style="font-size: 12px; line-height: 14.4px; color: #434952; text-align: left;">{{t.usage}}</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </x-import>
+
+    <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">{{cur.name}} · {{cur.version}}</h2>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{cur.kind}} · file name {{cur.file}} · last changed {{cur.changed}}</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="outline">Edit</x-import>
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="secondary">Save as new version</x-import>
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="outline" color="danger" is-disabled="{{cur.inUse}}" on-click="{{askRemove}}">Remove</x-import>
+            </div>
+          </div>
+          <sc-if value="{{cur.inUse}}" hint-placeholder-val="{{ true }}">
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Can't be removed: {{cur.usedBy}}. Move those documents to another template first.</span>
+          </sc-if>
+          <sc-if value="{{confirming}}" hint-placeholder-val="{{ false }}">
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="warning" title="{{confirmTitle}}" standalone="{{yes}}">
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                <span>No project uses it. Older versions stay in the history so past documents still show where they came from.</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="primary" color="danger" on-click="{{doRemove}}">Remove template</x-import>
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="text" on-click="{{cancelRemove}}">Cancel</x-import>
+                </div>
+              </div>
+            </x-import>
+          </sc-if>
+          <sc-if value="{{justCreated}}" hint-placeholder-val="{{ false }}">
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="info" title="{{createdTitle}}" standalone="{{yes}}">In the real app this opens the editor with an empty {{createdKind}} template, or a copy of the default.</x-import>
+          </sc-if>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <h3 style="margin: 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Metadata fields</h3>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Grid" columns="{{fieldColumns}}" rows="{{cur.fields}}"></x-import>
+          </div>
+        </div>
+      </x-import>
+
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <h3 style="margin: 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Sections</h3>
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">The guidance tells the assistant what to ask and what to write in each section</span>
+          </div>
+          <sc-for list="{{cur.sections}}" as="s" hint-placeholder-count="5">
+            <div style="display: flex; gap: 16px; align-items: flex-start; padding-bottom: 16px; border-bottom: 1px solid #e0e5e8;">
+              <span style="flex: 0 0 180px; font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{s.title}}</span>
+              <span style="flex: 1 1 auto; min-width: 0; font-size: 14px; line-height: 20px; color: #434952;">{{s.guide}}</span>
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="{{s.color}}">{{s.req}}</x-import>
+            </div>
+          </sc-for>
+        </div>
+      </x-import>
+
+      <sc-if value="{{hasSource}}" hint-placeholder-val="{{ false }}">
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <h3 style="margin: 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">File</h3>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Placeholders in double braces are filled from the project when the package is generated.</span>
+            </div>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Tabs" variant="inline" items="{{mdTabs}}" value="{{mdTab}}" on-change="{{setMdTab}}"></x-import>
+            <sc-if value="{{showPreview}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px; line-height: 20px; color: #25282d;">
+                <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; padding: 16px; border-radius: 8px; background: #f4f6f8;">
+                  <sc-for list="{{front}}" as="f" hint-placeholder-count="3">
+                    <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+                      <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{f.k}}</span>
+                      <span style="font-size: 14px; line-height: 20px; color: #000;">{{f.v}}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-for list="{{blocks}}" as="b" hint-placeholder-count="6">
+                  <sc-if value="{{b.h1}}" hint-placeholder-val="{{ false }}"><h2 style="margin: 4px 0 0; font-size: 20px; line-height: 24px; font-weight: 700; color: #000;">{{b.text}}</h2></sc-if>
+                  <sc-if value="{{b.h2}}" hint-placeholder-val="{{ false }}"><h3 style="margin: 8px 0 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">{{b.text}}</h3></sc-if>
+                  <sc-if value="{{b.li}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; padding-left: 8px;"><span style="color: #6b7180;">•</span><span>{{b.text}}</span></div></sc-if>
+                  <sc-if value="{{b.p}}" hint-placeholder-val="{{ true }}"><p style="margin: 0;">{{b.text}}</p></sc-if>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{showSource}}" hint-placeholder-val="{{ false }}">
+              <pre style="margin: 0; padding: 16px; border-radius: 8px; background: #f4f6f8; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 18px; color: #25282d; white-space: pre-wrap;">{{srcText}}</pre>
+            </sc-if>
+          </div>
+        </x-import>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"from":{"editor":"enum","options":["none","start","setup","setupkeel"],"default":"setupkeel"},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sel: 'intent', removed: [], confirming: false, created: '', mdTab: 'preview' };
+  }
+  renderVals() {
+    const R = window.React;
+    const DS = window.SoftwareOneDesignSystem_52b182;
+    const common = [
+      { field: 'id', type: 'ID (INT-, SPC-, PLN-)', filled: 'Automatic' },
+      { field: 'project', type: 'Project ID', filled: 'Automatic' },
+      { field: 'title', type: 'Text', filled: 'You' },
+      { field: 'author', type: 'Person', filled: 'Automatic' },
+      { field: 'created / updated', type: 'Date', filled: 'Automatic' },
+      { field: 'status', type: 'Draft, Pending, Approved, Closed', filled: 'Approval step' },
+      { field: 'version', type: 'Number', filled: 'Automatic' },
+      { field: 'template', type: 'Template and version', filled: 'Automatic' }
+    ];
+    const req = (r) => ({ req: r ? 'Required' : 'Optional', color: r ? 'primary' : 'gray' });
+    const sec = (title, guide, r) => Object.assign({ title: title, guide: guide }, req(r));
+    const T = {
+      intent: { name: 'Standard intent', version: 'v3', kind: 'Intent', uses: 5, isDefault: true, file: 'docs/intent.md', changed: '04/11/2026',
+        fields: common.concat([ { field: 'source', type: 'Brainstorm, ticket or incident', filled: 'Automatic' }, { field: 'mocks', type: 'Attached mock references (optional)', filled: 'Attach step' } ]),
+        sections: [ sec('Problem', 'What the user cannot do today, and who is affected.', true), sec('Proposed outcome', 'What better looks like, in the proposer’s own words.', true),
+          sec('Requirements', 'Short, testable statements. Each gets a REQ ID.', true), sec('Affected users and systems', 'People and services touched by the change.', true),
+          sec('Constraints', 'Limits on scope, technology, data or timing.', false), sec('Open questions', 'Anything still undecided. Carried forward to the spec.', false) ] },
+      light: { name: 'Lightweight intent', version: 'v1', kind: 'Intent', uses: 0, isDefault: false, file: 'docs/intent.md', changed: '28/10/2026',
+        fields: common,
+        sections: [ sec('Problem', 'One paragraph.', true), sec('Outcome', 'One paragraph.', true), sec('Requirements', 'Up to five REQ items.', true) ] },
+      spec: { name: 'Requirements and design spec', version: 'v2', kind: 'Spec', uses: 3, isDefault: true, file: 'docs/spec.md', changed: '06/11/2026',
+        fields: common.concat([ { field: 'from_intent', type: 'Document and version', filled: 'Automatic' }, { field: 'policies', type: 'Policy list with versions', filled: 'Automatic' } ]),
+        sections: [ sec('Requirements', 'All REQ items, from the intent and new ones.', true), sec('Approach', 'How the change will work, at component level.', true),
+          sec('Feasibility', 'Architecture fit, integration, security, effort, risk, build or buy.', true), sec('Flagged concerns', 'Conflicts with policy or missing information, each with an owner.', true), sec('Acceptance scenarios', 'Given/When/Then scenarios tagged with REQ IDs, following the BDD style guide.', true), sec('Out of scope', 'What this change will not do.', false) ] },
+      shortspec: { name: 'Short spec', version: 'v1', kind: 'Spec', uses: 0, isDefault: false, file: 'docs/spec.md', changed: '20/11/2026',
+        fields: common,
+        sections: [ sec('Requirements', 'All REQ items, from the intent and new ones.', true), sec('Approach', 'How the change will work, in a few paragraphs.', true) ] },
+      plan: { name: 'Implementation plan', version: 'v2', kind: 'Plan', uses: 3, isDefault: true, file: 'docs/plan.md', changed: '10/11/2026',
+        fields: common.concat([ { field: 'from_spec', type: 'Document and version', filled: 'Automatic' } ]),
+        sections: [ sec('Tasks', 'Ordered tasks, each with REQ IDs and an acceptance test.', true), sec('Files that change', 'Expected files or modules per task.', false),
+          sec('Risks', 'What could break and how to check it.', true), sec('Test strategy', 'Acceptance test stubs and how CI runs them.', true) ] },
+      agents: { name: 'AGENTS.md', version: 'v1', kind: 'Handoff', uses: 2, isDefault: true, file: 'AGENTS.md', changed: '12/11/2026',
+        fields: [ { field: 'project', type: 'Project ID', filled: 'Automatic' }, { field: 'plan_version', type: 'Number', filled: 'Automatic' } ],
+        sections: [ sec('Read first', 'Point to docs/intent.md, spec.md and plan.md.', true), sec('Commands', 'Build, test and lint commands.', true),
+          sec('Rules', 'Update plan.md when the work departs from it. Make the scenarios in features/ pass; never edit .feature files to do so.', true), sec('Visual reference', 'For UI tasks, compare screenshots with the references in docs/mocks/. They show intent; the spec decides.', false), sec('Conventions', 'For agents without native skills: the rules from the selected standards.', false), sec('Scope', 'Build only what is in Now in docs/roadmap.md. Do not start Next or Later items.', true), sec('Verifying your work', 'Build, test and lint commands with healthy output. Run all before reporting done; fix the code, not the test.', true), sec('Agent roles', 'For agents without native subagents: the verifier, simplifier and researcher instructions from the Agent kit.', false), sec('Done means', 'All acceptance tests for the task pass in CI.', true) ] },
+      decision: { name: 'Decision record', version: 'v1', kind: 'Decision', uses: 4, isDefault: true, file: 'docs/decisions/NNNN-*.md', changed: '02/11/2026',
+        fields: common.concat([ { field: 'decision', type: 'Go, Park or No-go', filled: 'You' } ]),
+        sections: [ sec('Decision', 'Go, Park or No-go.', true), sec('Reason', 'Why, in a few sentences.', true), sec('Conditions', 'What must be resolved before or during the build.', false) ] }
+      ,
+      roadmap: { name: 'Roadmap', version: 'v1', kind: 'Roadmap', uses: 1, isDefault: true, file: 'docs/roadmap.md', changed: '20/11/2026',
+        fields: common.concat([ { field: 'horizons', type: 'Now, Next, Later, Not doing (or named releases)', filled: 'Template' } ]),
+        sections: [ sec('Now', 'The only scope the coding agent builds. Each item links to requirements or a change request.', true), sec('Next', 'Approved direction, not started.', true), sec('Later', 'Ideas we intend to do, not scheduled.', false), sec('Not doing', 'Decided against, with the reason.', true) ],
+        source: ['---', 'id: {{roadmap_id}}', 'project: {{project_id}}', 'template: roadmap@1', '---', '', '# Roadmap: {{project_title}}', '', '## Now ({{current_release}})', '- Items linked to REQ IDs or change requests', '', '## Next', '- Approved direction, not started', '', '## Later', '- Ideas, not scheduled', '', '## Not doing', '- Decision and reason'].join('\n') }      ,
+      verifier: { name: 'Verifier', version: 'v1', kind: 'Agent kit', uses: 1, isDefault: true, file: '.claude/agents/verifier.md · or AGENTS.md › Agent roles', changed: '20/11/2026',
+        fields: [ { field: 'name', type: 'Text', filled: 'Template' }, { field: 'description', type: 'When the agent should use it', filled: 'Template' }, { field: 'tools', type: 'Allowed tools', filled: 'Template' } ],
+        sections: [ sec('What it checks', 'Runs the app and checks the change against plan.md and the acceptance tests for each REQ ID.', true), sec('Output', 'Reports what it ran, what it saw and any mismatch. Never fixes anything.', true) ],
+        source: ['---', 'name: verifier', 'description: Runs the app and checks the change works before the session reports done', 'tools: Bash, Read', '---', '', '# Verifier', '', 'Start the app with {{run_command}}.', 'Run the acceptance tests for the task: {{acceptance_tests}}.', 'Check the behaviour against {{plan_path}} and the REQ IDs it lists.', '', '## Report', '- What you ran and what you saw', '- Any behaviour that does not match the plan', '- Do not fix anything; report only'].join('\n') },
+      simplifier: { name: 'Code simplifier', version: 'v1', kind: 'Agent kit', uses: 1, isDefault: true, file: '.claude/agents/code-simplifier.md · or AGENTS.md › Agent roles', changed: '20/11/2026',
+        fields: [ { field: 'name', type: 'Text', filled: 'Template' }, { field: 'description', type: 'When the agent should use it', filled: 'Template' }, { field: 'tools', type: 'Allowed tools', filled: 'Template' } ],
+        sections: [ sec('What it does', 'Removes needless complexity after the main agent finishes, without changing behaviour.', true), sec('Guardrails', 'Tests must still pass. Never edit acceptance tests.', true) ],
+        source: ['---', 'name: code-simplifier', 'description: Simplifies code after a task is done, without changing behaviour', 'tools: Read, Edit, Bash', '---', '', '# Code simplifier', '', 'Review the files changed in this task.', 'Remove duplication, dead code and needless abstraction.', '', '## Rules', '- Behaviour must not change', '- Run {{test_command}} before and after', '- Never edit files under {{acceptance_tests_dir}}'].join('\n') },
+      researcher: { name: 'Researcher', version: 'v1', kind: 'Agent kit', uses: 1, isDefault: true, file: '.claude/agents/researcher.md · or AGENTS.md › Agent roles', changed: '20/11/2026',
+        fields: [ { field: 'name', type: 'Text', filled: 'Template' }, { field: 'description', type: 'When the agent should use it', filled: 'Template' }, { field: 'tools', type: 'Allowed tools', filled: 'Template' } ],
+        sections: [ sec('What it does', 'Explores the codebase or docs and reports back, so the main session keeps a clean context.', true), sec('Output', 'A short summary with file paths, no code changes.', true) ],
+        source: ['---', 'name: researcher', 'description: Explores the codebase and reports back without changing anything', 'tools: Read, Grep', '---', '', '# Researcher', '', 'Answer the question you are given by reading the code and docs.', 'Start with {{spec_path}} and {{plan_path}}.', '', '## Report', '- A short answer first', '- The files and lines that support it', '- Do not edit any file'].join('\n') },
+      review: { name: 'REVIEW.md', version: 'v1', kind: 'Agent kit', uses: 1, isDefault: true, file: 'REVIEW.md', changed: '20/11/2026',
+        fields: [ { field: 'project', type: 'Project ID', filled: 'Automatic' } ],
+        sections: [ sec('Passes', 'Bugs, security, and compliance with spec.md and plan.md.', true), sec('Severity', 'What counts as Important versus a nit.', true), sec('Do not report', 'Generated files and anything CI already enforces.', false) ],
+        source: ['---', 'project: {{project_id}}', '---', '', '# Review instructions', '', '## Passes', '- Bugs: logic errors, broken edge cases, regressions', '- Security: injection, authentication gaps, secrets in code', '- Compliance: the change matches {{spec_path}} and {{plan_path}}', '', '## What Important means here', 'Reserve Important for findings that break behaviour, leak data or breach a requirement.', '', '## Cap the nits', 'Report at most five nits per review.'].join('\n') }
+    };
+    const st = this.state;
+    const kinds = [ ['Intent', 'Intent templates'], ['Spec', 'Spec templates'], ['Plan', 'Plan templates'], ['Handoff', 'Agent instructions'], ['Decision', 'Decision records'], ['Roadmap', 'Roadmaps'], ['Agent kit', 'Agent kit · subagents and review policy'] ];
+    const order = ['intent', 'light', 'spec', 'shortspec', 'plan', 'agents', 'decision', 'roadmap', 'verifier', 'simplifier', 'researcher', 'review'].filter((k) => st.removed.indexOf(k) < 0);
+    const sel = order.indexOf(st.sel) >= 0 ? st.sel : order[0];
+    const base = 'display: flex; flex-direction: column; gap: 4px; width: 100%; box-sizing: border-box; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-family: inherit; color: #25282d; ';
+    const usedBy = (t) => t.uses === 0 ? 'not used by any document' : 'used by ' + t.uses + ' document' + (t.uses === 1 ? '' : 's');
+    const cur = Object.assign({}, T[sel], { inUse: T[sel].uses > 0, usedBy: usedBy(T[sel]) });
+    const fromMap = { none: null, start: ['Initialise this folder', 'Start.dc.html'], setupkeel: ['Project setup', 'SetupKeel.dc.html'] };
+    const back = fromMap[this.props.from ?? 'setupkeel'];
+    return {
+      hasBack: !!back,
+      backLabel: back ? back[0] : '',
+      backHref: back ? back[1] : 'SetupKeel.dc.html',
+      yes: true,
+      addIcon: R.createElement(DS.Icon, { name: 'add', size: 5 }),
+      groupsT: kinds.map((kd) => ({
+        label: kd[1],
+        create: () => this.setState({ created: kd[0], confirming: false }),
+        items: order.filter((k) => T[k].kind === kd[0]).map((k) => ({
+          name: T[k].name, version: T[k].version,
+          usage: (T[k].isDefault ? 'Default · ' : '') + usedBy(T[k]).replace(/^./, (c) => c.toUpperCase()),
+          pick: () => this.setState({ sel: k, confirming: false, created: '' }),
+          style: base + (k === sel ? 'background: #ebf0ff; border: 1px solid #3366ff;' : 'background: #ffffff; border: 1px solid #e0e5e8;') }))
+      })),
+      askRemove: () => this.setState({ confirming: true, created: '' }),
+      confirming: st.confirming && !cur.inUse,
+      confirmTitle: 'Remove ' + cur.name + ' · ' + cur.version + '?',
+      cancelRemove: () => this.setState({ confirming: false }),
+      doRemove: () => this.setState({ removed: st.removed.concat([sel]), confirming: false }),
+      justCreated: !!st.created,
+      createdTitle: 'New ' + (st.created || '').toLowerCase() + ' template',
+      createdKind: (st.created || '').toLowerCase(),
+      cur: cur,
+      hasSource: !!T[sel].source,
+      mdTabs: [ { value: 'preview', label: 'Preview' }, { value: 'source', label: 'Markdown' } ],
+      mdTab: st.mdTab,
+      setMdTab: (v) => this.setState({ mdTab: v }),
+      showPreview: st.mdTab === 'preview',
+      showSource: st.mdTab === 'source',
+      srcText: T[sel].source || '',
+      front: (() => { if (!T[sel].source) return []; const src = T[sel].source.split('\n'); const end = src.indexOf('---', 1); return src.slice(1, end).map((l) => { const i = l.indexOf(':'); return { k: l.slice(0, i), v: l.slice(i + 1).trim() }; }); })(),
+      blocks: (() => { if (!T[sel].source) return []; const src = T[sel].source.split('\n'); const end = src.indexOf('---', 1); return src.slice(end + 1).filter((l) => l.trim()).map((l) => ({
+        h1: l.indexOf('# ') === 0, h2: l.indexOf('## ') === 0, li: l.indexOf('- ') === 0,
+        p: !(l.indexOf('# ') === 0 || l.indexOf('## ') === 0 || l.indexOf('- ') === 0),
+        text: l.replace(/^#+ /, '').replace(/^- /, '') })); })(),
+      fieldColumns: [
+        { key: 'field', label: 'Field', render: (r) => R.createElement('code', { style: { fontSize: 12 } }, r.field) },
+        { key: 'type', label: 'Type' },
+        { key: 'filled', label: 'Filled by' }
+      ],
+      groups: [
+        { label: 'Project · Keel', icon: 'lightbulb', items: [
+          { id: 'setup', label: 'Project setup', href: 'SetupKeel.dc.html' },
+          { id: 'explore', label: 'Explore', href: 'Explore.dc.html' },
+          { id: 'intent', label: 'Intent', href: 'Intent.dc.html' },
+          { id: 'spec', label: 'Spec', href: 'Spec.dc.html' },
+          { id: 'plan', label: 'Plan', href: 'Plan.dc.html' },
+          { id: 'handoff', label: 'Handoff', href: 'Handoff.dc.html' },
+          { id: 'roadmap', label: 'Roadmap', href: 'Roadmap.dc.html' },
+          { id: 'changes', label: 'Changes', href: 'ChangesList.dc.html' } ] },
+        { label: 'Library (.keel)', icon: 'folder', items: [
+          { id: 'templates', label: 'Templates', href: 'Templates.dc.html' },
+          { id: 'styles', label: 'Brainstorm styles', href: 'Styles.dc.html' },
+          { id: 'standards', label: 'Standards', href: 'Standards.dc.html' } ] },
+        { label: 'Settings', icon: 'settings', items: [
+          { id: 'settings', label: 'Settings', href: 'Settings.dc.html' } ] }
+      ],
+      brand: R.createElement('span', { style: { fontSize: 18, lineHeight: '26px', fontWeight: 700, color: '#000' } }, 'Keel'),
+      headerBar: R.createElement(DS.NavigationHeaderBar, { title: 'Templates', subtitle: 'Keel · ~/keel' })
+    };
+  }
+}
+</script>
+</body>
+</html>

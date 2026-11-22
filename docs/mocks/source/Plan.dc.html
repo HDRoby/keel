@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keel · Plan, versions and impact</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/softwareone/tokens.css">
+<link rel="stylesheet" href="ds/softwareone/components/bundle.css">
+<script src="ds/softwareone/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#3366ff}a:hover{color:#2447b3}
+</style>
+</helmet>
+<x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Navigation" groups="{{groups}}" active-id="plan" brand="{{brand}}" header-bar="{{headerBar}}">
+<div style="box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 24px; font-family: var(--font-body, Arial); color: var(--text-body, #25282d); max-width: 1400px;">
+  <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+      <h1 style="margin: 0; font-size: 24px; line-height: 28.13px; font-weight: 700; color: var(--text-primary, #000);">Keel</h1>
+      <span style="font-size: 12px; line-height: 14.4px; color: var(--text-muted, #6b7180);">PRJ-0001 · plan.md · PLN-0001 · from SPC-0001 v3</span>
+    </div>
+    <a href="Handoff.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="rocket_launch" size="5"></x-import>
+      Prepare handoff
+    </a>
+  </div>
+  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="warning" title="Pending change CR-0003" standalone="{{yes}}">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+      <span>Intent v3 adds REQ-014 (change requests with approval and impact) and is waiting for approval. If you approve it, this plan becomes out of date.</span>
+      <a href="Changes.dc.html" style="font-weight: 500;">Review change</a>
+    </div>
+  </x-import>
+  <dc-import name="StageBar" current="plan" hint-size="100%,72px"></dc-import>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card" style="flex: 1 1 280px; min-width: 0;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <h2 style="margin: 0 0 8px; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Versions</h2>
+        <sc-for list="{{versions}}" as="v" hint-placeholder-count="4">
+          <button type="button" onClick="{{v.pick}}" style="{{v.style}}">
+            <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="font-size: 14px; line-height: 20px; font-weight: 500;">{{v.label}}</span>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{v.when}}</span>
+            </span>
+            <span style="font-size: 12px; line-height: 14.4px; color: #434952; text-align: left;">{{v.reason}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </x-import>
+
+    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card" style="flex: 999 1 480px; min-width: 0;">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">{{diffTitle}}</h2>
+          <span style="font-size: 14px; line-height: 20px; color: #434952;">Why: {{why}}</span>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{who}}</span>
+        </div>
+        <div style="display: flex; flex-direction: column; border: 1px solid #e0e5e8; border-radius: 8px; overflow: hidden; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 20px;">
+          <sc-for list="{{diff}}" as="d" hint-placeholder-count="6">
+            <div style="{{d.style}}"><span style="display: inline-block; width: 20px; color: #6b7180;">{{d.sign}}</span>{{d.text}}</div>
+          </sc-for>
+        </div>
+      </div>
+    </x-import>
+
+    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card" style="flex: 1 1 300px; min-width: 0;">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Impact</h2>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Worked out from requirement IDs</span>
+        </div>
+        <sc-for list="{{impact}}" as="i" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{i.label}}</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <sc-for list="{{i.items}}" as="x" hint-placeholder-count="2">
+                <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" type="outline" color="{{i.color}}">{{x}}</x-import>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </x-import>
+  </div>
+
+  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Tasks in plan v4</h2>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Template: Implementation plan · v2   ·   Checked against 5 standards</span>
+        </div>
+        <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Each task names the requirements it serves and the scenarios that prove it</span>
+      </div>
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Grid" columns="{{taskColumns}}" rows="{{tasks}}"></x-import>
+    </div>
+  </x-import>
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1250}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { v: 4 };
+  }
+  renderVals() {
+    const R = window.React;
+    const DS = window.SoftwareOneDesignSystem_52b182;
+    const data = {
+      4: { label: 'Version 4 · current', when: '20/11/2026', reason: 'Split T8 into scaffold and push',
+           who: 'Edited by Roberto Basile · 20/11/2026 15:05 · approved',
+           why: 'Test the scaffold generator without GitHub, so the zip download works on its own.',
+           diff: [ ['', 'T7  Version diff and impact view          REQ-008'],
+                   ['-', 'T8  Scaffold and GitHub push              REQ-006'],
+                   ['+', 'T8a Scaffold generator (zip)              REQ-006'],
+                   ['+', 'T8b GitHub App push                       REQ-006'],
+                   ['', 'T9  Read-back from repository            REQ-007'] ],
+           impact: [ ['Requirements', ['REQ-006'], 'primary'], ['Tasks', ['T8a', 'T8b'], 'gray'], ['Scenarios', ['Handoff: scaffold contains documents and stubs'], 'warning'] ] },
+      3: { label: 'Version 3', when: '20/11/2026', reason: 'Added read-back task for REQ-007',
+           who: 'Edited by Roberto Basile · 20/11/2026 14:20 · approved',
+           why: 'Spec v3 replaced the one-way handoff with read-back (REQ-007), so the plan needed a task and a test.',
+           diff: [ ['', 'T8  Scaffold and GitHub push              REQ-006'],
+                   ['+', 'T9  Read-back from repository            REQ-007'] ],
+           impact: [ ['Requirements', ['REQ-007'], 'primary'], ['Tasks', ['T9'], 'gray'], ['Scenarios', ['Read-back: agent change shows up for review'], 'warning'] ] },
+      2: { label: 'Version 2', when: '20/11/2026', reason: 'Provider layer before brainstorm',
+           who: 'Edited by the assistant at your request · 20/11/2026 13:50 · approved',
+           why: 'The brainstorm depends on the model provider layer, so build that first.',
+           diff: [ ['-', 'T3  Brainstorm service                    REQ-001 REQ-011'],
+                   ['-', 'T4  Provider layer                        REQ-009'],
+                   ['+', 'T3  Provider layer                        REQ-009'],
+                   ['+', 'T4  Brainstorm service                    REQ-001 REQ-011'] ],
+           impact: [ ['Requirements', ['REQ-001', 'REQ-009', 'REQ-011'], 'primary'], ['Tasks', ['T3', 'T4'], 'gray'], ['Scenarios', ['No change'], 'gray'] ] },
+      1: { label: 'Version 1', when: '20/11/2026', reason: 'Generated from spec v2',
+           who: 'Generated by the assistant · 20/11/2026 13:30',
+           why: 'First plan, generated from the approved spec.',
+           diff: [ ['+', 'T1  Document store (markdown in git)      REQ-002 REQ-003'],
+                   ['+', 'T2  Template engine                       REQ-003'],
+                   ['+', 'T3  Brainstorm service                    REQ-001 REQ-011'],
+                   ['+', 'T4  Provider layer                        REQ-009'],
+                   ['+', 'T5  Traceability index                    REQ-004'],
+                   ['+', 'T6  Stage gates and approvals             REQ-005'],
+                   ['+', 'T7  Version diff and impact view          REQ-008'],
+                   ['+', 'T8  Scaffold and GitHub push              REQ-006'] ],
+           impact: [ ['Requirements', ['REQ-001 to REQ-006', 'REQ-008', 'REQ-009', 'REQ-011'], 'primary'], ['Tasks', ['T1 to T8'], 'gray'], ['Scenarios', ['6 created'], 'warning'] ] }
+    };
+    const cur = data[this.state.v];
+    const rowBase = 'display: flex; flex-direction: column; gap: 4px; width: 100%; box-sizing: border-box; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-family: inherit; color: #25282d; ';
+    const versions = [4, 3, 2, 1].map((n) => ({
+      label: data[n].label, when: data[n].when, reason: data[n].reason,
+      pick: () => this.setState({ v: n }),
+      style: rowBase + (n === this.state.v ? 'background: #ebf0ff; border: 1px solid #3366ff;' : 'background: #ffffff; border: 1px solid #e0e5e8;')
+    }));
+    const lineStyle = { '+': 'padding: 2px 12px; background: #e6f7ef; color: #00512e; white-space: pre;', '-': 'padding: 2px 12px; background: #fdecee; color: #8a1220; white-space: pre; text-decoration: line-through;', '': 'padding: 2px 12px; background: #ffffff; color: #434952; white-space: pre;' };
+    const reqChips = (list) => R.createElement('span', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } }, list.map((x) => R.createElement(DS.Chip, { key: x, type: 'outline', color: 'primary' }, x)));
+    return {
+      yes: true,
+      versions: versions,
+      diffTitle: this.state.v === 1 ? 'Version 1' : 'Changes from version ' + (this.state.v - 1) + ' to ' + this.state.v,
+      why: cur.why,
+      who: cur.who,
+      diff: cur.diff.map((d) => ({ sign: d[0] || ' ', text: d[1], style: lineStyle[d[0]] })),
+      impact: cur.impact.map((i) => ({ label: i[0], items: i[1], color: i[2] })),
+      taskColumns: [
+        { key: 'id', label: 'Task', width: 70, render: (r) => R.createElement('span', { style: { fontWeight: 500 } }, r.id) },
+        { key: 'title', label: 'Title' },
+        { key: 'reqs', label: 'Requirements', render: (r) => reqChips(r.reqs) },
+        { key: 'test', label: 'Acceptance scenarios', render: (r) => R.createElement('span', { style: { fontSize: 14 } }, r.test) }
+      ],
+      tasks: [
+        { id: 'T1', title: 'Document store: markdown with YAML front matter in git', reqs: ['REQ-002', 'REQ-003'], test: 'Intent document: carries its metadata' },
+        { id: 'T2', title: 'Template engine and template library', reqs: ['REQ-003'], test: 'Intent document: carries its metadata' },
+        { id: 'T3', title: 'Model provider layer (Anthropic, OpenAI, Azure, local)', reqs: ['REQ-009'], test: 'Brainstorm: asks about the next missing section' },
+        { id: 'T4', title: 'Brainstorm service: template-driven questions and styles', reqs: ['REQ-001', 'REQ-011'], test: 'Brainstorm: asks about the next missing section' },
+        { id: 'T5', title: 'Requirement IDs and traceability index', reqs: ['REQ-004'], test: 'Traceability: a changed requirement shows its impact' },
+        { id: 'T6', title: 'Stage gates and approvals', reqs: ['REQ-005'], test: 'Stage gating: 2 scenarios' },
+        { id: 'T7', title: 'Version diff, impact view and mock references', reqs: ['REQ-008', 'REQ-010'], test: 'Traceability: a changed requirement shows its impact' },
+        { id: 'T8a', title: 'Scaffold generator (zip)', reqs: ['REQ-006'], test: 'Handoff: scaffold contains documents and stubs' },
+        { id: 'T8b', title: 'GitHub App push', reqs: ['REQ-006'], test: 'Handoff: scaffold contains documents and stubs' },
+        { id: 'T9', title: 'Read-back from repository', reqs: ['REQ-007'], test: 'Read-back: agent change shows up for review' }
+      ],
+      groups: [
+        { label: 'Project · Keel', icon: 'lightbulb', items: [
+          { id: 'setup', label: 'Project setup', href: 'SetupKeel.dc.html' },
+          { id: 'explore', label: 'Explore', href: 'Explore.dc.html' },
+          { id: 'intent', label: 'Intent', href: 'Intent.dc.html' },
+          { id: 'spec', label: 'Spec', href: 'Spec.dc.html' },
+          { id: 'plan', label: 'Plan', href: 'Plan.dc.html' },
+          { id: 'handoff', label: 'Handoff', href: 'Handoff.dc.html' },
+          { id: 'roadmap', label: 'Roadmap', href: 'Roadmap.dc.html' },
+          { id: 'changes', label: 'Changes', href: 'ChangesList.dc.html' } ] },
+        { label: 'Library (.keel)', icon: 'folder', items: [
+          { id: 'templates', label: 'Templates', href: 'Templates.dc.html' },
+          { id: 'styles', label: 'Brainstorm styles', href: 'Styles.dc.html' },
+          { id: 'standards', label: 'Standards', href: 'Standards.dc.html' } ] },
+        { label: 'Settings', icon: 'settings', items: [
+          { id: 'settings', label: 'Settings', href: 'Settings.dc.html' } ] }
+      ],
+      brand: R.createElement('span', { style: { fontSize: 18, lineHeight: '26px', fontWeight: 700, color: '#000' } }, 'Keel'),
+      headerBar: R.createElement(DS.NavigationHeaderBar, { title: 'Plan', subtitle: 'Keel · ~/keel' })
+    };
+  }
+}
+</script>
+</body>
+</html>

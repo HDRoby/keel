@@ -6,7 +6,7 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 11
+version: 12
 template: implementation-plan@2
 from_spec: SPC-0001@11
 ---
@@ -72,8 +72,15 @@ Runs after CR-0005 (R10); CR-0006 builds on it.
 | --- | --- | --- | --- |
 | R12 | Design as decisions | REQ-013, REQ-005 | design-decisions |
 
+## Rework for CR-0008
+
+| Task | Title | Requirements | Scenarios |
+| --- | --- | --- | --- |
+| R13 | Every screen looks like the mockup | none (look and feel) | existing scenarios; ui.guard.test.ts |
+
 ## Version history
 
+- v12: task R13, UI consistency (CR-0008).
 - v11: task R12 for CR-0007.
 - v10: task R11 for CR-0006.
 - v9: task R18 for CR-0003; runs after CR-0005 (R10).

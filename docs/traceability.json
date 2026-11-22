@@ -4,7 +4,7 @@
   "from": {
     "intent": "INT-0001@4",
     "spec": "SPC-0001@11",
-    "plan": "PLN-0001@11"
+    "plan": "PLN-0001@12"
   },
   "requirements": {
     "REQ-001": {
@@ -216,6 +216,11 @@
       "features": [
         "features/design-decisions.feature"
       ]
+    },
+    "R13": {
+      "title": "Every screen looks like the mockup",
+      "requirements": [],
+      "features": []
     },
     "R18": {
       "title": "Change requests across stages, and the Changes page",

@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keel · Startup check</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/softwareone/tokens.css">
+<link rel="stylesheet" href="ds/softwareone/components/bundle.css">
+<script src="ds/softwareone/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#3366ff}a:hover{color:#2447b3}
+@keyframes keelPulse{0%,100%{opacity:.35}50%{opacity:1}}
+</style>
+</helmet>
+<x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Navigation" groups="{{groups}}" active-id="check" brand="{{brand}}" header-bar="{{headerBar}}">
+<div style="box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 24px; font-family: var(--font-body, Arial); color: var(--text-body, #25282d); max-width: 900px; width: 100%; margin: 0 auto;">
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 8px 12px; border: 1px dashed #b6bcc6; border-radius: 8px; font-size: 12px; line-height: 16px; color: #6b7180;">
+    <span>Mockup only, try:</span>
+    <sc-for list="{{caseTabs}}" as="ct" hint-placeholder-count="4">
+      <button type="button" onClick="{{ct.pick}}" style="{{ct.style}}">{{ct.label}}</button>
+    </sc-for>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <h1 style="margin: 0; font-size: 24px; line-height: 28.13px; font-weight: 700; color: var(--text-primary, #000);">{{title}}</h1>
+    <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--text-muted, #6b7180);">{{intro}}</p>
+  </div>
+
+  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;">
+        <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Startup check</h2>
+        <span style="font-size: 12px; line-height: 16px; color: #6b7180;">Runs every time Keel starts · took 0.4 s</span>
+      </div>
+      <sc-for list="{{checks}}" as="ck" hint-placeholder-count="5">
+        <div style="{{ck.rowStyle}}">
+          <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{ck.icon}}" size="5" color="{{ck.color}}"></x-import>
+          <div style="display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto; min-width: 0;">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+              <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{ck.title}}</span>
+              <span style="{{ck.tagStyle}}">{{ck.tag}}</span>
+            </div>
+            <span style="font-size: 13px; line-height: 19px; color: #434952;">{{ck.text}}</span>
+            <sc-if value="{{ck.hasFix}}" hint-placeholder-val="{{ false }}">
+              <span style="font-size: 12px; line-height: 16px; color: #25282d;">{{ck.fix}}</span>
+            </sc-if>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </x-import>
+
+  <sc-if value="{{blocked}}" hint-placeholder-val="{{ true }}">
+    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="warning" title="{{blockTitle}}" standalone="{{yes}}">{{blockText}}</x-import>
+  </sc-if>
+
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+    <sc-if value="{{blocked}}" hint-placeholder-val="{{ true }}">
+      <a href="{{fixHref}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="settings" size="5"></x-import>
+        {{fixLabel}}
+      </a>
+    </sc-if>
+    <sc-if value="{{allOk}}" hint-placeholder-val="{{ false }}">
+      <a href="{{continueHref}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">Continue</a>
+    </sc-if>
+    <button type="button" onClick="{{recheck}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #6b7180; border-radius: 8px; background: #ffffff; color: #25282d; font: inherit; font-size: 14px; line-height: 20px; font-weight: 500; cursor: pointer;">{{recheckLabel}}</button>
+    <span style="flex: 1 1 260px; font-size: 12px; line-height: 16px; color: #6b7180;">{{footNote}}</span>
+  </div>
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { kase: 'ollama', checking: false };
+  }
+  renderVals() {
+    const R = window.React;
+    const DS = window.SoftwareOneDesignSystem_52b182;
+    const st = this.state;
+    const k = st.kase;
+    const pill = (bg, fg) => 'font-size: 12px; line-height: 16px; padding: 1px 8px; border-radius: 999px; background: ' + bg + '; color: ' + fg + ';';
+    const ok = (title, text) => ({ state: 'ok', title: title, text: text });
+    const bad = (title, text, fix) => ({ state: 'bad', title: title, text: text, fix: fix });
+    const warn = (title, text, fix) => ({ state: 'warn', title: title, text: text, fix: fix });
+    const skip = (title, text) => ({ state: 'skip', title: title, text: text });
+    const C = {
+      first: [
+        bad('Your settings', 'No settings found in ~/.config/keel. This looks like the first time Keel runs on this computer.', 'Fix: choose a model provider in Settings. Ollama is preselected.'),
+        skip('Model provider', 'Checked once a provider is chosen.'),
+        skip('Models for each task', 'Checked once a provider is chosen.'),
+        ok('Project config', '/Users/roberto/keel/.keel/config.yml is valid (format 2).')
+      ],
+      ollama: [
+        ok('Your settings', '~/.config/keel/settings.json is valid. Provider: Ollama.'),
+        bad('Model provider', 'Keel could not reach Ollama at http://localhost:11434 (connection refused).', 'Fix: start Ollama (open the app, or run ollama serve), then check again. Or choose another provider in Settings.'),
+        skip('Models for each task', 'Checked once the provider answers.'),
+        ok('Project config', '/Users/roberto/keel/.keel/config.yml is valid (format 2).')
+      ],
+      models: [
+        ok('Your settings', '~/.config/keel/settings.json is valid. Provider: Ollama.'),
+        ok('Model provider', 'Ollama is running at http://localhost:11434 · 3 models installed.'),
+        bad('Models for each task', '"Spec and plan" is set to qwen3:32b, which is no longer installed. A test message to gemma3:12b ("Section comments") answered in 1.2 s.', 'Fix: pick another model for "Spec and plan" in Settings, or run ollama pull qwen3:32b.'),
+        ok('Project config', '/Users/roberto/keel/.keel/config.yml is valid (format 2).')
+      ],
+      config: [
+        ok('Your settings', '~/.config/keel/settings.json is valid. Provider: Ollama.'),
+        ok('Model provider', 'Ollama is running at http://localhost:11434 · 4 models installed.'),
+        ok('Models for each task', 'Each task has a model, and a short test message got an answer.'),
+        bad('Project config', '.keel/config.yml line 14: "templates.spec" names requirements-and-design-spec@3, which is not in .keel/templates.', 'Fix: choose an available spec template in Project setup, or restore the file from git. Keel does not change the file on its own.')
+      ],
+      ok: [
+        ok('Your settings', '~/.config/keel/settings.json is valid. Provider: Ollama.'),
+        ok('Model provider', 'Ollama is running at http://localhost:11434 · 4 models installed.'),
+        ok('Models for each task', 'Each task has a model, and a short test message got an answer.'),
+        ok('Project config', '/Users/roberto/keel/.keel/config.yml is valid (format 2).')
+      ]
+    };
+    const list = C[k];
+    const blocked = list.some((c) => c.state === 'bad');
+    const look = {
+      ok: ['check_circle', '#008556', 'OK', pill('#e6f6ec', '#1a7f43'), '#ffffff', '#e0e5e8'],
+      bad: ['error', '#b42318', 'Needs fixing', pill('#fdecea', '#b42318'), '#fffafa', '#f5c2bd'],
+      warn: ['warning', '#b54708', 'Warning', pill('#fff4e0', '#8a5a00'), '#fffcf5', '#f3d39a'],
+      skip: ['radio_button_unchecked', '#9aa0ab', 'Waiting', pill('#f0f2f5', '#6b7180'), '#ffffff', '#e0e5e8']
+    };
+    const checks = list.map((c) => {
+      const L = look[c.state];
+      return {
+        title: c.title, text: c.text, fix: c.fix || '', hasFix: !!c.fix,
+        icon: st.checking ? 'progress_activity' : L[0], color: L[1], tag: st.checking ? 'Checking…' : L[2], tagStyle: L[3],
+        rowStyle: 'display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: 8px; background: ' + L[4] + '; border: 1px solid ' + L[5] + ';' + (st.checking ? ' animation: keelPulse 1.2s infinite;' : '')
+      };
+    });
+    const titles = {
+      first: ['Set up Keel first', 'Keel needs a model provider before it can comment, draft or review. It takes a minute.', 'Choose a model provider'],
+      ollama: ['Keel cannot reach your model', 'Everything that needs a model is paused until this is fixed. Your documents are safe and still readable.', 'Open Settings'],
+      models: ['A model is missing', 'One task points to a model that is not available. Fix it before going on.', 'Open Settings'],
+      config: ['This project\'s config has a problem', 'Keel will not open the project until .keel/config.yml is valid, so nothing is written with a wrong setting.', 'Open Project setup'],
+      ok: ['All set', 'Your settings, model access and project config are fine.', '']
+    }[k];
+    return {
+      yes: true,
+      caseTabs: [['first', 'First run'], ['ollama', 'Ollama not running'], ['models', 'Model missing'], ['config', 'Project config invalid'], ['ok', 'All OK']].map((c) => ({
+        label: c[1], pick: () => this.setState({ kase: c[0] }),
+        style: 'border: 1px solid ' + (k === c[0] ? '#3366ff' : '#e0e5e8') + '; background: ' + (k === c[0] ? '#ebf0ff' : '#ffffff') + '; color: ' + (k === c[0] ? '#2447b3' : '#434952') + '; border-radius: 999px; padding: 2px 10px; font: inherit; font-size: 12px; line-height: 16px; cursor: pointer;'
+      })),
+      title: titles[0],
+      intro: titles[1],
+      checks: checks,
+      blocked: blocked,
+      allOk: !blocked,
+      blockTitle: k === 'config' ? 'The project stays closed until the config is valid' : 'Keel is in setup mode',
+      blockText: k === 'config' ? 'Only Project setup and Settings are available. Fix the config there, then check again.' : 'Only Settings is available until every check passes. The other pages open as soon as it is fixed.',
+      fixLabel: titles[2],
+      fixHref: k === 'config' ? 'SetupKeel.dc.html' : 'Settings.dc.html',
+      continueHref: 'Handoff.dc.html',
+      recheck: () => { this.setState({ checking: true }); setTimeout(() => this.setState({ checking: false, kase: 'ok' }), 1200); },
+      recheckLabel: st.checking ? 'Checking…' : 'Check again',
+      footNote: blocked ? 'Keel also checks again on its own when you come back from Settings.' : 'When every check passes, Keel skips this page and opens the project directly.',
+      groups: blocked ? [
+        { label: 'Setup', icon: 'build', items: [
+          { id: 'check', label: 'Startup check', href: 'Startup.dc.html' },
+          { id: 'settings', label: 'Settings', href: 'Settings.dc.html' } ].concat(k === 'config' ? [{ id: 'setup', label: 'Project setup', href: 'SetupKeel.dc.html' }] : []) },
+        { label: 'Project · Keel (locked)', icon: 'lock', items: [] }
+      ] : [
+        { label: 'Project · Keel', icon: 'lightbulb', items: [
+          { id: 'setup', label: 'Project setup', href: 'SetupKeel.dc.html' },
+          { id: 'explore', label: 'Explore', href: 'Explore.dc.html' },
+          { id: 'intent', label: 'Intent', href: 'Intent.dc.html' },
+          { id: 'spec', label: 'Spec', href: 'Spec.dc.html' },
+          { id: 'plan', label: 'Plan', href: 'Plan.dc.html' },
+          { id: 'handoff', label: 'Handoff', href: 'Handoff.dc.html' } ] },
+        { label: 'Settings', icon: 'settings', items: [
+          { id: 'check', label: 'Startup check', href: 'Startup.dc.html' },
+          { id: 'settings', label: 'Settings', href: 'Settings.dc.html' } ] }
+      ],
+      brand: R.createElement('span', { style: { fontSize: 18, lineHeight: '26px', fontWeight: 700, color: '#000' } }, 'Keel'),
+      headerBar: R.createElement(DS.NavigationHeaderBar, { title: 'Startup check', subtitle: 'Keel · ~/keel' })
+    };
+  }
+}
+</script>
+</body>
+</html>
