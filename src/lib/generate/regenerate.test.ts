@@ -5,7 +5,7 @@ import { ensureSeed } from '../seed';
 import { createDocument, readDocument, saveDocument } from '../store/documents';
 import { commitFiles } from '../store/git';
 import { tempStore } from '../store/test-store';
-import { createProject, projectDir } from '../store/workspace';
+import { initialiseProject } from '../store/workspace';
 import { recordDecision, review } from '../gates/approvals';
 import { generatePlan, regeneratePlan } from './plan';
 import { conflictsOf, resolveConflicts } from './resolve';
@@ -16,10 +16,10 @@ const INTENT = '# Intent: Approvals\n\n## Requirements\n\n- REQ-001 Record an ap
 
 async function project(standards: string[] = []) {
   const store = tempStore();
-  ensureSeed(store.home, join(process.cwd(), 'seed'));
-  await createProject(store, { slug: 'app', title: 'Approvals', author: 'Ada', standards });
-  await createDocument(store, 'app', { kind: 'intent', title: 'Approvals', body: INTENT, template: 'standard-intent@3' });
-  await review(store, 'app', 'intent', { action: 'approve', by: 'Ada', comment: '' });
+  ensureSeed(store.root, join(process.cwd(), 'seed'));
+  await initialiseProject(store, { title: 'Approvals', author: 'Ada', standards });
+  await createDocument(store, { kind: 'intent', title: 'Approvals', body: INTENT, template: 'standard-intent@3' });
+  await review(store, 'intent', { action: 'approve', by: 'Ada', comment: '' });
   return store;
 }
 
@@ -42,7 +42,7 @@ describe('standards in the spec', () => {
       seen.push(messages.at(-1)?.content ?? '');
       return undefined;
     };
-    const spec = await generateSpec(store, 'app', 'requirements-and-design-spec@2', spy);
+    const spec = await generateSpec(store, 'requirements-and-design-spec@2', spy);
     expect(spec.ok && spec.value.header.standards).toEqual(['security-baseline@2', 'small-steps@1']);
     expect(spec.ok && spec.value.body).toContain('## Standards applied\n\n- Security baseline v2 (`security-baseline@2`, Security team)\n- Small steps, tests first v1');
     expect(seen.some((s) => s.includes('security-baseline@2:'))).toBe(true);
@@ -55,45 +55,45 @@ describe('regenerateSpec', () => {
   it('keeps edits, takes new text, raises conflicts that block approval, and resolves them', async () => {
     const store = await project();
     const state = { round: 1 };
-    const first = await generateSpec(store, 'app', 'requirements-and-design-spec@2', writer(state));
+    const first = await generateSpec(store, 'requirements-and-design-spec@2', writer(state));
     if (!first.ok) throw new Error(first.message);
     // The proposer edits Approach (unchanged by the next generation) and Flagged concerns (changed by it).
     const edited = first.value.body.replace('Approach text (stable)', 'My approach').replace('Flagged concerns text, round 1', 'My concerns');
-    await saveDocument(store, 'app', 'docs/spec.md', { reason: 'Edit', body: edited });
+    await saveDocument(store, 'docs/spec.md', { reason: 'Edit', body: edited });
 
     state.round = 2;
-    const again = await regenerateSpec(store, 'app', writer(state));
+    const again = await regenerateSpec(store, writer(state));
     if (!again.ok) throw new Error(again.message);
     expect(again.value.header.version).toBe(3);
     expect(again.value.body).toContain('My approach');
     expect(again.value.body).toContain('My concerns');
     expect(conflictsOf(again.value).map((c) => c.name)).toEqual(['Flagged concerns']);
     expect(conflictsOf(again.value)[0]?.theirs).toContain('Flagged concerns text, round 2');
-    expect(await review(store, 'app', 'spec', { action: 'approve', by: 'Ada', comment: '' })).toMatchObject({ error: 'conflicts' });
+    expect(await review(store, 'spec', { action: 'approve', by: 'Ada', comment: '' })).toMatchObject({ error: 'conflicts' });
 
-    const resolved = await resolveConflicts(store, 'app', 'spec', [{ name: 'Flagged concerns', choice: 'merged', merged: 'Both concerns.' }]);
+    const resolved = await resolveConflicts(store, 'spec', [{ name: 'Flagged concerns', choice: 'merged', merged: 'Both concerns.' }]);
     if (!resolved.ok) throw new Error(resolved.message);
     expect(resolved.value.body).toContain('## Flagged concerns\n\nBoth concerns.\n');
     expect(conflictsOf(resolved.value)).toEqual([]);
-    expect(await resolveConflicts(store, 'app', 'spec', [{ name: 'Nope', choice: 'mine' }])).toMatchObject({ error: 'invalid-input' });
-    expect(await review(store, 'app', 'spec', { action: 'approve', by: 'Ada', comment: '' })).toMatchObject({ ok: true });
-    expect(await regenerateSpec(store, 'app', writer(state))).toMatchObject({ error: 'not-draft' });
+    expect(await resolveConflicts(store, 'spec', [{ name: 'Nope', choice: 'mine' }])).toMatchObject({ error: 'invalid-input' });
+    expect(await review(store, 'spec', { action: 'approve', by: 'Ada', comment: '' })).toMatchObject({ ok: true });
+    expect(await regenerateSpec(store, writer(state))).toMatchObject({ error: 'not-draft' });
   });
 
   it('treats an edited feature file as a conflict when the scenarios change too', async () => {
     const store = await project();
-    await generateSpec(store, 'app', 'requirements-and-design-spec@2', async () => undefined);
+    await generateSpec(store, 'requirements-and-design-spec@2', async () => undefined);
     const short = await project();
-    await generateSpec(short, 'app', 'short-spec@1', async () => undefined);
-    expect(existsSync(join(projectDir('app', short.home), 'features/app.feature'))).toBe(false);
-    const dir = projectDir('app', store.home);
-    writeFileSync(join(dir, 'features/app.feature'), 'Feature: Mine\n');
-    await commitFiles(dir, ['features/app.feature'], 'Edit scenarios');
-    await saveDocument(store, 'app', 'docs/intent.md', { reason: 'More', body: `${INTENT}- REQ-003 Revoke\n` });
-    const again = await regenerateSpec(store, 'app', async () => undefined);
-    expect(again.ok && conflictsOf(again.value).map((c) => c.name)).toEqual(['features/app.feature']);
-    await resolveConflicts(store, 'app', 'spec', [{ name: 'features/app.feature', choice: 'theirs' }]);
-    expect(readFileSync(join(dir, 'features/app.feature'), 'utf8')).toContain('@REQ-003');
+    await generateSpec(short, 'short-spec@1', async () => undefined);
+    expect(existsSync(join(short.root, 'features/approvals.feature'))).toBe(false);
+    const dir = store.root;
+    writeFileSync(join(dir, 'features/approvals.feature'), 'Feature: Mine\n');
+    await commitFiles(dir, ['features/approvals.feature'], 'Edit scenarios');
+    await saveDocument(store, 'docs/intent.md', { reason: 'More', body: `${INTENT}- REQ-003 Revoke\n` });
+    const again = await regenerateSpec(store, async () => undefined);
+    expect(again.ok && conflictsOf(again.value).map((c) => c.name)).toEqual(['features/approvals.feature']);
+    await resolveConflicts(store, 'spec', [{ name: 'features/approvals.feature', choice: 'theirs' }]);
+    expect(readFileSync(join(dir, 'features/approvals.feature'), 'utf8')).toContain('@REQ-003');
   });
 });
 
@@ -101,38 +101,38 @@ describe('gates on regeneration', () => {
   it('refuses to regenerate or resolve on a locked stage', async () => {
     // A spec next to a draft intent (as read-back could bring in): the Spec stage is locked.
     const store = tempStore();
-    ensureSeed(store.home, join(process.cwd(), 'seed'));
-    await createProject(store, { slug: 'app', title: 'Approvals', author: 'Ada' });
-    await createDocument(store, 'app', { kind: 'intent', title: 'Approvals', body: INTENT, template: 'standard-intent@3' });
-    await createDocument(store, 'app', { kind: 'spec', title: 'Approvals', body: '# Spec\n', template: 'short-spec@1' });
-    expect(await regenerateSpec(store, 'app', async () => undefined)).toMatchObject({ error: 'locked', message: 'Needs an approved intent' });
-    expect(await resolveConflicts(store, 'app', 'spec', [])).toMatchObject({ error: 'locked' });
-    expect(await regeneratePlan(store, 'app', async () => undefined)).toMatchObject({ error: 'locked', message: 'Needs a Go decision' });
+    ensureSeed(store.root, join(process.cwd(), 'seed'));
+    await initialiseProject(store, { title: 'Approvals', author: 'Ada' });
+    await createDocument(store, { kind: 'intent', title: 'Approvals', body: INTENT, template: 'standard-intent@3' });
+    await createDocument(store, { kind: 'spec', title: 'Approvals', body: '# Spec\n', template: 'short-spec@1' });
+    expect(await regenerateSpec(store, async () => undefined)).toMatchObject({ error: 'locked', message: 'Needs an approved intent' });
+    expect(await resolveConflicts(store, 'spec', [])).toMatchObject({ error: 'locked' });
+    expect(await regeneratePlan(store, async () => undefined)).toMatchObject({ error: 'locked', message: 'Needs a Go decision' });
   });
 });
 
 describe('regeneratePlan', () => {
   it('updates unedited tasks, keeps edited ones as conflicts, and removes dropped unedited tasks', async () => {
     const store = await project();
-    await recordDecision(store, 'app', { decision: 'go', by: 'Ada', reason: 'Yes.', consequences: '' });
+    await recordDecision(store, { decision: 'go', by: 'Ada', reason: 'Yes.', consequences: '' });
     const state = { round: 1 };
-    await generatePlan(store, 'app', writer(state));
-    const t2 = readDocument(store, 'app', 'tasks/T2.md');
+    await generatePlan(store, writer(state));
+    const t2 = readDocument(store, 'tasks/T2.md');
     if (!t2.ok) throw new Error(t2.message);
-    await saveDocument(store, 'app', 'tasks/T2.md', { reason: 'Edit', body: `${t2.value.body}\nMy note.\n` });
+    await saveDocument(store, 'tasks/T2.md', { reason: 'Edit', body: `${t2.value.body}\nMy note.\n` });
 
     state.round = 2;
-    await saveDocument(store, 'app', 'docs/intent.md', { reason: 'Drop export', body: INTENT.replace('- REQ-002 Export the log\n', '') });
-    const again = await regeneratePlan(store, 'app', writer(state));
+    await saveDocument(store, 'docs/intent.md', { reason: 'Drop export', body: INTENT.replace('- REQ-002 Export the log\n', '') });
+    const again = await regeneratePlan(store, writer(state));
     if (!again.ok) throw new Error(again.message);
-    expect(readDocument(store, 'app', 'tasks/T1.md')).toMatchObject({ ok: true, value: { header: { title: 'Record approvals', version: 2 } } });
+    expect(readDocument(store, 'tasks/T1.md')).toMatchObject({ ok: true, value: { header: { title: 'Record approvals', version: 2 } } });
     expect(conflictsOf(again.value).map((c) => [c.name, c.theirs])).toEqual([['tasks/T2.md', '']]);
-    expect(existsSync(join(projectDir('app', store.home), 'tasks/T2.md'))).toBe(true);
+    expect(existsSync(join(store.root, 'tasks/T2.md'))).toBe(true);
 
-    const t1 = readDocument(store, 'app', 'tasks/T1.md');
+    const t1 = readDocument(store, 'tasks/T1.md');
     expect(t1.ok && t1.value.header.plan).toBe('PLN-0001@2');
-    await resolveConflicts(store, 'app', 'plan', [{ name: 'tasks/T2.md', choice: 'theirs' }]);
-    expect(existsSync(join(projectDir('app', store.home), 'tasks/T2.md'))).toBe(false);
-    expect(await review(store, 'app', 'plan', { action: 'approve', by: 'Ada', comment: '' })).toMatchObject({ ok: true });
+    await resolveConflicts(store, 'plan', [{ name: 'tasks/T2.md', choice: 'theirs' }]);
+    expect(existsSync(join(store.root, 'tasks/T2.md'))).toBe(false);
+    expect(await review(store, 'plan', { action: 'approve', by: 'Ada', comment: '' })).toMatchObject({ ok: true });
   });
 });

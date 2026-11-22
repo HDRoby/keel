@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { createDocument, saveDocument } from '../store/documents';
 import { tempStore } from '../store/test-store';
-import { createProject, projectDir } from '../store/workspace';
+import { initialiseProject } from '../store/workspace';
 import { buildTrace } from '../trace/index';
 import { bodyAt, compactChanges, documentVersions, lineChanges } from './diff';
 import { versionImpact } from './impact';
@@ -28,11 +28,11 @@ describe('lineChanges', () => {
 describe('document versions', () => {
   it('lists versions with the reason they were made, and the body at each', async () => {
     const store = tempStore();
-    await createProject(store, { slug: 'p', title: 'P', author: 'Ada' });
-    await createDocument(store, 'p', { kind: 'plan', title: 'P', body: 'one\n', template: 'implementation-plan@2' });
-    await saveDocument(store, 'p', 'docs/plan.md', { reason: 'Add two', body: 'one\ntwo\n' });
-    await saveDocument(store, 'p', 'docs/plan.md', { reason: 'Approved by Ada', status: 'approved', sameVersion: true });
-    const dir = projectDir('p', store.home);
+    await initialiseProject(store, { title: 'P', author: 'Ada' });
+    await createDocument(store, { kind: 'plan', title: 'P', body: 'one\n', template: 'implementation-plan@2' });
+    await saveDocument(store, 'docs/plan.md', { reason: 'Add two', body: 'one\ntwo\n' });
+    await saveDocument(store, 'docs/plan.md', { reason: 'Approved by Ada', status: 'approved', sameVersion: true });
+    const dir = store.root;
     const versions = await documentVersions(dir, 'docs/plan.md');
     expect(versions.map((v) => [v.version, v.reason])).toEqual([[1, 'Create plan'], [2, 'Add two']]);
     expect(await bodyAt(dir, 'docs/plan.md', versions[1]!)).toBe('one\ntwo\n');
@@ -43,9 +43,9 @@ describe('document versions', () => {
 describe('versionImpact', () => {
   it('finds requirements on changed lines or with changed statements, and what they reach', async () => {
     const store = tempStore();
-    await createProject(store, { slug: 'p', title: 'P', author: 'Ada' });
-    await createDocument(store, 'p', { kind: 'task', title: 'T', body: '# T1 · T\n', template: 'task@1', extra: { requirements: ['REQ-003'] } });
-    const dir = projectDir('p', store.home);
+    await initialiseProject(store, { title: 'P', author: 'Ada' });
+    await createDocument(store, { kind: 'task', title: 'T', body: '# T1 · T\n', template: 'task@1', extra: { requirements: ['REQ-003'] } });
+    const dir = store.root;
     mkdirSync(join(dir, 'features'));
     writeFileSync(join(dir, 'features/a.feature'), 'Feature: A\n  @REQ-001\n  Scenario: S\n');
     const before = '- REQ-001 Old wording\n| T1 | x | REQ-003 |\n| T2 | y | REQ-009 |\n';

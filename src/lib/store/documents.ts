@@ -6,13 +6,13 @@ import { z } from 'zod';
 import type { DocumentHeader, DocumentKind, DocumentStatus, KeelDocument } from '../documents/types';
 import { fail, ok, type Result } from '../result';
 import { writeFileAtomic } from './atomic';
-import { commitFiles } from './git';
+import { commitBlocker, commitFiles, fileAt, keelVersionOf } from './git';
 import type { Store } from './db';
-import { fromYamlDate, projectDir, readProject, today } from './workspace';
+import { fromYamlDate, readProject, today } from './workspace';
 
 export type StoredDocument = KeelDocument & { path: string };
 
-export type DocumentError = 'invalid-front-matter' | 'invalid-path' | 'not-found' | 'already-exists' | 'unknown-project';
+export type DocumentError = 'invalid-front-matter' | 'invalid-path' | 'not-found' | 'already-exists' | 'not-initialised' | 'repo-busy' | 'edited-outside';
 
 const SINGLE: Partial<Record<DocumentKind, string>> = {
   intent: 'docs/intent.md',
@@ -48,7 +48,7 @@ export function kindFromPath(path: string): DocumentKind | undefined {
   return folder?.[0] as DocumentKind | undefined;
 }
 
-/** Repository paths of every document file in a project folder, sorted. */
+/** Repository paths of every document file in the project folder, sorted. */
 export function listDocumentPaths(dir: string): string[] {
   return ['docs', 'tasks']
     .filter((top) => existsSync(join(dir, top)))
@@ -88,16 +88,18 @@ export interface NewDocument {
 }
 
 /** Creates a document as version 1 (status draft unless given), and commits it. */
-export async function createDocument(store: Store, slug: string, input: NewDocument): Promise<Result<StoredDocument, DocumentError>> {
-  const project = readProject(slug, store.home);
-  if (!project.ok) return fail('unknown-project', project.message);
-  const dir = projectDir(slug, store.home);
+export async function createDocument(store: Store, input: NewDocument): Promise<Result<StoredDocument, DocumentError>> {
+  const project = readProject(store.root);
+  if (!project.ok) return fail('not-initialised', project.message);
+  const dir = store.root;
   const number = nextNumber(dir, input.kind);
   const padded = String(number).padStart(4, '0');
   const id = input.kind === 'task' ? (input.id && /^T\d{1,4}$/.test(input.id) ? input.id : `T${number}`) : `${PREFIX[input.kind]}-${padded}`;
   const fileName = input.fileSlug && /^[a-z0-9][a-z0-9-]{0,40}$/.test(input.fileSlug) ? `${padded}-${input.fileSlug}` : id;
   const path = SINGLE[input.kind] ?? `${FOLDER[input.kind]}/${fileName}.md`;
   if (existsSync(join(dir, path))) return fail('already-exists', `${path} already exists`);
+  const blocker = await commitBlocker(dir);
+  if (blocker) return fail('repo-busy', blocker);
   const date = today(store);
   const header: DocumentHeader = {
     ...input.extra,
@@ -105,15 +107,15 @@ export async function createDocument(store: Store, slug: string, input: NewDocum
     created: date, updated: date, status: input.status ?? 'draft', version: 1, template: input.template,
   };
   const doc = { kind: input.kind, header, body: input.body, path };
-  await write(store, slug, doc, `Create ${input.kind}`);
+  await write(store, doc, `Create ${input.kind}`);
   return ok(doc);
 }
 
 /** Reads a document from the project's working tree. */
-export function readDocument(store: Store, slug: string, path: string): Result<StoredDocument, DocumentError> {
+export function readDocument(store: Pick<Store, 'root'>, path: string): Result<StoredDocument, DocumentError> {
   const kind = kindFromPath(path);
   if (!kind) return fail('invalid-path', `Not a document path: ${path}`);
-  const file = join(projectDir(slug, store.home), path);
+  const file = join(store.root, path);
   if (!existsSync(file)) return fail('not-found', `${path} does not exist`);
   const parsed = parseDocument(readFileSync(file, 'utf8'));
   return parsed.ok ? ok({ kind, path, ...parsed.value }) : parsed;
@@ -126,15 +128,32 @@ export interface DocumentChange {
   status?: DocumentStatus;
   extra?: Record<string, unknown>;   // extra header fields, such as approvals; core fields cannot be overwritten
   sameVersion?: boolean;             // a status change such as an approval: the content version stays (owner decision)
+  external?: boolean;                // read-back: the working copy holds the agent's change Keel is accepting
+}
+
+/**
+ * True when the working copy differs from the version Keel last committed (or, for a document Keel never
+ * committed, from HEAD): someone edited it outside Keel, and Keel must not overwrite it (task R5).
+ */
+export async function editedOutside(root: string, path: string): Promise<boolean> {
+  const file = join(root, path);
+  if (!existsSync(file)) return false;
+  const known = (await keelVersionOf(root, path)) ?? (await fileAt(root, 'HEAD', path));
+  return known !== undefined && known !== readFileSync(file, 'utf8');
 }
 
 /**
  * Saves a change as the next version, and commits it with the reason. With sameVersion the version
  * number stays and no new version is recorded; the commit still carries the reason.
  */
-export async function saveDocument(store: Store, slug: string, path: string, change: DocumentChange): Promise<Result<StoredDocument, DocumentError>> {
-  const current = readDocument(store, slug, path);
+export async function saveDocument(store: Store, path: string, change: DocumentChange): Promise<Result<StoredDocument, DocumentError>> {
+  const current = readDocument(store, path);
   if (!current.ok) return current;
+  const blocker = await commitBlocker(store.root);
+  if (blocker) return fail('repo-busy', blocker);
+  if (!change.external && (await editedOutside(store.root, path))) {
+    return fail('edited-outside', `${path} has changes made outside Keel. Review them on the Handoff page (read-back) first.`);
+  }
   const { header, body } = current.value;
   const doc: StoredDocument = {
     ...current.value,
@@ -153,7 +172,7 @@ export async function saveDocument(store: Store, slug: string, path: string, cha
       updated: today(store),
     },
   };
-  await write(store, slug, doc, change.reason, !change.sameVersion);
+  await write(store, doc, change.reason, !change.sameVersion);
   return ok(doc);
 }
 
@@ -162,14 +181,14 @@ export function commitMessage(header: DocumentHeader, reason: string): string {
   return `${header.id} v${header.version}: ${oneLine(reason)}`;
 }
 
-async function write(store: Store, slug: string, doc: StoredDocument, reason: string, newVersion = true): Promise<void> {
-  const dir = projectDir(slug, store.home);
+async function write(store: Store, doc: StoredDocument, reason: string, newVersion = true): Promise<void> {
+  const dir = store.root;
   const file = join(dir, doc.path);
   mkdirSync(dirname(file), { recursive: true });
   writeFileAtomic(file, serializeDocument(doc.header, doc.body));
   const commit = await commitFiles(dir, [doc.path], commitMessage(doc.header, reason));
-  store.index.upsertDocument(slug, doc);
-  if (newVersion) store.index.addVersion(slug, { id: doc.header.id, version: doc.header.version, commit, date: doc.header.updated, reason: oneLine(reason) });
+  store.index.upsertDocument(doc);
+  if (newVersion) store.index.addVersion({ id: doc.header.id, version: doc.header.version, commit, date: doc.header.updated, reason: oneLine(reason) });
 }
 
 function nextNumber(dir: string, kind: DocumentKind): number {

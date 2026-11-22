@@ -5,7 +5,7 @@ import { saveModelChoice } from '../settings/settings';
 import { ensureSeed } from '../seed';
 import { createDocument, readDocument } from '../store/documents';
 import { tempStore } from '../store/test-store';
-import { createProject, projectDir } from '../store/workspace';
+import { initialiseProject } from '../store/workspace';
 import { buildTrace } from '../trace/index';
 import { recordDecision, review } from '../gates/approvals';
 import { generatePlan, orderOfWork, plannedTasks } from './plan';
@@ -16,10 +16,10 @@ const INTENT = '# Intent: Approvals\n\n## Requirements\n\n- REQ-001 Record an ap
 
 async function approvedIntent() {
   const store = tempStore();
-  ensureSeed(store.home, join(process.cwd(), 'seed'));
-  await createProject(store, { slug: 'app', title: 'Approvals', author: 'Ada' });
-  await createDocument(store, 'app', { kind: 'intent', title: 'Approvals', body: INTENT, template: 'standard-intent@3' });
-  await review(store, 'app', 'intent', { action: 'approve', by: 'Ada', comment: '' });
+  ensureSeed(store.root, join(process.cwd(), 'seed'));
+  await initialiseProject(store, { title: 'Approvals', author: 'Ada' });
+  await createDocument(store, { kind: 'intent', title: 'Approvals', body: INTENT, template: 'standard-intent@3' });
+  await review(store, 'intent', { action: 'approve', by: 'Ada', comment: '' });
   return store;
 }
 
@@ -68,10 +68,10 @@ describe('spec parts', () => {
 describe('generateSpec', () => {
   it('is locked until the intent is approved, then fills the template once', async () => {
     const store = tempStore();
-    ensureSeed(store.home, join(process.cwd(), 'seed'));
-    await createProject(store, { slug: 'app', title: 'Approvals', author: 'Ada' });
-    await createDocument(store, 'app', { kind: 'intent', title: 'Approvals', body: INTENT, template: 'standard-intent@3' });
-    expect(await generateSpec(store, 'app', 'requirements-and-design-spec@2', silent)).toMatchObject({ error: 'locked', message: 'Needs an approved intent' });
+    ensureSeed(store.root, join(process.cwd(), 'seed'));
+    await initialiseProject(store, { title: 'Approvals', author: 'Ada' });
+    await createDocument(store, { kind: 'intent', title: 'Approvals', body: INTENT, template: 'standard-intent@3' });
+    expect(await generateSpec(store, 'requirements-and-design-spec@2', silent)).toMatchObject({ error: 'locked', message: 'Needs an approved intent' });
   });
 
   it('writes spec.md and features/<slug>.feature that trace back to the intent', async () => {
@@ -81,22 +81,22 @@ describe('generateSpec', () => {
       calls.push(task);
       return messages[0]?.content.includes('Gherkin') ? undefined : `Text for ${task}.`;
     };
-    expect(await generateSpec(store, 'app', 'roadmap@1', writer)).toMatchObject({ error: 'unknown-template' });
-    const spec = await generateSpec(store, 'app', 'requirements-and-design-spec@2', writer);
+    expect(await generateSpec(store, 'roadmap@1', writer)).toMatchObject({ error: 'unknown-template' });
+    const spec = await generateSpec(store, 'requirements-and-design-spec@2', writer);
     if (!spec.ok) throw new Error(spec.message);
     expect(spec.value.header).toMatchObject({ id: 'SPC-0001', status: 'draft', template: 'requirements-and-design-spec@2', from_intent: 'INT-0001@1' });
     expect(spec.value.body).toContain('## Requirements\n\n| ID | Requirement | Source |\n| --- | --- | --- |\n| REQ-001 | Record an approval | Intent |');
     expect(spec.value.body).toContain('## Feasibility review\n\nText for feasibility.');
     expect(spec.value.body).toContain('## Standards applied\n\nNone selected for this project.');
     expect(calls.filter((c) => c === 'feasibility')).toHaveLength(1);
-    const trace = buildTrace(projectDir('app', store.home));
-    expect(trace.requirements['REQ-002']?.scenarios).toEqual(['features/app.feature › Export the log']);
-    expect(await generateSpec(store, 'app', 'requirements-and-design-spec@2', writer)).toMatchObject({ error: 'already-exists' });
+    const trace = buildTrace(store.root);
+    expect(trace.requirements['REQ-002']?.scenarios).toEqual(['features/approvals.feature › Export the log']);
+    expect(await generateSpec(store, 'requirements-and-design-spec@2', writer)).toMatchObject({ error: 'already-exists' });
   });
 
   it('marks sections no model wrote', async () => {
     const store = await approvedIntent();
-    const spec = await generateSpec(store, 'app', 'short-spec@1', silent);
+    const spec = await generateSpec(store, 'short-spec@1', silent);
     expect(spec.ok && spec.value.body).toContain('## Approach\n\n_Not written yet: A few paragraphs. No model was available._');
   });
 });
@@ -115,29 +115,29 @@ describe('plan parts', () => {
 
   it('builds the order of work with scenarios', () => {
     const table = orderOfWork([{ title: 'A', requirements: ['REQ-001'] }, { title: 'B', requirements: ['REQ-002'] }],
-      [{ feature: 'features/app.feature', scenario: 'S', requirements: ['REQ-001'] }]);
-    expect(table).toBe('| Task | Title | Requirements | Scenarios |\n| --- | --- | --- | --- |\n| T1 | A | REQ-001 | app |\n| T2 | B | REQ-002 | — |');
+      [{ feature: 'features/approvals.feature', scenario: 'S', requirements: ['REQ-001'] }]);
+    expect(table).toBe('| Task | Title | Requirements | Scenarios |\n| --- | --- | --- | --- |\n| T1 | A | REQ-001 | approvals |\n| T2 | B | REQ-002 | — |');
   });
 });
 
 describe('generatePlan', () => {
   it('needs a Go decision, then writes plan.md and one task file per task, all traceable', async () => {
     const store = await approvedIntent();
-    expect(await generatePlan(store, 'app', silent)).toMatchObject({ error: 'locked', message: 'Needs a Go decision' });
-    await generateSpec(store, 'app', 'requirements-and-design-spec@2', silent);
-    await recordDecision(store, 'app', { decision: 'go', by: 'Ada', reason: 'Worth it.', consequences: '' });
+    expect(await generatePlan(store, silent)).toMatchObject({ error: 'locked', message: 'Needs a Go decision' });
+    await generateSpec(store, 'requirements-and-design-spec@2', silent);
+    await recordDecision(store, { decision: 'go', by: 'Ada', reason: 'Worth it.', consequences: '' });
     const writer: Writer = async (_task, messages) => (messages[0]?.content.startsWith('Split') ? 'T1 | Approval flow | REQ-001, REQ-002' : undefined);
-    const plan = await generatePlan(store, 'app', writer);
+    const plan = await generatePlan(store, writer);
     if (!plan.ok) throw new Error(plan.message);
     expect(plan.value.header).toMatchObject({ id: 'PLN-0001', from_spec: 'SPC-0001@1', template: 'implementation-plan@2' });
-    expect(plan.value.body).toContain('| T1 | Approval flow | REQ-001, REQ-002 | app |');
-    const task = readDocument(store, 'app', 'tasks/T1.md');
+    expect(plan.value.body).toContain('| T1 | Approval flow | REQ-001, REQ-002 | approvals |');
+    const task = readDocument(store, 'tasks/T1.md');
     expect(task).toMatchObject({ ok: true, value: { header: { id: 'T1', status: 'todo', plan: 'PLN-0001@1', requirements: ['REQ-001', 'REQ-002'] } } });
-    const text = readFileSync(join(projectDir('app', store.home), 'tasks/T1.md'), 'utf8');
+    const text = readFileSync(join(store.root, 'tasks/T1.md'), 'utf8');
     expect(text).toContain('# T1 · Approval flow');
-    expect(text).toContain('- `features/app.feature` › Record an approval');
-    const trace = buildTrace(projectDir('app', store.home));
-    expect(trace.tasks.T1).toMatchObject({ requirements: ['REQ-001', 'REQ-002'], features: ['features/app.feature'] });
-    expect(await generatePlan(store, 'app', writer)).toMatchObject({ error: 'already-exists' });
+    expect(text).toContain('- `features/approvals.feature` › Record an approval');
+    const trace = buildTrace(store.root);
+    expect(trace.tasks.T1).toMatchObject({ requirements: ['REQ-001', 'REQ-002'], features: ['features/approvals.feature'] });
+    expect(await generatePlan(store, writer)).toMatchObject({ error: 'already-exists' });
   });
 });

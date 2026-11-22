@@ -1,10 +1,12 @@
-// Provider connections and model per task, stored in keel.db (REQ-009).
+// Provider connections and model per task, stored in the user config folder's settings.json (REQ-009, ADR-0011).
 import { z } from 'zod';
 import { DEFAULT_ANTHROPIC_MODEL } from '../providers/anthropic';
 import { MODEL_TASKS, PROVIDER_IDS, type ModelChoice, type ModelTask, type ProviderConfig, type RealProviderId } from '../providers/types';
 import { fail, ok, type Result } from '../result';
 import type { Store } from '../store/db';
 import { decryptSecret, encryptSecret, workspaceKey } from './secrets';
+import { setUserSetting, userSetting } from './user-dir';
+import { gitUserName } from '../store/git';
 
 const storedConfig = z.strictObject({
   apiKey: z.string().optional(),        // encrypted
@@ -24,15 +26,10 @@ export type ProviderView = Omit<ProviderConfig, 'apiKey'> & { hasKey: boolean };
 
 export const DEFAULT_CHOICE: ModelChoice = { provider: 'anthropic', model: DEFAULT_ANTHROPIC_MODEL };
 
+// settings.json: { "provider.<id>": {...}, "model.<task>": {...}, ... }, keys encrypted.
 function readJson<T>(store: Store, key: string, schema: z.ZodType<T>): T | undefined {
-  const raw = store.index.getSetting(key);
-  if (raw === undefined) return undefined;
-  try {
-    const parsed = schema.safeParse(JSON.parse(raw));
-    return parsed.success ? parsed.data : undefined;
-  } catch {
-    return undefined;
-  }
+  const parsed = schema.safeParse(userSetting(store.user, key));
+  return parsed.success ? parsed.data : undefined;
 }
 
 /** A provider's stored settings, with the key still encrypted. */
@@ -55,17 +52,33 @@ export interface ProviderUpdate extends Omit<ProviderConfig, 'apiKey'> {
 export function saveProvider(store: Store, id: RealProviderId, update: ProviderUpdate): void {
   const current = storedProvider(store, id);
   const { apiKey, clearKey, ...details } = update;
-  const sealed = clearKey ? undefined : apiKey ? encryptSecret(workspaceKey(store.home), apiKey) : current.apiKey;
+  const sealed = clearKey ? undefined : apiKey ? encryptSecret(workspaceKey(store.user), apiKey) : current.apiKey;
   const clean = Object.fromEntries(Object.entries(details).filter(([, v]) => v));
-  store.index.setSetting(`provider.${id}`, JSON.stringify({ ...clean, ...(sealed ? { apiKey: sealed } : {}) }));
+  setUserSetting(store.user, `provider.${id}`, { ...clean, ...(sealed ? { apiKey: sealed } : {}) });
 }
 
 /** A provider's connection settings with the key decrypted, for building the adapter. */
 export function providerConfig(store: Store, id: RealProviderId): Result<ProviderConfig, 'cannot-decrypt'> {
   const { apiKey, ...rest } = storedProvider(store, id);
   if (!apiKey) return ok(rest);
-  const key = decryptSecret(workspaceKey(store.home), apiKey);
+  const key = decryptSecret(workspaceKey(store.user), apiKey);
   return key.ok ? ok({ ...rest, apiKey: key.value }) : key;
+}
+
+/** The name used in forms by default: git config user.name, else the name saved in Settings. */
+export async function defaultAuthor(store: Pick<Store, 'root' | 'user'>): Promise<string> {
+  const fromGit = await gitUserName(store.root);
+  if (fromGit) return fromGit;
+  const saved = userSetting(store.user, 'author');
+  return typeof saved === 'string' ? saved : '';
+}
+
+/** Saves the default author name in the user config folder. Empty removes it. */
+export function saveAuthor(store: Pick<Store, 'user'>, name: string): Result<string, 'invalid-name'> {
+  const clean = name.trim();
+  if (clean.length > 120) return fail('invalid-name', 'A name can be up to 120 characters');
+  setUserSetting(store.user, 'author', clean || undefined);
+  return ok(clean);
 }
 
 export function modelChoice(store: Store, task: ModelTask): ModelChoice {
@@ -75,6 +88,6 @@ export function modelChoice(store: Store, task: ModelTask): ModelChoice {
 export function saveModelChoice(store: Store, task: ModelTask, choice: ModelChoice): Result<ModelChoice, 'invalid-choice'> {
   const parsed = modelChoiceSchema.safeParse(choice);
   if (!parsed.success || !MODEL_TASKS.some((t) => t.task === task)) return fail('invalid-choice', 'Choose a provider and a model');
-  store.index.setSetting(`model.${task}`, JSON.stringify(parsed.data));
+  setUserSetting(store.user, `model.${task}`, parsed.data);
   return ok(parsed.data);
 }

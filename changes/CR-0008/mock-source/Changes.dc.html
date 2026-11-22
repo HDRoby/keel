@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keel · Change and approval</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/softwareone/tokens.css">
+<link rel="stylesheet" href="ds/softwareone/components/bundle.css">
+<script src="ds/softwareone/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#3366ff}a:hover{color:#2447b3}
+</style>
+</helmet>
+<x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Navigation" groups="{{groups}}" active-id="changes" brand="{{brand}}" header-bar="{{headerBar}}">
+<div style="box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 24px; font-family: var(--font-body, Arial); color: var(--text-body, #25282d); max-width: 1400px;">
+  <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+        <h1 style="margin: 0; font-size: 24px; line-height: 28.13px; font-weight: 700; color: var(--text-primary, #000);">CR-0003 · Track changes across stages</h1>
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="{{crColor}}">{{crStatus}}</x-import>
+      </div>
+      <span style="font-size: 12px; line-height: 14.4px; color: var(--text-muted, #6b7180);">Keel · PRJ-0001 · intent v2 → v3 · raised by Roberto Basile on 20/11/2026 16:58</span>
+    </div>
+    <a href="Intent.dc.html" style="display: inline-flex; align-items: center; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #6b7180; border-radius: 8px; background: #ffffff; color: #25282d; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">Open intent</a>
+  </div>
+  <dc-import name="StageBar" current="intent" stale="{{stale}}" hint-size="100%,72px"></dc-import>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+    <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">1 · What changed in the intent</h2>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Reason: the open question on change propagation was answered in a follow-up brainstorm.</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Size of change (suggested: significant)</span>
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Switcher" options="{{sizeOptions}}" value="{{size}}" on-change="{{setSize}}" size="small"></x-import>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; border: 1px solid #e0e5e8; border-radius: 8px; overflow: hidden; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 20px;">
+            <sc-for list="{{diff}}" as="d" hint-placeholder-count="5">
+              <div style="{{d.style}}"><span style="display: inline-block; width: 20px; color: #6b7180;">{{d.sign}}</span>{{d.text}}</div>
+            </sc-for>
+          </div>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{sizeNote}}</span>
+        </div>
+      </x-import>
+
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">3 · Impact on later documents</h2>
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{impactNote}}</span>
+          </div>
+          <sc-for list="{{impacts}}" as="im" hint-placeholder-count="4">
+            <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid #e0e5e8; border-radius: 8px;">
+              <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;">
+                <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{im.doc}}</span>
+                <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="{{im.color}}">{{im.status}}</x-import>
+              </div>
+              <span style="font-size: 14px; line-height: 20px; color: #434952;">{{im.what}}</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <sc-for list="{{im.refs}}" as="r" hint-placeholder-count="2">
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" type="outline" color="gray">{{r}}</x-import>
+                </sc-for>
+              </div>
+              <sc-if value="{{im.actionable}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="primary" on-click="{{im.update}}">{{im.updateLabel}}</x-import>
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="outline" on-click="{{im.valid}}">Still valid</x-import>
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="text" on-click="{{im.later}}">Later</x-import>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </x-import>
+    </div>
+
+    <div style="flex: 1 1 400px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+            <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">2 · Approve intent v3</h2>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="{{apColor}}">{{apStatus}}</x-import>
+          </div>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Checks run on the new version</span>
+          <sc-for list="{{checks}}" as="c" hint-placeholder-count="4">
+            <div style="display: flex; align-items: flex-start; gap: 8px;">
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{c.icon}}" size="5" color="{{c.color}}"></x-import>
+              <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+                <span style="font-size: 14px; line-height: 20px; color: #000;">{{c.label}}</span>
+                <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{c.note}}</span>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{undecided}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" label="Comment" optional="{{yes}}" multiline="{{yes}}" rows="{{two}}" placeholder="Why you approve, or what needs to change" value="{{comment}}" on-change="{{setComment}}"></x-import>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="primary" on-click="{{approve}}">Approve intent v3</x-import>
+                <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="outline" on-click="{{requestChanges}}">Request changes</x-import>
+                <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="text" color="danger" on-click="{{reject}}">Reject</x-import>
+              </div>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Approver: Roberto Basile (you). Single-user workspace, so you approve your own changes.</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{decided}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="{{resultStatus}}" title="{{resultTitle}}" standalone="{{yes}}">{{resultText}}</x-import>
+              <div style="display: flex;">
+                <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="text" on-click="{{undo}}">Undo decision</x-import>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </x-import>
+
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+            <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">4 · Change package for the agent</h2>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="{{pkgColor}}">{{pkgStatus}}</x-import>
+          </div>
+          <span style="font-size: 14px; line-height: 20px; color: #434952;">The project is already in its repository, so the change goes to the coding agent as a package.</span>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <sc-for list="{{pkgFiles}}" as="f" hint-placeholder-count="5">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{f.icon}}" size="3" color="{{f.color}}"></x-import>
+                <span style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 20px; color: #000;">{{f.name}}</span>
+                <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{f.note}}</span>
+              </div>
+            </sc-for>
+          </div>
+          <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="primary" is-disabled="{{pkgBlocked}}" on-click="{{push}}">{{pushLabel}}</x-import>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{pkgNote}}</span>
+        </div>
+      </x-import>
+    </div>
+  </div>
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { size: 'significant', decision: '', comment: '', spec: 'pending', plan: 'pending', tests: 'pending', pushed: false };
+  }
+  renderVals() {
+    const R = window.React;
+    const DS = window.SoftwareOneDesignSystem_52b182;
+    const st = this.state;
+    const sig = st.size === 'significant';
+    const approved = st.decision === 'approved';
+    const ok = { icon: 'check_circle', color: 'var(--alerts-success-3, #008556)' };
+    const warn = { icon: 'error', color: 'var(--alerts-warning-3, #b35a00)' };
+    const lab = { pending: 'Out of date', updated: 'Updated', valid: 'Still valid', later: 'Later · still out of date' };
+    const col = { pending: 'warning', updated: 'success', valid: 'success', later: 'gray' };
+    const mk = (key, doc, what, refs, updateLabel, updatedDoc) => {
+      const s = st[key];
+      const before = !approved;
+      return {
+        doc: s === 'updated' ? updatedDoc : doc, what: what, refs: refs, updateLabel: updateLabel,
+        status: !sig ? 'Not affected' : (before ? 'Will be out of date' : lab[s]),
+        color: !sig ? 'gray' : (before ? 'gray' : col[s]),
+        actionable: sig && approved && (s === 'pending' || s === 'later'),
+        update: () => this.setState({ [key]: 'updated', pushed: false }),
+        valid: () => this.setState({ [key]: 'valid', pushed: false }),
+        later: () => this.setState({ [key]: 'later', pushed: false })
+      };
+    };
+    const impacts = [
+      mk('spec', 'spec.md v3', 'REQ-012 is new. It needs a requirement entry and a design note for change requests, out-of-date flags and change packages.', ['REQ-012', 'Design'], 'Draft spec v4', 'spec.md v4 (draft, from intent v3)'),
+      mk('plan', 'plan.md v4', 'Needs a new task for change requests. Task T7 (impact view) must cover every stage, not only the plan.', ['T7', 'New task T10'], 'Draft plan v5', 'plan.md v5 (draft, from spec v4)'),
+      mk('tests', 'Acceptance scenarios', 'Adds scenarios for REQ-012. The traceability scenario must also cover intent and spec changes.', ['Change requests: 2 new scenarios', 'Traceability: 1 updated'], 'Draft scenarios', 'Acceptance scenarios (3 drafted)')
+    ];
+    const resolved = (k) => st[k] === 'updated' || st[k] === 'valid';
+    const allResolved = ['spec', 'plan', 'tests'].every(resolved);
+    const staleList = (!sig || !approved) ? '' : [ !resolved('spec') ? 'spec' : '', !resolved('plan') ? 'plan' : '', !allResolved ? 'handoff' : '' ].filter(Boolean).join(',');
+    const results = {
+      approved: ['success', 'Intent v3 approved', 'Approved by Roberto Basile on 20/11/2026 at 17:10. Recorded in docs/decisions/0002-intent-v3.md. Intent v3 is now current.'],
+      changes: ['info', 'Changes requested', 'Intent v3 went back to draft with your comment. Intent v2 stays current and nothing downstream changes.'],
+      rejected: ['error', 'Intent v3 rejected', 'Intent v2 stays current. The change request is closed and kept in the history.']
+    };
+    const r = results[st.decision] || ['info', '', ''];
+    const pkgReady = approved && sig && allResolved;
+    return {
+      yes: true, two: 2,
+      stale: staleList,
+      crStatus: st.pushed ? 'Closed' : (approved ? (allResolved ? 'In progress' : 'Pending') : (st.decision ? 'Closed' : 'Open')),
+      crColor: st.pushed ? 'success' : (approved ? 'warning' : (st.decision ? 'gray' : 'primary')),
+      sizeOptions: [ { value: 'minor', label: 'Minor' }, { value: 'significant', label: 'Significant' } ],
+      size: st.size,
+      setSize: (v) => this.setState({ size: v }),
+      sizeNote: sig ? 'Significant: a requirement was added. Once approved, documents built on intent v2 are marked out of date.' : 'Minor: wording only. Later documents stay valid. (Not recommended here: a requirement was added.)',
+      diff: [
+        { sign: ' ', text: 'REQ-006 Hand off a repository scaffold any coding agent can build from', style: 'padding: 2px 12px; background: #ffffff; color: #434952; white-space: pre-wrap;' },
+        { sign: '+', text: 'REQ-012 Change requests: flag later documents as out of date, show impact, approve, and send a change package to the agent', style: 'padding: 2px 12px; background: #e6f7ef; color: #00512e; white-space: pre-wrap;' },
+        { sign: ' ', text: '## Open questions', style: 'padding: 2px 12px; background: #ffffff; color: #434952; white-space: pre-wrap;' },
+        { sign: '-', text: 'How should a change upstream affect later documents?', style: 'padding: 2px 12px; background: #fdecee; color: #8a1220; white-space: pre-wrap; text-decoration: line-through;' },
+        { sign: ' ', text: 'Public name: "Keel" is already used by other developer tools', style: 'padding: 2px 12px; background: #ffffff; color: #434952; white-space: pre-wrap;' }
+      ],
+      checks: [
+        Object.assign({ label: 'Required sections complete', note: 'Standard intent · v3' }, ok),
+        Object.assign({ label: 'Every requirement has an ID', note: 'REQ-001 to REQ-006, REQ-012' }, ok),
+        Object.assign({ label: 'Open questions answered or carried forward', note: 'The change-propagation question became REQ-012. The name question is carried forward.' }, ok),
+        Object.assign({ label: 'Mock references cover the new requirement', note: 'REQ-012 is not on any reference yet. Optional: the 6b screen of the mockup could be attached.' }, warn)
+      ],
+      apStatus: approved ? 'Approved' : (st.decision === 'changes' ? 'Draft' : (st.decision === 'rejected' ? 'Closed' : 'Pending')),
+      apColor: approved ? 'success' : (st.decision ? 'gray' : 'warning'),
+      undecided: !st.decision,
+      decided: !!st.decision,
+      comment: st.comment,
+      setComment: (e) => this.setState({ comment: e && e.target ? e.target.value : e }),
+      approve: () => this.setState({ decision: 'approved' }),
+      requestChanges: () => this.setState({ decision: 'changes' }),
+      reject: () => this.setState({ decision: 'rejected' }),
+      undo: () => this.setState({ decision: '', spec: 'pending', plan: 'pending', tests: 'pending', pushed: false }),
+      resultStatus: r[0], resultTitle: r[1], resultText: r[2],
+      impactNote: !approved ? 'Shown before approval so you know what the change will touch. Nothing is marked yet.' : (sig ? 'Built on intent v2, so marked out of date. Choose what to do with each one.' : 'Minor change: nothing downstream is affected.'),
+      impacts: impacts,
+      pkgStatus: st.pushed ? 'Pushed' : (pkgReady ? 'Ready' : (approved && sig ? 'Waiting' : 'Not needed yet')),
+      pkgColor: st.pushed ? 'success' : (pkgReady ? 'primary' : 'gray'),
+      pkgFiles: [
+        { icon: 'description', name: 'changes/CR-0003.md', note: 'What changed, why, affected tasks and tests', color: '#3366ff' },
+        { icon: 'description', name: 'docs/intent.md', note: 'v3', color: '#3366ff' },
+        { icon: 'description', name: 'docs/spec.md', note: st.spec === 'updated' ? 'v4' : 'unchanged', color: st.spec === 'updated' ? '#3366ff' : '#6b7180' },
+        { icon: 'description', name: 'docs/plan.md', note: st.plan === 'updated' ? 'v5' : 'unchanged', color: st.plan === 'updated' ? '#3366ff' : '#6b7180' },
+        { icon: 'science', name: 'features/change-requests.feature', note: st.tests === 'updated' ? '2 new scenarios, failing' : 'not yet', color: st.tests === 'updated' ? '#3366ff' : '#6b7180' }
+      ],
+      pkgBlocked: !pkgReady || st.pushed,
+      pushLabel: st.pushed ? 'Pushed to repository' : 'Push change package',
+      push: () => this.setState({ pushed: true }),
+      pkgNote: st.pushed ? 'Commit c41e9b2 · read-back will show when the agent has worked through CR-0003.' : (pkgReady ? 'Everything affected is updated or confirmed.' : 'Available once the intent is approved and spec, plan and tests are updated or confirmed as still valid.'),
+      groups: [
+        { label: 'Project · Keel', icon: 'lightbulb', items: [
+          { id: 'setup', label: 'Project setup', href: 'SetupKeel.dc.html' },
+          { id: 'explore', label: 'Explore', href: 'Explore.dc.html' },
+          { id: 'intent', label: 'Intent', href: 'Intent.dc.html' },
+          { id: 'spec', label: 'Spec', href: 'Spec.dc.html' },
+          { id: 'plan', label: 'Plan', href: 'Plan.dc.html' },
+          { id: 'handoff', label: 'Handoff', href: 'Handoff.dc.html' },
+          { id: 'roadmap', label: 'Roadmap', href: 'Roadmap.dc.html' },
+          { id: 'changes', label: 'Changes', href: 'Changes.dc.html' } ] },
+        { label: 'Library (.keel)', icon: 'folder', items: [
+          { id: 'templates', label: 'Templates', href: 'Templates.dc.html' },
+          { id: 'styles', label: 'Brainstorm styles', href: 'Styles.dc.html' },
+          { id: 'standards', label: 'Standards', href: 'Standards.dc.html' } ] },
+        { label: 'Settings', icon: 'settings', items: [
+          { id: 'settings', label: 'Settings', href: 'Settings.dc.html' } ] }
+      ],
+      brand: R.createElement('span', { style: { fontSize: 18, lineHeight: '26px', fontWeight: 700, color: '#000' } }, 'Keel'),
+      headerBar: R.createElement(DS.NavigationHeaderBar, { title: 'Change and approval', subtitle: 'Keel · ~/keel' })
+    };
+  }
+}
+</script>
+</body>
+</html>

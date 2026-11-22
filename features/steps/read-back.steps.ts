@@ -1,62 +1,72 @@
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+// Read-back from the local repository (REQ-007, ADR-0012). The coding agent works in the same folder.
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
-import { pushHandoff } from '../../src/lib/github/push';
-import { buildHandoff } from '../../src/lib/handoff/scaffold';
-import { parseDocument } from '../../src/lib/store/documents';
-import { BDD_HOME, projectWithApprovedPlan, world } from './support';
+import { parseDocument, saveDocument } from '../../src/lib/store/documents';
+import { bddStore, BDD_PROJECT, git, stagePath } from './support';
 
-const { Given, When, Then } = createBdd();
+const { When, Then } = createBdd();
 
-// A local bare repository stands in for GitHub (plan: test strategy); the server allows it with KEEL_ALLOW_LOCAL_REMOTES.
-let remote = '';
+const AGENT = ['-c', 'user.name=Coding Agent', '-c', 'user.email=agent@example.com'];
 const AGENT_MESSAGE = 'Split T1 so the run command gets its own task';
-const git = (cwd: string, ...args: string[]) => execFileSync('git', args, { cwd, encoding: 'utf8' });
+const RISK = '- The run command differs per operating system.';
 
-Given('a project pushed to a repository', async () => {
-  await projectWithApprovedPlan('readback', async (store) => {
-    remote = join(mkdtempSync(join(tmpdir(), 'keel-remote-')), 'repo.git');
-    git(tmpdir(), 'init', '-q', '--bare', '--initial-branch=main', remote);
-    const built = await buildHandoff(store, world.slug);
-    if (!built.ok) throw new Error(built.message);
-    const pushed = await pushHandoff(store, world.slug, { kind: 'local', path: remote, branch: 'main' }, built.value, 'PLN-0001@1', { env: { KEEL_ALLOW_LOCAL_REMOTES: '1' } });
-    expect(pushed.ok).toBe(true);
-  });
-});
+function editFile(path: string, change: (text: string) => string): void {
+  const file = join(BDD_PROJECT, path);
+  writeFileSync(file, change(readFileSync(file, 'utf8')));
+}
 
 When('the coding agent commits a change to docs\\/plan.md', async () => {
-  const clone = mkdtempSync(join(tmpdir(), 'keel-agent-'));
-  git(clone, 'clone', '-q', remote, '.');
-  const plan = join(clone, 'docs', 'plan.md');
-  writeFileSync(plan, readFileSync(plan, 'utf8').replace('## Risks', '## Risks\n\n- The run command differs per operating system.\n'));
-  git(clone, '-c', 'user.name=Coding Agent', '-c', 'user.email=agent@example.com', 'commit', '-qam', AGENT_MESSAGE);
-  git(clone, 'push', '-q', 'origin', 'main');
+  editFile('docs/plan.md', (t) => t.replace('## Risks', `## Risks\n\n${RISK}\n`));
+  git(...AGENT, 'commit', '-qm', AGENT_MESSAGE, '--', 'docs/plan.md');
 });
 
-When('Keel checks the repository', async ({ page }) => {
-  await page.goto(`/projects/${world.slug}/handoff`);
-  await page.getByRole('button', { name: 'Check now' }).click();
-  await expect(page.getByRole('list', { name: 'Pending changes' })).toBeVisible();
+When('the coding agent edits tasks\\/T2.md without committing', async () => {
+  editFile('tasks/T2.md', (t) => `${t}\nCheck the exit code too.\n`);
 });
+
+When('Keel commits a new spec version', async () => {
+  const store = bddStore();
+  const saved = await saveDocument(store, 'docs/spec.md', { reason: 'Clarify the approach', body: '# Spec: Handoff demo\n\nClearer approach.\n' });
+  store.index.close();
+  expect(saved.ok).toBe(true);
+});
+
+When('Keel checks the folder', async ({ page }) => {
+  await page.goto(stagePath('handoff'));
+  await page.getByRole('button', { name: 'Check now' }).click();
+  await expect(page.getByText(/^Checked \d{4}-\d{2}-\d{2}/)).toBeVisible();
+});
+
+const changeItem = (page: Page, path: string) =>
+  page.getByRole('list', { name: 'Pending changes' }).getByRole('listitem', { name: path });
 
 Then('the change is shown as pending', async ({ page }) => {
-  const change = page.getByRole('list', { name: 'Pending changes' }).getByRole('listitem', { name: 'docs/plan.md' });
+  const change = changeItem(page, 'docs/plan.md');
   await expect(change).toContainText('Pending');
   await expect(change).toContainText(AGENT_MESSAGE);
-  await expect(change.getByRole('list', { name: 'Changes to docs/plan.md' })).toContainText('+ - The run command differs per operating system.');
+  await expect(change.getByRole('list', { name: 'Changes to docs/plan.md' })).toContainText(`+ ${RISK}`);
 });
 
-Then('accepting it creates a new plan version', async ({ page }) => {
+Then('accepting it creates a new plan version in draft', async ({ page }) => {
   await page.getByRole('button', { name: 'Accept as plan v2' }).click();
   await expect(page.getByText('No changes from the coding agent.')).toBeVisible();
-  const plan = parseDocument(readFileSync(join(BDD_HOME, 'projects', world.slug, 'docs', 'plan.md'), 'utf8'));
+  const plan = parseDocument(readFileSync(join(BDD_PROJECT, 'docs', 'plan.md'), 'utf8'));
   if (!plan.ok) throw new Error(plan.message);
-  expect(plan.value.header.version).toBe(2);
-  expect(plan.value.body).toContain('The run command differs per operating system.');
-  await page.goto(`/projects/${world.slug}/versions?doc=docs%2Fplan.md&v=2`);
-  await expect(page.getByRole('status')).toContainText(`Read back from`);
-  await expect(page.getByRole('status')).toContainText(AGENT_MESSAGE);
+  expect(plan.value.header).toMatchObject({ version: 2, status: 'draft' });
+  expect(plan.value.body).toContain(RISK);
+  expect(git('log', '-1', '--format=%an')).toBe('Keel');
+});
+
+Then('the change is shown as pending and marked Uncommitted', async ({ page }) => {
+  const change = changeItem(page, 'tasks/T2.md');
+  await expect(change).toContainText('Pending');
+  await expect(change).toContainText('Uncommitted');
+  await expect(change.getByRole('list', { name: 'Changes to tasks/T2.md' })).toContainText('+ Check the exit code too.');
+});
+
+Then('there are no changes to review', async ({ page }) => {
+  await expect(page.getByText('No changes from the coding agent.')).toBeVisible();
+  await expect(page.getByRole('list', { name: 'Pending changes' })).toHaveCount(0);
 });

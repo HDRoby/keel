@@ -2,7 +2,7 @@
 id: ADR-0008
 project: PRJ-0001
 template: decision-record@1
-status: accepted
+status: superseded by ADR-0012
 date: 2026-11-20
 ---
 

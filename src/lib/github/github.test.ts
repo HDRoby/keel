@@ -1,31 +1,31 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { commitFiles } from '../store/git';
+import { currentBranch, githubRepoOf, push, remoteLabel, remoteOf } from '../store/remote';
 import { tempStore } from '../store/test-store';
-import { createProject, projectDir } from '../store/workspace';
+import { initialiseProject } from '../store/workspace';
 import { githubToken, hasGithubToken, looksLikeGithubToken, saveGithubToken } from './auth';
-import { checkTarget, cleanError, gitEnv, handoffDir, handoffGit, parseGithubRepo, pushHandoff, remoteUrl, repositoryOf } from './push';
+import { cleanError } from './push';
 
-const LOCAL = { KEEL_ALLOW_LOCAL_REMOTES: '1' };
-const enc = (s: string) => new TextEncoder().encode(s);
 const sh = (cwd: string, ...args: string[]) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
 
 function bare(): string {
   const dir = join(mkdtempSync(join(tmpdir(), 'keel-remote-')), 'repo.git');
-  execFileSync('git', ['init', '--bare', '--initial-branch=main', dir]);
+  execFileSync('git', ['init', '-q', '--bare', '--initial-branch=main', dir]);
   return dir;
 }
 
-describe('GitHub token', () => {
+describe('GitHub token (CI results only)', () => {
   it('stores a GitHub token encrypted, and refuses anything else', () => {
     const store = tempStore();
     const token = `github_pat_${'A'.repeat(40)}`;
     expect(looksLikeGithubToken(token)).toBe(true);
     expect(saveGithubToken(store, 'sk-ant-nope')).toMatchObject({ error: 'invalid-token' });
     expect(saveGithubToken(store, token)).toEqual({ ok: true, value: { hasToken: true } });
-    expect(store.index.getSetting('github.token')).not.toContain('github_pat_');
+    expect(readFileSync(join(store.user, 'settings.json'), 'utf8')).not.toContain('github_pat_');
     expect(githubToken(store)).toBe(token);
     saveGithubToken(store, '');
     expect(hasGithubToken(store)).toBe(false);
@@ -33,88 +33,45 @@ describe('GitHub token', () => {
   });
 });
 
-describe('targets', () => {
-  it('reads owner/name and GitHub URLs, and allows local folders only for tests', () => {
-    expect(parseGithubRepo('my-org/keel')).toBe('my-org/keel');
-    expect(parseGithubRepo('https://github.com/my-org/keel.git')).toBe('my-org/keel');
-    expect(parseGithubRepo('../etc/passwd')).toBeUndefined();
-    expect(parseGithubRepo('https://evil.example/my-org/keel')).toBeUndefined();
-    expect(checkTarget({ kind: 'github', repo: 'a/b', branch: 'main' })).toMatchObject({ ok: true });
-    expect(checkTarget({ kind: 'github', repo: 'a/b', branch: '../x' })).toMatchObject({ error: 'invalid-target' });
-    expect(checkTarget({ kind: 'local', path: '/tmp/x', branch: 'main' }, {})).toMatchObject({ error: 'not-allowed' });
-    expect(checkTarget({ kind: 'local', path: 'relative', branch: 'main' }, LOCAL)).toMatchObject({ error: 'invalid-target' });
-  });
-});
-
-describe('git helpers', () => {
-  it('builds the remote URL without a token, and keeps the working copy under KEEL_HOME/handoffs', () => {
-    expect(remoteUrl({ kind: 'github', location: 'my-org/keel' })).toBe('https://github.com/my-org/keel.git');
-    expect(remoteUrl({ kind: 'local', location: '/tmp/repo.git' })).toBe('/tmp/repo.git');
-    const store = tempStore();
-    expect(handoffDir(store, 'demo')).toBe(join(store.home, 'handoffs', 'demo'));
-  });
-
-  it('shows only the first line of a git error, with the token and the header hidden', () => {
+describe('cleanError', () => {
+  it('shows only the first line of a git error, with tokens, headers and URL credentials hidden', () => {
     const token = `github_pat_${'E'.repeat(40)}`;
     expect(cleanError(new Error(`\nfatal: bad ${token}\nmore`), token)).toBe('fatal: bad ***');
     expect(cleanError('AUTHORIZATION: basic eHl6 rejected')).toBe('AUTHORIZATION: *** rejected');
+    expect(cleanError('fatal: https://user:pass@example.com/x.git not found')).toBe('fatal: https://***@example.com/x.git not found');
     expect(cleanError(new Error(''))).toBe('git failed');
     expect(cleanError('x'.repeat(400))).toHaveLength(300);
   });
 });
 
-describe('pushHandoff', () => {
-  it('pushes the package as a Keel commit, keeps files the agent added on the next push, and records each push', async () => {
+describe('the folder\'s remote', () => {
+  it('reads origin without credentials, and recognises GitHub', async () => {
+    expect(githubRepoOf('https://github.com/acme/demo.git')).toBe('acme/demo');
+    expect(githubRepoOf('git@github.com:acme/demo.git')).toBe('acme/demo');
+    expect(githubRepoOf('https://evil.example/acme/demo')).toBeUndefined();
     const store = tempStore();
-    await createProject(store, { slug: 'demo', title: 'Demo', author: 'Ada' });
+    await initialiseProject(store, { title: 'Demo', author: 'Ada' });
+    expect(await remoteOf(store.root)).toBeUndefined();
+    sh(store.root, 'remote', 'add', 'origin', 'https://someone:secret@github.com/acme/demo.git');
+    const remote = await remoteOf(store.root);
+    expect(remote).toEqual({ url: 'https://github.com/acme/demo.git', github: 'acme/demo' });
+    expect(remote && remoteLabel(remote)).toBe('github.com/acme/demo');
+    expect(await currentBranch(store.root)).toBe('main');
+  });
+
+  it('pushes HEAD to origin with git\'s own credentials, and says so when there is no remote', async () => {
+    const store = tempStore();
+    await initialiseProject(store, { title: 'Demo', author: 'Ada' });
+    expect(await push(store.root)).toMatchObject({ error: 'no-remote', message: 'This folder has no remote called origin. Push from your terminal when you are ready.' });
     const remote = bare();
-    const target = { kind: 'local' as const, path: remote, branch: 'main' };
-    const first = await pushHandoff(store, 'demo', target, [{ path: 'AGENTS.md', data: enc('v1') }, { path: 'docs/plan.md', data: enc('plan v1') }], 'PLN-0001@1', { env: LOCAL });
-    if (!first.ok) throw new Error(first.message);
-    expect(sh(remote, 'log', '--format=%an|%s', 'main')).toBe('Keel|Keel: handoff from PLN-0001@1');
-
-    // The coding agent clones, adds code and pushes.
-    const agent = mkdtempSync(join(tmpdir(), 'keel-agent-'));
-    execFileSync('git', ['clone', '-q', remote, agent]);
-    execFileSync('bash', ['-c', 'mkdir -p src && echo code > src/app.ts && git add -A && git -c user.name=Agent -c user.email=a@b commit -qm "Add app"'], { cwd: agent });
-    sh(agent, 'push', '-q', 'origin', 'main');
-
-    // With a token set, the same push still works (the header only applies to github.com).
-    const second = await pushHandoff(store, 'demo', target, [{ path: 'AGENTS.md', data: enc('v2') }], 'PLN-0001@2', { env: LOCAL, token: `github_pat_${'D'.repeat(40)}` });
-    if (!second.ok) throw new Error(second.message);
-    sh(agent, 'pull', '-q');
-    expect(readFileSync(join(agent, 'AGENTS.md'), 'utf8')).toBe('v2');
-    expect(readFileSync(join(agent, 'src/app.ts'), 'utf8')).toBe('code\n');
-    expect(sh(remote, 'log', '--format=%s', 'main').split('\n')).toEqual(['Keel: handoff from PLN-0001@2', 'Add app', 'Keel: handoff from PLN-0001@1']);
-    expect(repositoryOf(store, 'demo')).toMatchObject({ kind: 'local', location: remote, branch: 'main', pushes: [{ plan: 'PLN-0001@1' }, { plan: 'PLN-0001@2', commit: second.value.commit }] });
-    // Pushing the same package again changes nothing and records nothing.
-    const again = await pushHandoff(store, 'demo', target, [{ path: 'AGENTS.md', data: enc('v2') }], 'PLN-0001@2', { env: LOCAL });
-    expect(again).toMatchObject({ ok: true, value: { unchanged: true, commit: second.value.commit } });
-    expect(repositoryOf(store, 'demo')?.pushes).toHaveLength(2);
-    expect(sh(projectDir('demo', store.home), 'log', '-1', '--format=%s')).toMatch(/^PRJ-0001: pushed PLN-0001@2 to /);
-  });
-
-  it('needs a token for GitHub, and never writes the token into the working copy', async () => {
-    const store = tempStore();
-    await createProject(store, { slug: 'demo', title: 'Demo', author: 'Ada' });
-    expect(await pushHandoff(store, 'demo', { kind: 'github', repo: 'a/b', branch: 'main' }, [], 'PLN-0001@1')).toMatchObject({ error: 'no-token' });
-    const token = `github_pat_${'B'.repeat(40)}`;
-    const failed = await pushHandoff(store, 'demo', { kind: 'local', path: join(tmpdir(), 'missing-remote-for-keel.git'), branch: 'main' }, [{ path: 'a.md', data: enc('x') }], 'PLN-0001@1', { token, env: LOCAL });
-    expect(failed).toMatchObject({ ok: false, error: 'push-failed' });
-    expect(failed.ok ? '' : failed.message).not.toMatch(/environment guard|not permitted/);
-    expect(failed.ok ? '' : failed.message).not.toContain(token);
-    const config = readFileSync(join(store.home, 'handoffs', 'demo', '.git', 'config'), 'utf8');
-    expect(config).not.toContain(token);
-    expect(config).not.toContain('extraheader');
-  });
-
-  it('gives git the token as a github.com header through the environment only', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'keel-env-'));
-    execFileSync('git', ['init', '-q', dir]);
-    const token = `github_pat_${'C'.repeat(40)}`;
-    const header = (await handoffGit(dir, token).raw(['config', '--get', 'http.https://github.com/.extraheader'])).trim();
-    expect(Buffer.from(header.replace('AUTHORIZATION: basic ', ''), 'base64').toString()).toBe(`x-access-token:${token}`);
-    expect(readFileSync(join(dir, '.git', 'config'), 'utf8')).not.toContain('extraheader');
-    expect(Object.keys(gitEnv())).toEqual(['PATH', 'HOME', 'GIT_TERMINAL_PROMPT']);
+    sh(store.root, 'remote', 'add', 'origin', remote);
+    writeFileSync(join(store.root, 'AGENTS.md'), '# Agents\n');
+    await commitFiles(store.root, ['AGENTS.md'], 'Handoff for plan v1');
+    expect(await push(store.root)).toEqual({ ok: true, value: { remote, branch: 'main' } });
+    expect(sh(remote, 'log', '--format=%an|%s', 'main')).toBe('Keel|Keel: Handoff for plan v1\nKeel|Keel: Initialise project');
+    const missing = tempStore();
+    await initialiseProject(missing, { title: 'Demo', author: 'Ada' });
+    sh(missing.root, 'remote', 'add', 'origin', join(tmpdir(), 'no-such-remote-for-keel.git'));
+    expect(await push(missing.root)).toMatchObject({ error: 'push-failed', message: expect.stringMatching(/^The push failed: (fatal|error): /) });
   });
 });

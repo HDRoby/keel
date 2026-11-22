@@ -4,11 +4,11 @@ project: PRJ-0001
 title: Keel
 author: Roberto Basile
 created: 2026-11-20
-updated: 2026-11-20
+updated: 2026-11-22
 status: approved
-version: 6
+version: 7
 template: requirements-and-design-spec@2
-from_intent: INT-0001@2
+from_intent: INT-0001@3
 standards:
   - security-baseline@2
   - typescript-conventions@3
@@ -29,26 +29,27 @@ decision: go (docs/decisions/0001-go.md)
 | REQ-003 | Versioned, editable templates for intent, spec, plan, roadmap, decision records, agent instructions and the agent kit. A template used by any project cannot be removed. | Intent |
 | REQ-004 | Stable requirement IDs traced from intent to spec, plan tasks and acceptance scenarios. | Intent |
 | REQ-005 | Stage gating: Intent needs the required template sections; Spec needs an approved intent; Plan needs a Go decision; Handoff needs an approved plan and a latest decision of Go. Locked stages say why. An approved document is not reopened by a review; it changes through a change request. | Intent |
-| REQ-006 | Hand off a repository scaffold any coding agent can build from: AGENTS.md, docs, tasks, failing acceptance scenarios, agent kit, standards, CI. As a zip or pushed to GitHub. | Intent |
-| REQ-007 | Read back changes the agent makes to `docs/` and `tasks/` in the repository; accept them as new versions or dismiss them. An accepted change to an approved document goes back to draft for a new approval. | Spec |
+| REQ-006 | Handoff writes the agent files into the project folder (AGENTS.md, CLAUDE.md, REVIEW.md, agent kit, standards as skills, failing acceptance scenarios, CI). It never overwrites a file Keel did not write without asking. Zip download is optional. Push to the folder's existing git remote is optional. | Intent |
+| REQ-007 | Read back the agent's commits and uncommitted edits to `docs/`, `tasks/` and `features/` from the local repository. Keel's own commits are ignored. Accept as a new version or dismiss. An accepted change to an approved document goes back to draft for a new approval. | Spec |
 | REQ-008 | Version history for every document with readable diffs, the reason for each version, and its impact by requirement ID. | Spec |
-| REQ-009 | Model provider layer: Anthropic, OpenAI, Azure OpenAI and local OpenAI-compatible endpoints (Ollama). A model can be chosen per task. | Spec |
+| REQ-009 | Model provider layer: Anthropic, OpenAI, Azure OpenAI and local OpenAI-compatible endpoints (Ollama). A model can be chosen per task. API keys and provider connections are stored in the user config folder, never in the project folder. | Spec |
 | REQ-010 | Attach mock references (links, images, PDF, HTML) to the intent and spec and link them to requirements. No mock generation. | Spec |
 | REQ-011 | Brainstorm styles as versioned skill files (Challenger, Coach, Cost and value, Market, Engineering-first), chosen at the start. | Spec |
+| REQ-012 | Keel works on one project per folder. `npx keel [path]` opens the folder; a folder without `.keel/` opens on the Initialise screen, where the user sets title, description, templates, brainstorm style and standards. All project config and libraries are in `.keel/`, committed with the project. | Intent |
 
 ## Approach
 
-- **Form:** a local web app. `npx keel` (or `npm run dev` from source) starts a Next.js server on `localhost` and opens the browser. Single user, no login. See `docs/decisions/0005-local-web-app.md`.
+- **Form:** a local web app. `npx keel [path]` starts a server on `127.0.0.1` (first free port from 3000) for one folder and opens the browser. Single user, no login. See `docs/decisions/0005-local-web-app.md` and `docs/decisions/0009-one-project-per-folder.md`.
 - **Stack:** TypeScript end to end. Next.js (App Router) for UI and API routes. See `docs/decisions/0006-typescript-stack.md`.
-- **Storage:** a workspace folder (default `~/.keel/`). Each project is a git repository under `~/.keel/projects/<slug>/` holding its markdown documents with YAML front matter. A SQLite file (`~/.keel/keel.db`) caches metadata and versions, and holds settings. The traceability index is built from the project files when needed, not cached. Git is the source of truth; the index can be rebuilt from it. See `docs/decisions/0007-storage-git-and-sqlite.md`.
+- **Storage:** The project folder is a git repository, also used by the coding agent. Keel keeps its config and libraries in `.keel/` (ADR-0010) and its documents in `docs/`, `tasks/` and `features/`. Keel commits only its own files. The SQLite index is `.keel/cache/index.db`, ignored by git and rebuildable. Personal settings and secrets are in the user config folder (ADR-0011).
 - **Model providers:** one `ChatProvider` interface with adapters for Anthropic, OpenAI, Azure OpenAI and OpenAI-compatible endpoints. Streaming responses. API keys stored encrypted, never written to documents, git or logs.
-- **GitHub:** push the handoff with a fine-grained personal access token (or OAuth device flow). Read-back works by polling the repository on a schedule, because a local app cannot receive webhooks. See `docs/decisions/0008-read-back-by-polling.md`.
+- **Git:** handoff files are written into the folder. Push is optional, to the folder's existing remote, with the user's own git credentials. Read-back reads the local repository (ADR-0012).
 - **Traceability:** a parser extracts REQ IDs from documents, task files and `@REQ-xxx` scenario tags into the index. Impact is computed from it.
-- **UI:** follows the clickable mockup referenced in `docs/mocks/README.md`: Projects, Start, Project setup, Explore, Intent, Spec, Plan, Handoff, Roadmap, Changes, Templates, Brainstorm styles, Standards, Settings.
+- **UI:** follows the clickable mockup referenced in `docs/mocks/README.md`: Initialise, Project setup, Explore, Intent, Spec, Plan, Handoff, Roadmap, Changes, Templates, Brainstorm styles, Standards, Settings.
 
 ## Components
 
-Document store · Template engine and library · Provider layer · Brainstorm service (templates and styles) · Traceability index · Stage gates and approvals · Version diff and impact · Mock references · Scaffold generator · GitHub push · Read-back.
+Document store · Template engine and library · Provider layer · Brainstorm service (templates and styles) · Traceability index · Stage gates and approvals · Version diff and impact · Mock references · Scaffold generator · Optional push · Read-back.
 
 ## Standards applied
 
@@ -59,8 +60,8 @@ Security baseline v2 · TypeScript conventions v3 · BDD style guide v1 · Small
 | Lens | Rating | Note |
 | --- | --- | --- |
 | Architecture fit | Good | Web app, markdown in git, provider layer: standard parts |
-| Integration | Medium | GitHub API for push and read-back; four LLM APIs |
-| Security and data | Medium | Stores API keys and repository tokens (Security baseline v2, rules 1 to 3) |
+| Integration | Good | No GitHub API needed: handoff and read-back use the local repository; four LLM APIs |
+| Security and data | Medium | API keys in the user config folder, never in the project (Security baseline v2, rules 1 to 3) |
 | Effort | Medium | About 10 tasks for a single-user first version |
 | Risk | Medium | Crowded spec-driven tools market; name not clear to use |
 | Build or buy | Build | Existing tools start at the spec and target engineers |
@@ -77,10 +78,11 @@ Written in Gherkin in `features/`, one or more per requirement, tagged `@REQ-xxx
 
 ## Out of scope for v0.1
 
-Code generation, multi-user roles and approvals, change requests across stages (CR-0003, Next), the Maintain stage, a VS Code extension, built-in mock generation, git providers other than GitHub.
+Code generation, multi-user roles and approvals, change requests across stages (CR-0003, Next), the Maintain stage, a VS Code extension, built-in mock generation, git providers other than GitHub, several projects in one Keel run.
 
 ## Version history
 
+- v7: one project per folder in the code repository, `.keel/` folder, read-back from local git, optional push (CR-0004).
 - v6: REQ-007 refined: an accepted read-back change to an approved document goes back to draft for a new approval (owner decision, task T9).
 - v5: REQ-005 refined: Handoff also needs the latest decision to be Go, and an approved document is not reopened by a review (owner decisions, task T6).
 - v4: the traceability index is built from the project files when needed instead of being cached in keel.db (owner decision, task T5).

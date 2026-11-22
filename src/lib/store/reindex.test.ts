@@ -5,7 +5,7 @@ import { openIndex } from './db';
 import { createDocument, saveDocument } from './documents';
 import { rebuildIndex, versionFromCommit } from './reindex';
 import { tempStore } from './test-store';
-import { createProject, projectDir } from './workspace';
+import { initialiseProject } from './workspace';
 
 describe('versionFromCommit', () => {
   it('reads store commit messages and ignores others', () => {
@@ -18,18 +18,18 @@ describe('versionFromCommit', () => {
 describe('rebuildIndex', () => {
   it('rebuilds an empty index from git and reports unreadable documents', async () => {
     const store = tempStore();
-    await createProject(store, { slug: 'keel', title: 'Keel', author: 'Ada' });
-    await createDocument(store, 'keel', { kind: 'intent', title: 'Keel', body: 'x', template: 't@1' });
-    await saveDocument(store, 'keel', 'docs/intent.md', { reason: 'Edit' });
-    await saveDocument(store, 'keel', 'docs/intent.md', { reason: 'Approved', status: 'approved', sameVersion: true });
-    await createDocument(store, 'keel', { kind: 'task', title: 'T', body: 'x', template: 't@1' });
-    writeFileSync(join(projectDir('keel', store.home), 'docs/spec.md'), 'no header');
+    await initialiseProject(store, { title: 'Keel', author: 'Ada' });
+    await createDocument(store, { kind: 'intent', title: 'Keel', body: 'x', template: 't@1' });
+    await saveDocument(store, 'docs/intent.md', { reason: 'Edit' });
+    await saveDocument(store, 'docs/intent.md', { reason: 'Approved', status: 'approved', sameVersion: true });
+    await createDocument(store, { kind: 'task', title: 'T', body: 'x', template: 't@1' });
+    writeFileSync(join(store.root, 'docs/spec.md'), 'no header');
 
-    const fresh = { ...store, index: openIndex(store.home, ':memory:') };
+    const fresh = { ...store, index: openIndex(store.root, ':memory:') };
     const report = await rebuildIndex(fresh);
-    expect(report).toMatchObject({ projects: 1, documents: 2, versions: 3 });
-    expect(report.skipped[0]).toMatch(/^keel\/docs\/spec\.md:/);
-    expect(fresh.index.documents('keel')).toEqual(store.index.documents('keel'));
-    expect(fresh.index.versions('keel', 'INT-0001').map((v) => [v.version, v.reason])).toEqual([[1, 'Create intent'], [2, 'Edit']]);
+    expect(report).toMatchObject({ documents: 2, versions: 3 });
+    expect(report.skipped[0]).toMatch(/^docs\/spec\.md:/);
+    expect(fresh.index.documents()).toEqual(store.index.documents());
+    expect(fresh.index.versions('INT-0001').map((v) => [v.version, v.reason])).toEqual([[1, 'Create intent'], [2, 'Edit']]);
   });
 });

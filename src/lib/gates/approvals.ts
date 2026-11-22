@@ -9,9 +9,8 @@ import type { DocumentStatus, Stage } from '../documents/types';
 import { fail, type Result } from '../result';
 import type { Store } from '../store/db';
 import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
-import { fromYamlDate, projectDir, today } from '../store/workspace';
+import { fromYamlDate, readConfig, today } from '../store/workspace';
 import { readTemplate } from '../templates/library';
-import { repositoryOf } from '../github/push';
 import { readbackState } from '../readback/changes';
 import { renderTemplate } from '../templates/render';
 import { gateFor, type Decision, type ProjectState } from './rules';
@@ -48,13 +47,13 @@ export function approvalsOf(doc: StoredDocument): Approval[] {
 
 /** Approve, request changes or reject: sets the status and records who, when and why. The version stays. */
 export async function review(
-  store: Store, slug: string, document: Approvable,
+  store: Store, document: Approvable,
   input: { action: ApprovalAction; by: string; comment: string },
 ): Promise<Result<StoredDocument, 'not-found' | 'locked' | 'invalid-input' | 'not-reviewable' | 'conflicts'>> {
   if (!input.by.trim()) return fail('invalid-input', 'Say who is reviewing');
-  const gate = gateFor(projectState(store, slug), document);
+  const gate = gateFor(projectState(store), document);
   if (!gate.available) return fail('locked', gate.reason ?? 'This stage is locked');
-  const doc = readDocument(store, slug, APPROVABLE[document]);
+  const doc = readDocument(store, APPROVABLE[document]);
   if (!doc.ok) return fail('not-found', doc.message);
   if (doc.value.header.status === 'closed') return fail('not-reviewable', `${doc.value.header.id} was rejected and is closed`);
   // Owner decision: an approved document is not reopened by a review; it changes through a change request (CR-0003, Next).
@@ -66,7 +65,7 @@ export async function review(
     return fail('conflicts', `Resolve the ${open} open conflict${open === 1 ? '' : 's'} from the regeneration before approving`);
   }
   const approval: Approval = { action: input.action, by: input.by.trim(), date: today(store), comment: input.comment.trim(), version: doc.value.header.version };
-  const saved = await saveDocument(store, slug, APPROVABLE[document], {
+  const saved = await saveDocument(store, APPROVABLE[document], {
     status: STATUS_AFTER[input.action],
     sameVersion: true,
     extra: { approvals: [...approvalsOf(doc.value), approval] },
@@ -93,23 +92,23 @@ export const DECISION_TITLE: Record<Decision, string> = { go: 'Go', park: 'Park'
 
 /** Records a Go, Park or No-go decision as docs/decisions/NNNN-<decision>.md. */
 export async function recordDecision(
-  store: Store, slug: string,
+  store: Store,
   input: { decision: Decision; by: string; reason: string; consequences: string },
 ): Promise<Result<StoredDocument, 'locked' | 'invalid-input'>> {
-  const gate = gateFor(projectState(store, slug), 'spec');
+  const gate = gateFor(projectState(store), 'spec');
   if (!gate.available) return fail('locked', gate.reason ?? 'The spec stage is locked');
   const [by, reason, consequences] = [input.by.trim(), input.reason.trim(), input.consequences.trim()];
   if (!by || !reason) return fail('invalid-input', 'Say who decided and why');
   const label = DECISION_TITLE[input.decision];
   const title = `${label} decision`;
-  const template = readTemplate(store.home, 'decision-record');
+  const template = readTemplate(store.root, 'decision-record');
   const body = template.ok
     ? renderTemplate(template.value.content, { title }).body
         .replace(/## Decision\n<!--[^\n]*-->/, `## Decision\n\n${label}, decided by ${by}.`)
         .replace(/## Reason\n<!--[^\n]*-->/, `## Reason\n\n${reason}`)
         .replace(/## Consequences\n<!--[^\n]*-->/, consequences ? `## Consequences\n\n${consequences}` : '$&')
     : `# ${title}\n\n## Decision\n\n${label}\n\n## Reason\n\n${reason}\n`;
-  const created = await createDocument(store, slug, {
+  const created = await createDocument(store, {
     kind: 'decision', title, body, template: template.ok ? `decision-record@${template.value.version}` : 'decision-record@1',
     status: 'approved', fileSlug: input.decision, extra: { decision: input.decision, decided_by: by },
   });
@@ -117,18 +116,18 @@ export async function recordDecision(
 }
 
 /** Everything the gates need, read from the project. */
-export function projectState(store: Store, slug: string): ProjectState {
+export function projectState(store: Store): ProjectState {
   const status = (path: string) => {
-    const doc = readDocument(store, slug, path);
+    const doc = readDocument(store, path);
     return doc.ok ? doc.value.header.status : undefined;
   };
-  const context = loadContext(store, slug);
+  const context = loadContext(store);
   return {
     requiredCaptured: context.ok && requiredCaptured(context.value.sections, context.value.session.answers),
     intent: status(APPROVABLE.intent),
     spec: status(APPROVABLE.spec),
     plan: status(APPROVABLE.plan),
-    decisions: decisionsOf(projectDir(slug, store.home)),
+    decisions: decisionsOf(store.root),
   };
 }
 
@@ -141,18 +140,18 @@ const STATUS_WORD: Record<string, string> = { draft: 'Draft', pending: 'Pending'
 const DECISION_WORD: Record<Decision, string> = { go: 'Go decision', park: 'Parked', 'no-go': 'No-go' };
 
 /** What each stage has so far, for the stage bar. */
-export function stageSummaries(store: Store, slug: string): Record<Stage, StageSummary> {
+export function stageSummaries(store: Store): Record<Stage, StageSummary> {
   const doc = (path: string) => {
-    const d = readDocument(store, slug, path);
+    const d = readDocument(store, path);
     return d.ok ? d.value.header : undefined;
   };
-  const context = loadContext(store, slug);
+  const context = loadContext(store);
   const required = context.ok ? context.value.sections.filter((s) => s.required) : [];
   const captured = context.ok ? required.filter((s) => isCaptured(context.value.session.answers, s.heading)).length : 0;
   const intent = doc(APPROVABLE.intent);
   const spec = doc(APPROVABLE.spec);
   const plan = doc(APPROVABLE.plan);
-  const decision = decisionsOf(projectDir(slug, store.home)).at(-1);
+  const decision = decisionsOf(store.root).at(-1);
   const docLine = (name: string, header?: { version: number; status: string }) => (header ? `${name} v${header.version} · ${STATUS_WORD[header.status] ?? header.status}` : `No ${name} yet`);
   return {
     explore: {
@@ -163,9 +162,11 @@ export function stageSummaries(store: Store, slug: string): Record<Stage, StageS
     spec: { detail: `${spec ? `spec.md v${spec.version}` : 'No spec.md yet'} · ${decision ? DECISION_WORD[decision] : 'no decision'}`, done: decision === 'go' },
     plan: { detail: docLine('plan.md', plan), done: plan?.status === 'approved' },
     handoff: (() => {
-      if (!repositoryOf(store, slug)?.pushes.length) return { detail: 'Ready to hand off', done: false };
-      const waiting = readbackState(store, slug).pending.length;
-      return { detail: `Pushed · ${waiting === 0 ? 'no changes to review' : `${waiting} change${waiting === 1 ? '' : 's'} to review`}`, done: true };
+      // Written once Handoff has put its files in the folder (handoff.files in config.yml, task R7).
+      const handoff = readConfig(store.root)?.handoff as { files?: Record<string, string> } | undefined;
+      if (!handoff?.files || Object.keys(handoff.files).length === 0) return { detail: 'Ready to hand off', done: false };
+      const waiting = readbackState(store).pending.length;
+      return { detail: `Written to this folder · ${waiting === 0 ? 'no changes to review' : `${waiting} change${waiting === 1 ? '' : 's'} to review`}`, done: true };
     })(),
   };
 }

@@ -12,3 +12,5 @@ export const Send = () => <svg {...base}><path d="M4 12 20 4l-4 16-4-7z" /><path
 export const DocIcon = () => <svg {...base}><path d="M7 3h7l5 5v13H7z" /><path d="M14 3v5h5M10 13h6M10 17h6" /></svg>;
 export const Pencil = () => <svg {...base} width={15} height={15}><path d="M4 20h4L19 9l-4-4L4 16z" /></svg>;
 export const Question = () => <svg {...base} style={{ color: 'var(--warn)' }}><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7M12 17h.01" /></svg>;
+export const Book = () => <svg {...base}><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z" /><path d="M4 19V5M8 7h7" /></svg>;
+export const Gear = () => <svg {...base} width={16} height={16}><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" /></svg>;

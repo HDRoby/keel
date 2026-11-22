@@ -15,14 +15,14 @@ describe('standards', () => {
   });
 
   it('seeds every standard once and lists them by name', () => {
-    const { home } = tempStore();
+    const { root: home } = tempStore();
     expect(ensureStandards(home, SEED)).toEqual({ ok: true, value: readdirSync(join(SEED, 'standards')).length });
     expect(ensureStandards(home, SEED)).toEqual({ ok: true, value: 0 });
     expect(listStandards(home).map((s) => s.ref)).toEqual(['api-design@1', 'bdd-style@1', 'plain-markdown@1', 'security-baseline@2', 'small-steps@1', 'typescript-conventions@3']);
   });
 
   it('reads by ref and picks the ones that apply to a stage', () => {
-    const { home } = tempStore();
+    const { root: home } = tempStore();
     ensureStandards(home, SEED);
     expect(readStandard(home, 'security-baseline@2')).toMatchObject({ ok: true, value: { owner: 'Security team' } });
     expect(readStandard(home, '../x@1')).toMatchObject({ error: 'not-found' });

@@ -19,3 +19,5 @@ Git gives history, diffs and a portable audit trail; documents stay readable wit
 ## Consequences
 
 The index must be rebuildable from git at any time (`keel reindex`).
+
+Amended by CR-0004 (2026-11-22): the git repository is now the project folder, and the index is `.keel/cache/index.db` (ADR-0009, ADR-0010).

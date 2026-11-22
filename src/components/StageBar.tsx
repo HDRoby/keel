@@ -10,13 +10,12 @@ import { CheckCircle, Current, Lock, Open } from './Icons';
 import { ErrorAlert, PageHead, Topbar } from './Shell';
 
 interface StageBarProps {
-  slug: string;
   gates: StageGate[];
   current: Stage;
   summaries: Record<Stage, StageSummary>;
 }
 
-export function StageBar({ slug, gates, current, summaries }: StageBarProps) {
+export function StageBar({ gates, current, summaries }: StageBarProps) {
   return (
     <nav aria-label="Stages" className="stagebar">
       {gates.map((g, i) => {
@@ -31,7 +30,7 @@ export function StageBar({ slug, gates, current, summaries }: StageBarProps) {
           </>
         );
         return g.available ? (
-          <Link key={g.stage} href={`/projects/${slug}/${g.stage}`} className="stage" aria-current={g.stage === current ? 'step' : undefined}>{body}</Link>
+          <Link key={g.stage} href={`/${g.stage}`} className="stage" aria-current={g.stage === current ? 'step' : undefined}>{body}</Link>
         ) : (
           <span key={g.stage} role="link" aria-disabled="true" title={g.reason} className="stage">{body}</span>
         );
@@ -59,7 +58,7 @@ export function StageLayout({ page, error, meta, description, actions, locked, c
       <Topbar crumb={`${project.title} · ${project.id}`} title={gate.label} />
       <main className="content">
         <PageHead title={project.title} meta={meta ?? project.id} description={description} actions={gate.available ? actions : undefined} />
-        <StageBar slug={project.slug} gates={gates} current={gate.stage} summaries={summaries} />
+        <StageBar gates={gates} current={gate.stage} summaries={summaries} />
         {!gate.available ? (
           <>
             <section aria-label={`${gate.label} stage`} className="card">

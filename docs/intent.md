@@ -4,9 +4,9 @@ project: PRJ-0001
 title: Keel
 author: Roberto Basile
 created: 2026-11-20
-updated: 2026-11-20
+updated: 2026-11-22
 status: approved
-version: 2
+version: 3
 template: standard-intent@3
 brainstorm_style: challenger@1
 mocks:
@@ -21,7 +21,7 @@ Coding agents now build software in hours, but the steps before the build still 
 
 ## Proposed outcome
 
-A web app where anyone with an idea brainstorms with an LLM, then produces a versioned intent, spec and plan with metadata and traceable requirements. It hands a scaffolded repository to any coding agent (Claude Code, Codex and others) and reads the agent's changes back.
+A web app where anyone with an idea brainstorms with an LLM, then produces a versioned intent, spec and plan with metadata and traceable requirements. It works inside the project's own repository, writes the handoff files for any coding agent (Claude Code, Codex and others) and reads the agent's changes back.
 
 ## Requirements
 
@@ -31,6 +31,7 @@ A web app where anyone with an idea brainstorms with an LLM, then produces a ver
 - REQ-004 Stable requirement IDs traced from intent to spec, plan and tests
 - REQ-005 Each stage unlocks only when the previous one is approved
 - REQ-006 Hand off a repository scaffold any coding agent can build from
+- REQ-012 One project per folder, with its config and libraries in a .keel folder
 
 ## Affected users and systems
 
@@ -47,3 +48,8 @@ Proposers (engineers, product managers, anyone with an idea), coding agents, git
 
 - Public name: "Keel" is already used by other developer tools. Fine as a codename.
 - How should a change upstream affect later documents? (Answered later by CR-0003, which is in Next on the roadmap.)
+
+## Version history
+
+- v3: one project per folder, in the code repository (CR-0004).
+- v2: approved intent for Keel v0.1.

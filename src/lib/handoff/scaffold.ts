@@ -2,7 +2,6 @@
 // AGENTS.md, CLAUDE.md, REVIEW.md, docs, tasks, failing acceptance scenarios with step stubs, the agent kit,
 // the standards and CI. Keel's own repository is an example of the output. It never contains application code.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { writeFileAtomic } from '../store/atomic';
 import { join } from 'node:path';
 import matter from 'gray-matter';
 import { z } from 'zod';
@@ -11,14 +10,14 @@ import { githubToken } from '../github/auth';
 import { projectState } from '../gates/approvals';
 import { gateFor } from '../gates/rules';
 import { listMocks } from '../mocks/references';
+import { readSkillFile } from '../skill-files';
 import { PROVIDER_IDS } from '../providers/types';
 import { fail, ok, type Result } from '../result';
 import { providerConfig } from '../settings/settings';
 import { standardsFor } from '../standards/library';
 import type { Store } from '../store/db';
 import { readDocument } from '../store/documents';
-import { commitFiles } from '../store/git';
-import { PROJECT_FILE, projectDir, readProject } from '../store/workspace';
+import { readConfig, readProject, updateConfig } from '../store/workspace';
 import { listTemplates, readTemplate } from '../templates/library';
 import { renderTemplate } from '../templates/render';
 import { buildTrace, traceabilityJson } from '../trace/index';
@@ -46,26 +45,20 @@ export const DEFAULT_COMMANDS: Commands = {
   install: 'npm install', run: 'npm run dev', test: 'npm test', scenarios: 'npm run test:bdd', verify: 'npm run verify',
 };
 
-/** The handoff commands saved in project.md, or the defaults. */
-export function handoffCommands(store: Store, slug: string): Commands {
-  const file = join(projectDir(slug, store.home), PROJECT_FILE);
-  if (!existsSync(file)) return DEFAULT_COMMANDS;
-  const parsed = commandsSchema.safeParse(matter(readFileSync(file, 'utf8'), {}).data.handoff);
+/** The handoff commands saved in .keel/config.yml, or the defaults. */
+export function handoffCommands(store: Pick<Store, 'root'>): Commands {
+  const parsed = commandsSchema.safeParse(readConfig(store.root)?.commands);
   return parsed.success ? parsed.data : DEFAULT_COMMANDS;
 }
 
-/** Saves the handoff commands in project.md. */
-export async function saveHandoffCommands(store: Store, slug: string, commands: Commands): Promise<Result<Commands, HandoffError>> {
-  const project = readProject(slug, store.home);
+/** Saves the handoff commands in .keel/config.yml. */
+export async function saveHandoffCommands(store: Store, commands: Commands): Promise<Result<Commands, HandoffError>> {
+  const project = readProject(store.root);
   if (!project.ok) return fail('not-found', project.message);
   const parsed = commandsSchema.safeParse(commands);
   if (!parsed.success) return fail('invalid-input', 'Every command needs a value');
-  const dir = projectDir(slug, store.home);
-  const file = join(dir, PROJECT_FILE);
-  const current = matter(readFileSync(file, 'utf8'), {});
-  writeFileAtomic(file, matter.stringify(current.content, { ...current.data, handoff: parsed.data }));
-  await commitFiles(dir, [PROJECT_FILE], `${project.value.id}: handoff commands`);
-  return ok(parsed.data);
+  const saved = await updateConfig(store, { commands: parsed.data }, 'Keel: handoff commands');
+  return saved.ok ? ok(parsed.data) : fail('not-found', saved.message);
 }
 
 const text = (path: string, content: string): PackageFile => ({ path, data: new TextEncoder().encode(content.endsWith('\n') ? content : `${content}\n`) });
@@ -85,22 +78,22 @@ function fromTemplate(home: string, id: string, values: Record<string, string>, 
 }
 
 /** Builds every file of the handoff package. Refuses while the Handoff stage is locked, or if a secret is found. */
-export async function buildHandoff(store: Store, slug: string): Promise<Result<PackageFile[], HandoffError>> {
-  const gate = gateFor(projectState(store, slug), 'handoff');
+export async function buildHandoff(store: Store): Promise<Result<PackageFile[], HandoffError>> {
+  const gate = gateFor(projectState(store), 'handoff');
   if (!gate.available) return fail('locked', gate.reason ?? 'The handoff stage is locked');
-  const project = readProject(slug, store.home);
+  const project = readProject(store.root);
   if (!project.ok) return fail('not-found', project.message);
-  const dir = projectDir(slug, store.home);
-  const intent = readDocument(store, slug, 'docs/intent.md');
-  const plan = readDocument(store, slug, 'docs/plan.md');
+  const dir = store.root;
+  const intent = readDocument(store, 'docs/intent.md');
+  const plan = readDocument(store, 'docs/plan.md');
   if (!intent.ok || !plan.ok) return fail('not-found', 'The handoff needs intent.md and plan.md');
-  const commands = handoffCommands(store, slug);
+  const commands = handoffCommands(store);
   const title = project.value.title;
-  const standards = standardsFor(store.home, project.value.standards);
+  const standards = standardsFor(store.root, project.value.standards);
   const pathValues = { plan_path: '`docs/plan.md`', spec_path: '`docs/spec.md`', traceability_path: '`docs/traceability.json`' };
-  const kit = listTemplates(store.home).filter((t) => t.group === 'agent-kit' && t.id !== 'review');
+  const kit = listTemplates(store.root).filter((t) => t.group === 'agent-kit' && t.id !== 'review');
   const kitFiles = kit.flatMap((t) => {
-    const template = readTemplate(store.home, t.id);
+    const template = readTemplate(store.root, t.id);
     if (!template.ok) return [];
     const parsed = matter(template.value.content, {});
     const header: Record<string, unknown> = { ...parsed.data };
@@ -113,25 +106,31 @@ export async function buildHandoff(store: Store, slug: string): Promise<Result<P
   });
 
   const files: PackageFile[] = [];
+  const copied = new Set<string>();   // documents taken as they are, not generated from a template
   const copy = (path: string) => {
-    if (existsSync(join(dir, path))) files.push({ path, data: new Uint8Array(readFileSync(join(dir, path))) });
+    if (!existsSync(join(dir, path))) return;
+    files.push({ path, data: new Uint8Array(readFileSync(join(dir, path))) });
+    copied.add(path);
   };
 
   // Documents, decisions, mock references, tasks and scenarios, as they are in the project.
   ['docs/intent.md', 'docs/spec.md', 'docs/plan.md'].forEach(copy);
   filesUnder(dir, 'docs/decisions', (f) => f.endsWith('.md')).forEach(copy);
-  if (listMocks(dir).length > 0) filesUnder(dir, 'docs/mocks', () => true).forEach(copy);
+  if (listMocks(dir).length > 0) filesUnder(dir, '.keel/mocks', () => true).forEach(copy);
   filesUnder(dir, 'tasks', (f) => f.endsWith('.md')).forEach(copy);
   const features: FeatureFile[] = filesUnder(dir, 'features', (f) => f.endsWith('.feature'))
     .map((path) => ({ path, content: readFileSync(join(dir, path), 'utf8') }));
-  features.forEach((f) => files.push(text(f.path, f.content)));
+  features.forEach((f) => {
+    files.push(text(f.path, f.content));
+    copied.add(f.path);
+  });
   stepStubs(features).forEach((s) => files.push(text(s.path, s.content)));
 
   // The roadmap: the project's own, or Now from the requirements in the intent.
   if (existsSync(join(dir, 'docs/roadmap.md'))) copy('docs/roadmap.md');
   else {
     const now = Object.entries(requirementStatements(intent.value.body)).map(([id, s]) => `- ${s} (${id})`).join('\n');
-    const roadmap = fromTemplate(store.home, 'roadmap', { title, current_release: 'v0.1' }, {
+    const roadmap = fromTemplate(store.root, 'roadmap', { title, current_release: 'v0.1' }, {
       'Now (v0.1)': now || '- The requirements in docs/intent.md', Next: '- Nothing yet.', Later: '- Nothing yet.', 'Not doing': '- Code generation inside Keel: coding agents build.',
     });
     if (roadmap) files.push(text('docs/roadmap.md', matter.stringify(`\n${roadmap}`, { project: project.value.id, template: 'roadmap@1', updated: project.value.created })));
@@ -141,7 +140,7 @@ export async function buildHandoff(store: Store, slug: string): Promise<Result<P
   // Instructions for any agent (AGENTS.md), for Claude Code (CLAUDE.md, .claude/), and for reviewers (REVIEW.md).
   const standardsSummary = standards.length === 0 ? '- No standards were selected for this project.'
     : standards.map((s) => `- **${s.name} v${s.version}:** ${s.description}`).join('\n');
-  const agents = fromTemplate(store.home, 'agents', {
+  const agents = fromTemplate(store.root, 'agents', {
     commands: [`- Install: \`${commands.install}\``, `- Run: \`${commands.run}\``, `- Unit tests: \`${commands.test}\``, `- Acceptance scenarios: \`${commands.scenarios}\``, `- All checks: \`${commands.verify}\``].join('\n'),
     standards_summary: `${standardsSummary}\n\nClaude Code loads these as skills from \`.claude/skills/\`; other agents follow this summary.`,
     verify_command: `Run before reporting a task done, and paste the output:\n\n\`\`\`\n${commands.verify}\n\`\`\`\n\nIf a test fails, fix the code, not the test.`,
@@ -159,10 +158,10 @@ export async function buildHandoff(store: Store, slug: string): Promise<Result<P
   ].join('\n')));
   kitFiles.forEach((k) => files.push(k.file));
   standards.forEach((s) => {
-    const source = readFileSync(join(store.home, 'standards', `${s.ref}.md`), 'utf8');
+    const source = readSkillFile(store.root, 'standards', s.ref) ?? '';
     files.push(text(`.claude/skills/${s.id}/SKILL.md`, source));
   });
-  const review = fromTemplate(store.home, 'review', pathValues, {
+  const review = fromTemplate(store.root, 'review', pathValues, {
     'What Important means here': 'A bug the change adds or makes worse, a security problem (cite the standard and rule, for example "Security baseline v2, rule 1"), or a departure from `docs/spec.md` or `docs/plan.md` that the plan does not record.',
     'Do not report': ['- Style the linter already checks.', '- Changes outside the diff, unless the diff breaks them.', '- Personal preferences without a rule or a bug behind them.'].join('\n'),
   });
@@ -186,9 +185,10 @@ export async function buildHandoff(store: Store, slug: string): Promise<Result<P
     `Planned with Keel (${project.value.id}). Coding agents start with \`AGENTS.md\`; the intent, spec and plan are in \`docs/\`, the tasks in \`tasks/\`, and the acceptance scenarios in \`features/\`.`,
   ].join('\n')));
 
-  // Every placeholder must be filled: an agent reading "{{verify_command}}" is not helped.
+  // Every placeholder Keel fills must be filled: an agent reading "{{verify_command}}" is not helped.
+  // Documents taken as they are may mention placeholders on purpose (a task about templates, for example).
   const decoderForPlaceholders = new TextDecoder('utf-8', { fatal: false });
-  const unfilled = files.filter((f) => !f.path.endsWith('.feature') && /\{\{\s*[a-z_]+\s*\}\}/.test(decoderForPlaceholders.decode(f.data))).map((f) => f.path);
+  const unfilled = files.filter((f) => !copied.has(f.path) && /\{\{\s*[a-z_]+\s*\}\}/.test(decoderForPlaceholders.decode(f.data))).map((f) => f.path);
   if (unfilled.length > 0) return fail('invalid-input', `Unfilled template placeholders in ${unfilled.join(', ')}; check the templates`);
 
   // Never hand off a key or token (Security baseline v2, rule 1).

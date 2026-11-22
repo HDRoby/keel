@@ -1,5 +1,5 @@
 // Versioned skill files (brainstorm styles, standards): seeded from seed/<kind>/<name>/SKILL.md into
-// KEEL_HOME/<kind>/<name>@<version>.md, and read back by ref.
+// <project>/.keel/<kind>/<name>@<version>.md (ADR-0010), and read back by ref.
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fail, ok, type Result } from './result';
@@ -14,16 +14,19 @@ interface Versioned {
   name: string;
 }
 
-/** The workspace folder of one kind of skill file. */
-export function skillDir(home: string, kind: SkillKind): string {
-  return join(home, kind);
+/** Allowed names of styles and standards. */
+export const NAME = /^[a-z0-9][a-z0-9-]{0,63}$/;
+
+/** The .keel folder of one kind of skill file in a project. */
+export function skillDir(root: string, kind: SkillKind): string {
+  return join(root, '.keel', kind);
 }
 
-/** Copies seed/<kind>/<name>/SKILL.md into the workspace on first run. Every file must parse, or nothing is copied. */
+/** Copies seed/<kind>/<name>/SKILL.md into the project's .keel/ at Initialise. Every file must parse, or nothing is copied. */
 export function seedSkills<E extends string>(
-  home: string, seedDir: string, kind: SkillKind, parse: (content: string) => Result<{ ref: string }, E>,
+  root: string, seedDir: string, kind: SkillKind, parse: (content: string) => Result<{ ref: string }, E>,
 ): Result<number, E> {
-  const dir = skillDir(home, kind);
+  const dir = skillDir(root, kind);
   const source = join(seedDir, kind);
   if (existsSync(dir) || !existsSync(source)) return ok(0);
   const staged: { from: string; ref: string }[] = [];
@@ -40,8 +43,8 @@ export function seedSkills<E extends string>(
 }
 
 /** The latest version of every skill file of a kind, sorted by name. Files that do not parse, or are misnamed, are skipped. */
-export function latestSkills<T extends Versioned>(home: string, kind: SkillKind, parse: (content: string) => Result<T, string>): T[] {
-  const dir = skillDir(home, kind);
+export function latestSkills<T extends Versioned>(root: string, kind: SkillKind, parse: (content: string) => Result<T, string>): T[] {
+  const dir = skillDir(root, kind);
   if (!existsSync(dir)) return [];
   const latest = new Map<string, T>();
   for (const file of readdirSync(dir).filter((f) => f.endsWith('.md'))) {
@@ -53,7 +56,7 @@ export function latestSkills<T extends Versioned>(home: string, kind: SkillKind,
 }
 
 /** The raw content of one version, by ref such as "coach@1"; undefined for an unknown or unsafe ref. */
-export function readSkillFile(home: string, kind: SkillKind, ref: string): string | undefined {
-  const file = join(skillDir(home, kind), `${ref}.md`);
+export function readSkillFile(root: string, kind: SkillKind, ref: string): string | undefined {
+  const file = join(skillDir(root, kind), `${ref}.md`);
   return VERSIONED_REF.test(ref) && existsSync(file) ? readFileSync(file, 'utf8') : undefined;
 }

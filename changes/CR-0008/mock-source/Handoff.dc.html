@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keel · Handoff and read-back</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/softwareone/tokens.css">
+<link rel="stylesheet" href="ds/softwareone/components/bundle.css">
+<script src="ds/softwareone/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#3366ff}a:hover{color:#2447b3}
+</style>
+</helmet>
+<x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Navigation" groups="{{groups}}" active-id="handoff" brand="{{brand}}" header-bar="{{headerBar}}">
+<div style="box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 24px; font-family: var(--font-body, Arial); color: var(--text-body, #25282d); max-width: 1400px;">
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+    <h1 style="margin: 0; font-size: 24px; line-height: 28.13px; font-weight: 700; color: var(--text-primary, #000);">Keel</h1>
+    <span style="font-size: 12px; line-height: 14.4px; color: var(--text-muted, #6b7180);">PRJ-0001 · handoff from plan v4 · /Users/roberto/keel</span>
+  </div>
+  <dc-import name="StageBar" current="handoff" hint-size="100%,72px"></dc-import>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card" style="flex: 1 1 400px; min-width: 0;">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Files in this folder</h2>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Your documents are already here. Handoff adds the agent files next to them and commits only those.</span>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Agent instructions template: AGENTS.md · v1</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <sc-for list="{{tree}}" as="f" hint-placeholder-count="12">
+            <div style="{{f.style}}">
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{f.icon}}" size="3" color="{{f.color}}"></x-import>
+              <span style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 20px; color: #000; white-space: nowrap;">{{f.name}}</span>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto;">{{f.note}}</span>
+              <span style="{{f.stateStyle}}">{{f.state}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </x-import>
+
+    <div style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+            <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Write to this folder</h2>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="{{writtenColor}}" icon="{{writtenIcon}}">{{writtenLabel}}</x-import>
+          </div>
+          <span style="font-size: 14px; line-height: 20px; color: #434952;">{{writeSummary}}</span>
+          <sc-if value="{{conflictOpen}}" hint-placeholder-val="{{ true }}">
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="warning" title="README.md is already here and Keel did not write it" standalone="{{yes}}">
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <span>Keel never overwrites a file it did not write without asking.</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="outline" on-click="{{keepMine}}">Keep mine</x-import>
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="outline" on-click="{{useKeels}}">Use Keel's</x-import>
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="text" on-click="{{writeBeside}}">Write as README.keel.md</x-import>
+                </div>
+              </div>
+            </x-import>
+          </sc-if>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="primary" is-disabled="{{cannotWrite}}" on-click="{{write}}">{{writeLabel}}</x-import>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="text">Download as zip</x-import>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 16px; border-top: 1px solid #e0e5e8;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Push (optional)</span>
+                <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Remote origin · github.com/roberto/keel · branch main · {{ahead}}</span>
+              </div>
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="outline" is-disabled="{{nothingToPush}}" on-click="{{push}}">Push to origin</x-import>
+            </div>
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Uses your own git credentials. Keel never pushes on its own. No remote? Push from your terminal when you are ready.</span>
+          </div>
+          <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="info" title="Change CR-0003 is pending" standalone="{{yes}}">Once it is approved and the spec, plan and tests are updated, its change package is written here. <a href="Changes.dc.html" style="font-weight: 500;">Review the change</a></x-import>
+        </div>
+      </x-import>
+
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Read-back from this folder</h2>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Checked 1 min ago from local git · commits and uncommitted edits in docs/, tasks/ and features/ · Keel's own commits are ignored</span>
+            </div>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="outline" icon="{{refreshIcon}}">Check now</x-import>
+          </div>
+
+          <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="{{bannerStatus}}" title="{{bannerTitle}}" standalone="{{yes}}">{{bannerText}}</x-import>
+
+          <sc-for list="{{changes}}" as="c" hint-placeholder-count="2">
+            <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid #e0e5e8; border-radius: 8px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+                <span style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 20px; color: #000;">{{c.file}}</span>
+                <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="{{c.chipColor}}">{{c.status}}</x-import>
+              </div>
+              <span style="font-size: 14px; line-height: 20px; color: #25282d;">{{c.summary}}</span>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{c.meta}}</span>
+              <sc-if value="{{c.pending}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="primary" on-click="{{c.accept}}">{{c.acceptLabel}}</x-import>
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="text" on-click="{{c.dismiss}}">Dismiss</x-import>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Acceptance scenarios passing in CI, per requirement (optional: GitHub remote and a token in your settings)</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <sc-for list="{{tests}}" as="t" hint-placeholder-count="8">
+                <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="{{t.color}}" icon="{{t.icon}}">{{t.name}}</x-import>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+  </div>
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1200}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { c1: 'pending', c2: 'pending', readme: 'open', written: false, pushed: false };
+  }
+  renderVals() {
+    const R = window.React;
+    const DS = window.SoftwareOneDesignSystem_52b182;
+    const row = (depth) => 'display: flex; align-items: center; gap: 8px; min-width: 0; padding: 2px 0 2px ' + (depth * 20) + 'px;';
+    const st = this.state;
+    const chipStyle = (bg, fg) => 'font-size: 12px; line-height: 16px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; background: ' + bg + '; color: ' + fg + ';';
+    const rm = st.readme;
+    const states = {
+      here: ['In folder', chipStyle('#f0f2f5', '#6b7180')],
+      add: [st.written ? 'Written' : 'New', st.written ? chipStyle('#e6f6ec', '#1a7f43') : chipStyle('#e8eeff', '#2447b3')],
+      conflict: [rm === 'open' ? 'Conflict' : (rm === 'mine' ? 'Kept yours' : (rm === 'keel' ? (st.written ? 'Written' : 'Use Keel\'s') : (st.written ? 'Written beside' : 'Beside'))), rm === 'open' ? chipStyle('#fff4e0', '#8a5a00') : chipStyle('#f0f2f5', '#6b7180')],
+      none: ['', '']
+    };
+    const f = (depth, icon, name, note, state) => { const k = states[state || 'none']; return { icon: icon, name: name, note: note || '', style: row(depth), color: icon === 'folder' ? '#6b7180' : '#3366ff', state: k[0], stateStyle: k[0] ? k[1] : 'display: none;' }; };
+    const tree = [
+      f(0, 'folder', 'keel/', 'your repository'),
+      f(1, 'folder', '.keel/', 'config, templates, styles, standards', 'here'),
+      f(1, 'folder', 'docs/', 'written as you approve each document', 'here'),
+      f(2, 'description', 'intent.md', 'INT-0001 v2', 'here'),
+      f(2, 'description', 'spec.md', 'SPC-0001 v3', 'here'),
+      f(2, 'description', 'plan.md', 'PLN-0001 v4', 'here'),
+      f(2, 'description', 'roadmap.md', 'RMP-0001 · Now = v0.1', 'here'),
+      f(2, 'description', 'decisions/', 'ADR-0001 to ADR-0012', 'here'),
+      f(1, 'folder', 'tasks/', 'T1 to T9, one file each', 'here'),
+      f(1, 'description', 'AGENTS.md', 'Instructions, conventions, verification, agent roles', 'add'),
+      f(1, 'description', 'CLAUDE.md', 'Points to AGENTS.md', 'add'),
+      f(1, 'description', 'REVIEW.md', 'Review policy', 'add'),
+      f(1, 'description', 'README.md', 'Already in your repository', 'conflict'),
+      f(1, 'folder', '.claude/skills/', 'Standards as skills, from .keel/standards', 'add'),
+      f(1, 'folder', '.claude/agents/', 'verifier, code-simplifier, researcher', 'add'),
+      f(1, 'folder', 'features/', '6 .feature files · 7 scenarios', 'add'),
+      f(1, 'folder', 'features/steps/', 'Failing step stubs', 'add'),
+      f(1, 'folder', '.github/workflows/', 'ci.yml runs the tests', 'add'),
+      f(1, 'folder', 'src/', 'your code (Keel does not touch it)')
+    ];
+    const mk = (key, file, summary, meta, acceptLabel, doneLabel) => {
+      const s = st[key];
+      return {
+        file: file, summary: summary, meta: meta, acceptLabel: acceptLabel,
+        pending: s === 'pending',
+        status: s === 'pending' ? 'Pending' : (s === 'accepted' ? doneLabel : 'Closed'),
+        chipColor: s === 'pending' ? 'warning' : (s === 'accepted' ? 'success' : 'gray'),
+        accept: () => this.setState({ [key]: 'accepted' }),
+        dismiss: () => this.setState({ [key]: 'dismissed' })
+      };
+    };
+    const changes = [
+      mk('c1', 'docs/plan.md', 'The agent split T9 into T9a (webhook listener) and T9b (diff viewer). REQ-007 now maps to both.', 'Commit 8d1e07b · 20/11/2026 16:05 · by coding agent', 'Accept as plan v5', 'Accepted as plan v5'),
+      mk('c2', 'docs/spec.md', 'Added a note under REQ-009: local models are supported through an OpenAI-compatible endpoint only.', 'Uncommitted edit in the working tree · 20/11/2026 16:22', 'Accept as spec v4', 'Accepted as spec v4')
+    ];
+    const open = changes.filter((c) => c.pending).length;
+    const testsDef = [
+      ['REQ-001 · 1 of 1', true], ['REQ-002 · 1 of 1', true], ['REQ-004 · 0 of 1', false],
+      ['REQ-005 · 1 of 2', false], ['REQ-006 · 0 of 1', false], ['REQ-007 · 0 of 1', false]
+    ];
+    return {
+      yes: true,
+      refreshIcon: R.createElement(DS.Icon, { name: 'refresh', size: 5 }),
+      tree: tree,
+      conflictOpen: st.readme === 'open',
+      keepMine: () => this.setState({ readme: 'mine' }),
+      useKeels: () => this.setState({ readme: 'keel' }),
+      writeBeside: () => this.setState({ readme: 'beside' }),
+      cannotWrite: st.readme === 'open' || st.written,
+      write: () => this.setState({ written: true }),
+      writeLabel: st.written ? 'Written' : 'Write 8 files to folder',
+      writtenColor: st.written ? 'success' : 'gray',
+      writtenIcon: st.written ? 'check' : 'schedule',
+      writtenLabel: st.written ? 'Written · Keel commit 4f2a9c1' : 'Not written yet',
+      writeSummary: st.written ? 'Keel wrote the agent files and committed only them on branch main. Your other changes are untouched.' : (st.readme === 'open' ? 'Choose what to do with README.md, then write.' : 'Ready: 8 new files. Keel commits only these, as one Keel commit.'),
+      ahead: st.pushed ? 'up to date' : (st.written ? '1 commit to push' : 'nothing to push'),
+      nothingToPush: !st.written || st.pushed,
+      push: () => this.setState({ pushed: true }),
+      changes: changes,
+      bannerStatus: open ? 'warning' : 'success',
+      bannerTitle: open ? open + ' agent change' + (open > 1 ? 's' : '') + ' in this folder since handoff' : 'Documents match the folder',
+      bannerText: open ? 'Review each change. Accepting it creates a new version, with the commit (or Uncommitted) as the reason, and commits it as a Keel commit.' : 'Every agent change has been reviewed.',
+      tests: testsDef.map((t) => ({ name: t[0], color: t[1] ? 'success' : 'gray', icon: t[1] ? 'check' : 'schedule' })),
+      groups: [
+        { label: 'Project · Keel', icon: 'lightbulb', items: [
+          { id: 'setup', label: 'Project setup', href: 'SetupKeel.dc.html' },
+          { id: 'explore', label: 'Explore', href: 'Explore.dc.html' },
+          { id: 'intent', label: 'Intent', href: 'Intent.dc.html' },
+          { id: 'spec', label: 'Spec', href: 'Spec.dc.html' },
+          { id: 'plan', label: 'Plan', href: 'Plan.dc.html' },
+          { id: 'handoff', label: 'Handoff', href: 'Handoff.dc.html' },
+          { id: 'roadmap', label: 'Roadmap', href: 'Roadmap.dc.html' },
+          { id: 'changes', label: 'Changes', href: 'Changes.dc.html' } ] },
+        { label: 'Library (.keel)', icon: 'folder', items: [
+          { id: 'templates', label: 'Templates', href: 'Templates.dc.html' },
+          { id: 'styles', label: 'Brainstorm styles', href: 'Styles.dc.html' },
+          { id: 'standards', label: 'Standards', href: 'Standards.dc.html' } ] },
+        { label: 'Settings', icon: 'settings', items: [
+          { id: 'settings', label: 'Settings', href: 'Settings.dc.html' } ] }
+      ],
+      brand: R.createElement('span', { style: { fontSize: 18, lineHeight: '26px', fontWeight: 700, color: '#000' } }, 'Keel'),
+      headerBar: R.createElement(DS.NavigationHeaderBar, { title: 'Handoff', subtitle: 'Keel · ~/keel' })
+    };
+  }
+}
+</script>
+</body>
+</html>

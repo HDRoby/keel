@@ -3,8 +3,7 @@
 import matter from 'gray-matter';
 import { z } from 'zod';
 import { fail, ok, type Result } from '../result';
-import { latestSkills, readSkillFile, seedSkills } from '../skill-files';
-import { SLUG } from '../store/workspace';
+import { latestSkills, NAME, readSkillFile, seedSkills } from '../skill-files';
 
 export type StandardStage = 'spec' | 'plan' | 'code';
 
@@ -20,7 +19,7 @@ export interface Standard {
 }
 
 const header = z.looseObject({
-  name: z.string().regex(SLUG),
+  name: z.string().regex(NAME),
   description: z.string().default(''),
   owner: z.string().default(''),
   version: z.number().int().min(1),
@@ -41,26 +40,26 @@ export function parseStandard(content: string): Result<Standard, 'invalid-standa
   return ok({ id: name, version, ref: `${name}@${version}`, name: title, description, owner, appliesTo, rules: parsed.content.trim() });
 }
 
-/** Copies seed/standards/<name>/SKILL.md into the workspace on first run. */
-export function ensureStandards(home: string, seedDir: string): Result<number, 'invalid-standard'> {
-  return seedSkills(home, seedDir, 'standards', parseStandard);
+/** Copies seed/standards/<name>/SKILL.md into the project's .keel/ at Initialise. */
+export function ensureStandards(root: string, seedDir: string): Result<number, 'invalid-standard'> {
+  return seedSkills(root, seedDir, 'standards', parseStandard);
 }
 
 /** The latest version of every standard, sorted by name. */
-export function listStandards(home: string): Standard[] {
-  return latestSkills(home, 'standards', parseStandard);
+export function listStandards(root: string): Standard[] {
+  return latestSkills(root, 'standards', parseStandard);
 }
 
 /** One version of a standard, by ref such as "security-baseline@2". */
-export function readStandard(home: string, ref: string): Result<Standard, 'not-found' | 'invalid-standard'> {
-  const content = readSkillFile(home, 'standards', ref);
+export function readStandard(root: string, ref: string): Result<Standard, 'not-found' | 'invalid-standard'> {
+  const content = readSkillFile(root, 'standards', ref);
   return content === undefined ? fail('not-found', `No standard ${ref}`) : parseStandard(content);
 }
 
 /** The project's standards that apply to a stage, skipping any that are no longer in the library. */
-export function standardsFor(home: string, refs: string[], stage?: StandardStage): Standard[] {
+export function standardsFor(root: string, refs: string[], stage?: StandardStage): Standard[] {
   return refs.flatMap((ref) => {
-    const standard = readStandard(home, ref);
+    const standard = readStandard(root, ref);
     return standard.ok && (!stage || standard.value.appliesTo.includes(stage)) ? [standard.value] : [];
   });
 }

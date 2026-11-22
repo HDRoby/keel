@@ -1,52 +1,128 @@
-import { readFileSync } from 'node:fs';
+// Handoff into the project folder (REQ-006). Writing: R7. Pushing to the folder's remote: R8.
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, relative } from 'node:path';
 import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 import { scanForSecrets } from '../../src/lib/handoff/secrets-scan';
 import { featureSteps, stepExpression } from '../../src/lib/handoff/stubs';
-import { readZip, type ZipEntry } from '../../src/lib/handoff/zip';
+import { writeHandoff } from '../../src/lib/handoff/write';
 import { saveProvider } from '../../src/lib/settings/settings';
-import { projectWithApprovedPlan, world } from './support';
+import { BDD_PROJECT, git, projectWithApprovedPlan, stagePath } from './support';
 
 const { Given, When, Then } = createBdd();
 
-// A key stored in Settings, which must never reach the package. Made up for the test.
+// A key stored in Settings, which must never reach the folder. Made up for the test.
 const STORED_KEY = 'sk-ant-api03-handoff-test-0123456789abcdefghij';
-let entries: ZipEntry[] = [];
-const decode = (data: Uint8Array) => new TextDecoder().decode(data);
-const textOf = (path: string) => decode(entries.find((e) => e.path === path)?.data ?? new Uint8Array());
+const MY_AGENTS = '# AGENTS.md\n\nOur own instructions, written by hand.\n';
 
-Given('a project with an approved plan', async () => {
-  await projectWithApprovedPlan('handoff', (store) => saveProvider(store, 'anthropic', { apiKey: STORED_KEY }));
+function filesUnder(dir: string): string[] {
+  return readdirSync(dir).flatMap((name) => {
+    const path = join(dir, name);
+    if (name === '.git' || name === 'node_modules') return [];
+    return statSync(path).isDirectory() ? filesUnder(path) : [path];
+  });
+}
+
+const read = (path: string) => readFileSync(join(BDD_PROJECT, path), 'utf8');
+
+Given('an initialised folder with an approved plan', async () => {
+  await projectWithApprovedPlan((store) => saveProvider(store, 'anthropic', { apiKey: STORED_KEY }));
 });
 
-When('I generate the handoff package', async ({ page }) => {
-  await page.goto(`/projects/${world.slug}/handoff`);
-  await expect(page.getByRole('status').filter({ hasText: 'none found' })).toBeVisible();
-  const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('link', { name: 'Download zip' }).click()]);
-  entries = readZip(readFileSync(await download.path()));
+When('I write the handoff to the folder', async ({ page }) => {
+  await page.goto(stagePath('handoff'));
+  await page.getByRole('button', { name: 'Write to folder' }).click();
+  await expect(page.getByRole('status').filter({ hasText: /^Wrote \d+ files in one Keel commit\.$/ })).toBeVisible();
 });
 
-Then('it contains AGENTS.md, docs\\/intent.md, docs\\/spec.md and docs\\/plan.md', async () => {
-  const paths = entries.map((e) => e.path);
-  expect(paths).toEqual(expect.arrayContaining(['AGENTS.md', 'docs/intent.md', 'docs/spec.md', 'docs/plan.md']));
-  expect(textOf('AGENTS.md')).toContain('## Read first');
+Then('the folder contains AGENTS.md, REVIEW.md and the agent kit', async () => {
+  expect(read('AGENTS.md')).toContain('## Read first');
+  expect(read('REVIEW.md')).toContain('## Do not report');
+  const agents = readdirSync(join(BDD_PROJECT, '.claude', 'agents'));
+  expect(agents).toEqual(expect.arrayContaining(['verifier.md', 'researcher.md', 'code-simplifier.md']));
 });
 
-Then('every scenario in it has a failing step stub', async () => {
-  const features = entries.filter((e) => /^features\/[^/]+\.feature$/.test(e.path));
+Then('every scenario in features\\/ has a failing step stub', async () => {
+  const features = readdirSync(join(BDD_PROJECT, 'features')).filter((f) => f.endsWith('.feature'));
   expect(features.length).toBeGreaterThan(0);
-  const steps = entries.filter((e) => e.path.startsWith('features/steps/')).map((e) => decode(e.data)).join('\n');
+  const steps = readdirSync(join(BDD_PROJECT, 'features', 'steps')).map((f) => read(`features/steps/${f}`)).join('\n');
   for (const feature of features) {
-    const found = featureSteps(decode(feature.data));
+    const found = featureSteps(read(`features/${feature}`));
     expect(found.length).toBeGreaterThan(0);
     for (const step of found) {
-      expect(steps, `${feature.path}: ${step.text}`).toContain(`${step.keyword}('${stepExpression(step.text)}', async () => {\n  throw new Error('Not implemented: `);
+      expect(steps, `${feature}: ${step.text}`).toContain(`${step.keyword}('${stepExpression(step.text)}', async () => {\n  throw new Error('Not implemented: `);
     }
   }
 });
 
-Then('it contains no API keys or tokens', async () => {
-  const files = entries.map((e) => ({ path: e.path, text: decode(e.data) }));
-  expect(scanForSecrets(files, [STORED_KEY])).toEqual([]);
-  expect(files.some((f) => f.text.includes(STORED_KEY))).toBe(false);
+Then('no file in the folder contains an API key or token', async () => {
+  const files = filesUnder(BDD_PROJECT).map((file) => ({ path: relative(BDD_PROJECT, file), text: readFileSync(file).toString('latin1') }));
+  expect(files.filter((f) => f.text.includes(STORED_KEY)).map((f) => f.path)).toEqual([]);
+  const texts = files.filter((f) => !f.path.startsWith('.keel/cache/'));
+  expect(scanForSecrets(texts, [STORED_KEY])).toEqual([]);
+});
+
+Then('the last commit is a Keel commit with the handoff files', async () => {
+  expect(git('log', '-1', '--format=%an <%ae>|%s')).toBe('Keel <keel@localhost>|Keel: Handoff for plan v1');
+  const committed = git('show', '--name-only', '--format=', 'HEAD').split('\n');
+  expect(committed).toEqual(expect.arrayContaining(['AGENTS.md', 'CLAUDE.md', 'REVIEW.md', '.claude/agents/verifier.md', '.github/workflows/ci.yml', '.keel/config.yml']));
+  expect(committed.every((p) => !p.startsWith('src/'))).toBe(true);
+});
+
+Given('the folder already has an AGENTS.md that Keel did not write', async () => {
+  writeFileSync(join(BDD_PROJECT, 'AGENTS.md'), MY_AGENTS);
+  git('-c', 'user.name=Dev', '-c', 'user.email=dev@example.com', 'add', 'AGENTS.md');
+  git('-c', 'user.name=Dev', '-c', 'user.email=dev@example.com', 'commit', '-qm', 'Our agent instructions');
+});
+
+When('I open the Handoff page', async ({ page }) => {
+  await page.goto(stagePath('handoff'));
+});
+
+Then('AGENTS.md is shown as a conflict', async ({ page }) => {
+  const row = page.getByRole('table', { name: 'Handoff files' }).getByRole('row', { name: 'AGENTS.md', exact: true });
+  await expect(row).toContainText('Conflict');
+  await expect(row.getByLabel('Keep mine')).toBeChecked();
+  await expect(row.getByLabel("Use Keel's")).toBeVisible();
+  await expect(row.getByText('AGENTS.keel.md')).toBeVisible();
+});
+
+Then('writing the handoff leaves my AGENTS.md unchanged until I choose', async ({ page }) => {
+  await page.getByRole('button', { name: 'Write to folder' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Wrote' })).toBeVisible();
+  expect(read('AGENTS.md')).toBe(MY_AGENTS);
+  const row = page.getByRole('table', { name: 'Handoff files' }).getByRole('row', { name: 'AGENTS.md', exact: true });
+  await expect(row).toContainText('Conflict');
+  await expect(page.getByRole('table', { name: 'Handoff files' }).getByRole('row', { name: 'REVIEW.md', exact: true })).toContainText('Unchanged');
+});
+
+// The folder's own remote: a local bare repository stands in for it (plan: test strategy).
+let remote = '';
+
+Given('an initialised folder with a handoff written', async () => {
+  await projectWithApprovedPlan(async (store) => {
+    const written = await writeHandoff(store);
+    expect(written.ok).toBe(true);
+  });
+});
+
+Given('the folder has a remote called origin', async () => {
+  remote = join(mkdtempSync(join(tmpdir(), 'keel-origin-')), 'origin.git');
+  execFileSync('git', ['init', '-q', '--bare', '--initial-branch=main', remote]);
+  git('remote', 'add', 'origin', remote);
+});
+
+When('I push from the Handoff page', async ({ page }) => {
+  await page.goto(stagePath('handoff'));
+  await page.getByRole('button', { name: `Push to origin (${remote})` }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Pushed main to origin' })).toBeVisible();
+});
+
+Then('the remote has the Keel commits', async () => {
+  const log = execFileSync('git', ['log', '--format=%an|%s', 'main'], { cwd: remote, encoding: 'utf8' }).trim().split('\n');
+  expect(log[0]).toBe('Keel|Keel: Handoff for plan v1');
+  expect(log).toContain('Keel|Keel: Initialise project');
+  expect(log.every((l) => l.startsWith('Keel|Keel: '))).toBe(true);
 });

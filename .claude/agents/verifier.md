@@ -6,7 +6,7 @@ tools: Bash, Read
 
 # Verifier
 
-1. Start the app with `npm run dev` (use a temporary KEEL_HOME).
+1. Start the app on a temporary folder: `KEEL_PROJECT_DIR=$(mktemp -d) KEEL_USER_DIR=$(mktemp -d) npm run dev`.
 2. Run the scenarios for the task: `npm run test:bdd -- --grep "@REQ-xxx"` for each requirement in the task file.
 3. Compare what you saw with `docs/plan.md` and the task file.
 

@@ -2,9 +2,9 @@
   "project": "PRJ-0001",
   "generated": "2026-11-20",
   "from": {
-    "intent": "INT-0001@2",
-    "spec": "SPC-0001@6",
-    "plan": "PLN-0001@6"
+    "intent": "INT-0001@3",
+    "spec": "SPC-0001@7",
+    "plan": "PLN-0001@7"
   },
   "requirements": {
     "REQ-001": {
@@ -17,6 +17,8 @@
     },
     "REQ-002": {
       "tasks": [
+        "R1",
+        "R5",
         "T1"
       ],
       "scenarios": [
@@ -51,23 +53,49 @@
     },
     "REQ-006": {
       "tasks": [
+        "R7",
+        "R8",
         "T8a",
         "T8b"
       ],
       "scenarios": [
-        "features/handoff.feature › The scaffold contains the documents and failing stubs"
+        "features/handoff.feature › Handoff writes the agent files into the project folder",
+        "features/handoff.feature › Handoff does not overwrite a file Keel did not write",
+        "features/handoff.feature › Pushing uses the folder's own remote"
+      ]
+    },
+    "REQ-012": {
+      "tasks": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R9"
+      ],
+      "scenarios": [
+        "features/project-folder.feature › Opening a folder without .keel offers to initialise it",
+        "features/project-folder.feature › Initialising creates the .keel folder",
+        "features/project-folder.feature › A folder that is not a git repository becomes one",
+        "features/project-folder.feature › Opening an initialised folder goes to the current stage",
+        "features/project-folder.feature › Keel never writes keys into the project folder",
+        "features/project-folder.feature › Keel commits only its own files",
+        "features/project-folder.feature › Initialising a folder that already has Keel documents adopts them"
       ]
     },
     "REQ-007": {
       "tasks": [
+        "R6",
         "T9"
       ],
       "scenarios": [
-        "features/read-back.feature › An agent change to the plan shows up for review"
+        "features/read-back.feature › An agent commit to the plan shows up for review",
+        "features/read-back.feature › An uncommitted agent edit shows up for review",
+        "features/read-back.feature › Keel's own commits are not read back"
       ]
     },
     "REQ-008": {
       "tasks": [
+        "R5",
         "T7"
       ],
       "scenarios": [
@@ -76,9 +104,11 @@
     },
     "REQ-009": {
       "tasks": [
+        "R2",
         "T3"
       ],
       "scenarios": [
+        "features/project-folder.feature › Keel never writes keys into the project folder",
         "features/providers.feature › Switching provider keeps the brainstorm working"
       ]
     },
@@ -100,6 +130,92 @@
     }
   },
   "tasks": {
+    "R1": {
+      "title": "Project folder and .keel store",
+      "requirements": [
+        "REQ-002",
+        "REQ-012"
+      ],
+      "features": [
+        "features/project-folder.feature",
+        "features/mock-references.feature"
+      ]
+    },
+    "R2": {
+      "title": "User config folder for settings and secrets",
+      "requirements": [
+        "REQ-009",
+        "REQ-012"
+      ],
+      "features": [
+        "features/project-folder.feature"
+      ]
+    },
+    "R3": {
+      "title": "`npx keel [path]` command",
+      "requirements": [
+        "REQ-012"
+      ],
+      "features": [
+        "features/project-folder.feature"
+      ]
+    },
+    "R4": {
+      "title": "Routes and screens without Projects",
+      "requirements": [
+        "REQ-012"
+      ],
+      "features": [
+        "features/project-folder.feature",
+        "features/stage-gating.feature"
+      ]
+    },
+    "R5": {
+      "title": "Documents written and committed in the folder",
+      "requirements": [
+        "REQ-002",
+        "REQ-008"
+      ],
+      "features": [
+        "features/project-folder.feature"
+      ]
+    },
+    "R6": {
+      "title": "Read-back from local git",
+      "requirements": [
+        "REQ-007"
+      ],
+      "features": [
+        "features/read-back.feature"
+      ]
+    },
+    "R7": {
+      "title": "Handoff writes into the folder",
+      "requirements": [
+        "REQ-006"
+      ],
+      "features": [
+        "features/handoff.feature"
+      ]
+    },
+    "R8": {
+      "title": "Optional push to the existing remote",
+      "requirements": [
+        "REQ-006"
+      ],
+      "features": [
+        "features/handoff.feature"
+      ]
+    },
+    "R9": {
+      "title": "Adopt existing documents and import old projects",
+      "requirements": [
+        "REQ-012"
+      ],
+      "features": [
+        "features/project-folder.feature"
+      ]
+    },
     "T1": {
       "title": "Document store: markdown with YAML front matter in git",
       "requirements": [
@@ -209,7 +325,17 @@
     },
     {
       "feature": "features/handoff.feature",
-      "scenario": "The scaffold contains the documents and failing stubs",
+      "scenario": "Handoff writes the agent files into the project folder",
+      "requirement": "REQ-006"
+    },
+    {
+      "feature": "features/handoff.feature",
+      "scenario": "Handoff does not overwrite a file Keel did not write",
+      "requirement": "REQ-006"
+    },
+    {
+      "feature": "features/handoff.feature",
+      "scenario": "Pushing uses the folder's own remote",
       "requirement": "REQ-006"
     },
     {
@@ -223,13 +349,63 @@
       "requirement": "REQ-010"
     },
     {
+      "feature": "features/project-folder.feature",
+      "scenario": "Opening a folder without .keel offers to initialise it",
+      "requirement": "REQ-012"
+    },
+    {
+      "feature": "features/project-folder.feature",
+      "scenario": "Initialising creates the .keel folder",
+      "requirement": "REQ-012"
+    },
+    {
+      "feature": "features/project-folder.feature",
+      "scenario": "A folder that is not a git repository becomes one",
+      "requirement": "REQ-012"
+    },
+    {
+      "feature": "features/project-folder.feature",
+      "scenario": "Opening an initialised folder goes to the current stage",
+      "requirement": "REQ-012"
+    },
+    {
+      "feature": "features/project-folder.feature",
+      "scenario": "Keel never writes keys into the project folder",
+      "requirement": "REQ-009"
+    },
+    {
+      "feature": "features/project-folder.feature",
+      "scenario": "Keel never writes keys into the project folder",
+      "requirement": "REQ-012"
+    },
+    {
+      "feature": "features/project-folder.feature",
+      "scenario": "Keel commits only its own files",
+      "requirement": "REQ-012"
+    },
+    {
+      "feature": "features/project-folder.feature",
+      "scenario": "Initialising a folder that already has Keel documents adopts them",
+      "requirement": "REQ-012"
+    },
+    {
       "feature": "features/providers.feature",
       "scenario": "Switching provider keeps the brainstorm working",
       "requirement": "REQ-009"
     },
     {
       "feature": "features/read-back.feature",
-      "scenario": "An agent change to the plan shows up for review",
+      "scenario": "An agent commit to the plan shows up for review",
+      "requirement": "REQ-007"
+    },
+    {
+      "feature": "features/read-back.feature",
+      "scenario": "An uncommitted agent edit shows up for review",
+      "requirement": "REQ-007"
+    },
+    {
+      "feature": "features/read-back.feature",
+      "scenario": "Keel's own commits are not read back",
       "requirement": "REQ-007"
     },
     {

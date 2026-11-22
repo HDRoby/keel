@@ -15,18 +15,18 @@ describe('styles', () => {
   });
 
   it('seeds every style once and lists the latest versions by name', () => {
-    const { home } = tempStore();
+    const { root: home } = tempStore();
     const seeded = ensureStyles(home, SEED);
     expect(seeded.ok && seeded.value).toBe(readdirSync(join(SEED, 'styles')).length);
     expect(ensureStyles(home, SEED)).toEqual({ ok: true, value: 0 });
-    writeFileSync(join(home, 'styles', 'challenger@2.md'), '---\nname: challenger\nversion: 2\n---\n# Challenger\n');
+    writeFileSync(join(home, '.keel', 'styles', 'challenger@2.md'), '---\nname: challenger\nversion: 2\n---\n# Challenger\n');
     const styles = listStyles(home);
     expect(styles.map((s) => s.ref)).toEqual(['challenger@2', 'coach@1', 'cost-value@1', 'engineering-first@1', 'market@1']);
     expect(styles[0]?.name).toBe('Challenger');
   });
 
   it('reads a style by ref and rejects unknown or unsafe refs', () => {
-    const { home } = tempStore();
+    const { root: home } = tempStore();
     ensureStyles(home, SEED);
     expect(readStyle(home, 'challenger@1')).toMatchObject({ ok: true, value: { name: 'Challenger' } });
     expect(readStyle(home, 'challenger@9')).toMatchObject({ error: 'not-found' });
@@ -35,13 +35,13 @@ describe('styles', () => {
 
   it('skips a seed folder without SKILL.md', () => {
     const store = tempStore();
-    const seed = join(store.home, 'seed');
+    const seed = join(store.root, 'seed');
     mkdirSync(join(seed, 'styles', 'empty'), { recursive: true });
-    expect(ensureStyles(join(store.home, 'ws'), seed)).toEqual({ ok: true, value: 0 });
+    expect(ensureStyles(join(store.root, 'ws'), seed)).toEqual({ ok: true, value: 0 });
   });
 
   it('saves an edit as the next version and keeps the old one', () => {
-    const { home } = tempStore();
+    const { root: home } = tempStore();
     ensureStyles(home, SEED);
     const old = readStyleFile(home, 'coach@1');
     if (!old.ok) throw new Error(old.message);
@@ -53,7 +53,7 @@ describe('styles', () => {
   });
 
   it('refuses a renamed, broken or unknown style', () => {
-    const { home } = tempStore();
+    const { root: home } = tempStore();
     ensureStyles(home, SEED);
     expect(saveStyleVersion(home, 'coach', '---\nname: other\nversion: 1\n---\n# X\n')).toMatchObject({ error: 'name-changed' });
     expect(saveStyleVersion(home, 'coach', 'no header')).toMatchObject({ error: 'invalid-style' });
