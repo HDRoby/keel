@@ -25,6 +25,8 @@ export default defineConfig({
       KEEL_PROJECT_DIR: join(tmpdir(), 'keel-bdd-project'),
       KEEL_USER_DIR: join(tmpdir(), 'keel-bdd-user'),
       KEEL_PROVIDER: 'fake',
+      // One line per model call, so a scenario can check that drafting makes none.
+      KEEL_FAKE_LOG: join(tmpdir(), 'keel-bdd-fake.log'),
       // Read-back scenarios check on demand.
       KEEL_READBACK_SECONDS: '0',
     },

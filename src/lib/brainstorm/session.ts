@@ -1,91 +1,138 @@
-// The project's brainstorm, kept in .keel/brainstorm/explore.md (REQ-001, REQ-011, ADR-0010).
+// Explore (REQ-001, REQ-011, task R10): the intent template's sections, filled in by the user, with a comment
+// from the assistant on each one. Kept in .keel/brainstorm/INT-0001.json: saved on every change, committed
+// only when the intent is drafted or a change request is saved (owner decision 2). The assistant never
+// changes text the user wrote: it fills empty sections as suggestions and offers rewrites in its comments.
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import matter from 'gray-matter';
 import { z } from 'zod';
-import type { ChatMessage } from '../providers/types';
 import { fail, ok, type Result } from '../result';
-import type { Store } from '../store/db';
-import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
-import { writeFileAtomic } from '../store/atomic';
-import { commitBlocker, commitSquashing, RepoBusyError } from '../store/git';
-import { initialiseProject, isInitialised, readProject, reserveRequirementIds, updateConfig } from '../store/workspace';
 import { previewRoot } from '../seed';
-import { REQUIREMENTS_SECTION, renderRequirements, requirementCandidates, unassigned } from '../trace/assign';
-import { maxReqNumber } from '../trace/parse';
+import { writeFileAtomic } from '../store/atomic';
+import type { Store } from '../store/db';
+import { commitFiles } from '../store/git';
+import { initialiseProject, isInitialised, readProject, updateConfig } from '../store/workspace';
 import { parseTemplateRef, readTemplate, templateName } from '../templates/library';
-import { renderTemplate } from '../templates/render';
-import { appendToSection, fillSections, isCaptured, nextQuestion, parseSections, requiredCaptured, type Question, type Section } from './sections';
-import { readStyle, type Style } from './styles';
 import { readStandard } from '../standards/library';
+import { parseSections, type Section } from './sections';
+import { readStyle, type Style } from './styles';
 
-/**
- * A brainstorm for documents Keel adopts (task R9): each template section that has text in the intent
- * counts as answered and already in intent.md, so Explore shows the progress and adds nothing twice.
- */
-export function sessionFromIntent(input: { title: string; idea: string; template: string; style: string; intentBody: string; templateContent: string }): Session {
-  const sections = parseSections(input.templateContent);
-  const answers: Record<string, string[]> = {};
-  for (const { heading } of sections) {
-    const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const match = new RegExp(`^## ${escaped}\\s*\\n([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm').exec(input.intentBody);
-    const text = (match?.[1] ?? '').replace(/<!--[\s\S]*?-->/g, '').trim();
-    if (text) answers[heading] = [text];
-  }
-  return {
-    title: input.title, idea: input.idea, template: input.template, brainstorm_style: input.style, answers,
-    current: nextQuestion(sections, answers) ?? null, transcript: [], req_ids: {},
-    in_intent: Object.fromEntries(Object.keys(answers).map((h) => [h, 1])),
-  };
-}
+/** Repository path of Explore's state; the template library reads the template from it. */
+export const EXPLORE_FILE = '.keel/brainstorm/INT-0001.json';
+/** Where CR-0004 kept the brainstorm; converted once (owner decision 2). */
+export const LEGACY_FILE = '.keel/brainstorm/explore.md';
 
-/** Repository path of the transcript; the template library reads the same path. */
-export const BRAINSTORM_FILE = '.keel/brainstorm/explore.md';
-
-const question = z.strictObject({ section: z.string(), step: z.enum(['ask', 'probe']) });
-const entry = z.strictObject({ role: z.enum(['user', 'assistant']), text: z.string(), section: z.string().optional(), step: z.enum(['ask', 'probe']).optional() });
-const sessionSchema = z.strictObject({
+const origin = z.enum(['user', 'suggested', 'accepted']);
+const rowSchema = z.object({ id: z.string().regex(/^REQ-\d{3,}$/).optional(), text: z.string(), origin });
+const rewrite = z.string().max(20_000);
+const commentSchema = z.object({
+  kind: z.enum(['challenge', 'link', 'suggest', 'ask', 'ok']),
+  text: z.string().max(2_000),
+  linkTo: z.string().optional(),     // the section a cross-reference points at
+  rewrite: rewrite.optional(),       // text the user can apply to this section
+  addRow: z.string().max(2_000).optional(),   // Requirements: a row the user can add
+  dismissed: z.boolean().optional(),
+  applied: z.boolean().optional(),
+});
+const threadSchema = z.object({ from: z.enum(['user', 'assistant']), text: z.string(), rewrite: rewrite.optional(), applied: z.boolean().optional() });
+const sectionSchema = z.object({
+  key: z.string(),
+  value: z.string().default(''),
+  rows: z.array(rowSchema).optional(),
+  origin: origin.default('user'),
+  cleared: z.boolean().optional(),
+  reviewedHash: z.string().optional(),
+  comment: commentSchema.optional(),
+  commentAt: z.string().optional(),   // when the comment last changed, for the "New comment" tag
+  thread: z.array(threadSchema).default([]),
+});
+const exploreSchema = z.object({
   title: z.string().min(1),
-  idea: z.string(),
+  idea: z.string().default(''),
   template: z.string(),
-  brainstorm_style: z.string(),
-  answers: z.record(z.string(), z.array(z.string())),
-  current: question.nullable(),
-  transcript: z.array(entry),
-  req_ids: z.record(z.string(), z.string()).default({}),  // requirement statement → REQ ID, never reassigned
-  in_intent: z.record(z.string(), z.number()).default({}), // per section, how many answers intent.md already has
+  style: z.string(),
+  sections: z.array(sectionSchema),
+  reviewedAt: z.string().optional(),
+  drafted: z.record(z.string(), z.string()).optional(),   // section text as it went into the last draft
+  changeRequest: z.string().optional(),   // after approval: the change request the edits are saved in
 });
 
-export type Entry = z.infer<typeof entry>;
-export type Session = z.infer<typeof sessionSchema>;
+export type Origin = z.infer<typeof origin>;
+export type Row = z.infer<typeof rowSchema>;
+export type Comment = z.infer<typeof commentSchema>;
+export type ThreadEntry = z.infer<typeof threadSchema>;
+export type SectionState = z.infer<typeof sectionSchema>;
+export type Explore = z.infer<typeof exploreSchema>;
 
 export type BrainstormError =
   | 'invalid-input' | 'not-found' | 'invalid-file' | 'unknown-template' | 'unknown-style'
-  | 'no-question' | 'not-ready' | 'already-drafted' | 'not-drafted' | 'intent-locked' | 'no-change';
+  | 'unknown-section' | 'not-ready' | 'intent-locked' | 'not-approved' | 'no-change' | 'repo-busy';
 
-/** Everything the brainstorm needs about its template and style. */
+/** Explore's state with its template sections and style. */
 export interface Context {
-  session: Session;
+  state: Explore;
   sections: Section[];
   style: Style;
   templateContent: string;
+}
+
+/** True when the text counts for the gate: written or accepted by the user. Suggestions do not count. */
+export function counts(section: SectionState): boolean {
+  if (section.rows) return section.rows.some((r) => r.origin !== 'suggested' && r.text.trim() !== '');
+  return section.origin !== 'suggested' && section.value.trim() !== '';
+}
+
+/** A section's state; an empty one when the template has a section the state does not have yet. */
+export function sectionOf(state: Explore, key: string, list = false): SectionState {
+  return state.sections.find((s) => s.key === key) ?? { key, value: '', origin: 'user', thread: [], ...(list ? { rows: [] } : {}) };
+}
+
+/** Every required section, Requirements included, has text the user wrote or accepted (REQ-005). */
+export function requiredFilled(context: Pick<Context, 'state' | 'sections'>): boolean {
+  return context.sections.filter((s) => s.required).every((s) => counts(sectionOf(context.state, s.heading, s.list)));
+}
+
+/** Fingerprint of what the assistant reviews in a section. */
+export function fingerprint(section: SectionState): string {
+  const content = section.rows ? section.rows.map((r) => `${r.origin}:${r.text}`).join('\n') : `${section.origin}:${section.value}`;
+  return createHash('sha256').update(content).digest('hex').slice(0, 16);
+}
+
+/** True when some section changed since the assistant last reviewed it. */
+export function needsReview(context: Pick<Context, 'state' | 'sections'>): boolean {
+  return context.sections.some((s) => {
+    const section = sectionOf(context.state, s.heading, s.list);
+    return section.reviewedHash !== fingerprint(section);
+  });
+}
+
+function emptyState(input: { title: string; idea: string; template: string; style: string }, sections: Section[]): Explore {
+  return {
+    title: input.title, idea: input.idea, template: input.template, style: input.style,
+    sections: sections.map((s) => ({ key: s.heading, value: '', origin: 'user' as const, thread: [], ...(s.list ? { rows: [] } : {}) })),
+  };
+}
+
+function serialise(state: Explore): string {
+  return `${JSON.stringify(state, null, 2)}\n`;
 }
 
 export interface NewIdea {
   title: string;
   idea: string;
   author: string;
-  template: string;  // e.g. standard-intent@3
+  template: string;  // e.g. standard-intent@4
   style: string;     // e.g. challenger@1
-  standards?: string[];  // e.g. security-baseline@2
-  templates?: { spec?: string; plan?: string };   // document templates chosen at Initialise
+  standards?: string[];
+  templates?: { spec?: string; plan?: string };
 }
 
 /**
- * Initialise and start: writes .keel/ with config, libraries and the brainstorm (first question pending)
- * as one commit. The choices are checked against the seed library, since .keel/ does not exist yet.
+ * Initialise and start: writes .keel/ with config, libraries and Explore's empty sections as one commit.
+ * The choices are checked against the seed library, since .keel/ does not exist yet.
  */
-export async function startIdea(store: Store, input: NewIdea): Promise<Result<Session, BrainstormError>> {
+export async function startIdea(store: Store, input: NewIdea): Promise<Result<Explore, BrainstormError>> {
   if (!input.title.trim() || !input.author.trim()) return fail('invalid-input', 'A title and your name are needed');
   if (isInitialised(store.root)) return fail('invalid-input', 'This folder is already initialised');
   const library = previewRoot();
@@ -93,218 +140,207 @@ export async function startIdea(store: Store, input: NewIdea): Promise<Result<Se
   if (!sections.ok) return sections;
   const unknown = (input.standards ?? []).filter((ref) => !readStandard(library, ref).ok);
   if (unknown.length > 0) return fail('invalid-input', `Unknown standard ${unknown.join(', ')}`);
-  const session: Session = {
-    title: input.title.trim(), idea: input.idea.trim(), template: input.template, brainstorm_style: input.style,
-    answers: {}, req_ids: {}, in_intent: {}, current: nextQuestion(sections.value, {}) ?? null, transcript: [],
-  };
+  const state = emptyState({ title: input.title.trim(), idea: input.idea.trim(), template: input.template, style: input.style }, sections.value);
   const project = await initialiseProject(store, {
-    title: session.title, description: session.idea, author: input.author,
-    templates: Object.fromEntries(Object.entries({ intent: input.template, ...input.templates }).filter(([, v]) => v)), style: input.style, standards: input.standards ?? [],
-    files: [{ path: BRAINSTORM_FILE, content: sessionFile(session) }],
+    title: state.title, description: state.idea, author: input.author,
+    templates: Object.fromEntries(Object.entries({ intent: input.template, ...input.templates }).filter(([, v]) => v)),
+    style: input.style, standards: input.standards ?? [],
+    files: [{ path: EXPLORE_FILE, content: serialise(state) }],
   });
   if (!project.ok) return fail('invalid-input', project.message);
-  return ok(session);
+  return ok(state);
 }
 
-export function readSession(store: Pick<Store, 'root'>): Result<Session, BrainstormError> {
-  const file = join(store.root, BRAINSTORM_FILE);
-  if (!existsSync(file)) return fail('not-found', 'No brainstorm yet');
-  const parsed = sessionSchema.safeParse(matter(readFileSync(file, 'utf8'), {}).data);
-  return parsed.success ? ok(parsed.data) : fail('invalid-file', z.prettifyError(parsed.error));
+/** Converts CR-0004's explore.md: its answers become the user's text (owner decision 2). */
+function fromLegacy(text: string): Explore | undefined {
+  const data = z.looseObject({ title: z.string(), idea: z.string().default(''), template: z.string(), brainstorm_style: z.string(), answers: z.record(z.string(), z.array(z.string())).default({}) })
+    .safeParse(matter(text, {}).data);
+  if (!data.success) return undefined;
+  const { title, idea, template, brainstorm_style: style, answers } = data.data;
+  return {
+    title, idea, template, style,
+    sections: Object.entries(answers).map(([key, values]) => {
+      const joined = values.map((v) => v.trim()).filter(Boolean).join('\n\n');
+      if (key !== 'Requirements') return { key, value: joined, origin: 'user' as const, thread: [] };
+      const rows = joined.split('\n').map((l) => l.replace(/^\s*[-*]\s*(REQ-\d{3,}\s+)?/, '').trim()).filter(Boolean);
+      return { key, value: '', rows: rows.map((r) => ({ text: r, origin: 'user' as const })), origin: 'user' as const, thread: [] };
+    }),
+  };
 }
 
-/** The session with its template sections and style. */
+/** Explore's state from the folder; CR-0004's explore.md is read once and saved in the new form. */
+export function readExplore(store: Pick<Store, 'root'>): Result<Explore, BrainstormError> {
+  const file = join(store.root, EXPLORE_FILE);
+  if (existsSync(file)) {
+    try {
+      const parsed = exploreSchema.safeParse(JSON.parse(readFileSync(file, 'utf8')));
+      return parsed.success ? ok(parsed.data) : fail('invalid-file', z.prettifyError(parsed.error));
+    } catch {
+      return fail('invalid-file', `${EXPLORE_FILE} is not valid JSON`);
+    }
+  }
+  const legacy = join(store.root, LEGACY_FILE);
+  if (existsSync(legacy)) {
+    const converted = fromLegacy(readFileSync(legacy, 'utf8'));
+    if (!converted) return fail('invalid-file', `${LEGACY_FILE} could not be converted`);
+    writeExplore(store, converted);
+    return ok(converted);
+  }
+  return fail('not-found', 'No brainstorm yet');
+}
+
+/** Saves Explore's state. No commit: that happens when the intent is drafted (owner decision 2). */
+export function writeExplore(store: Pick<Store, 'root'>, state: Explore): void {
+  const file = join(store.root, EXPLORE_FILE);
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileAtomic(file, serialise(state));
+}
+
+/** The state with its template sections and style. Sections are listed in template order. */
 export function loadContext(store: Pick<Store, 'root'>): Result<Context, BrainstormError> {
-  const session = readSession(store);
-  if (!session.ok) return session;
-  const template = loadTemplate(store.root, session.value.template);
+  const state = readExplore(store);
+  if (!state.ok) return state;
+  const template = loadTemplate(store.root, state.value.template);
   if (!template.ok) return template;
-  const style = readStyle(store.root, session.value.brainstorm_style);
+  const style = readStyle(store.root, state.value.style);
   if (!style.ok) return fail('unknown-style', style.message);
-  return ok({ session: session.value, sections: parseSections(template.value), style: style.value, templateContent: template.value });
+  const sections = parseSections(template.value);
+  const ordered = sections.map((s) => sectionOf(state.value, s.heading, s.list));
+  const extra = state.value.sections.filter((s) => !sections.some((t) => t.heading === s.key));
+  return ok({ state: { ...state.value, sections: [...ordered, ...extra] }, sections, style: style.value, templateContent: template.value });
 }
 
-/** The question still to be asked, if the assistant has not asked it yet. */
-export function pendingQuestion(session: Session): Question | undefined {
-  const last = session.transcript.at(-1);
-  if (!session.current) return undefined;
-  const asked = last?.role === 'assistant' && last.section === session.current.section && last.step === session.current.step;
-  return asked ? undefined : session.current;
-}
-
-/** Records the proposer's answer to the current question and moves to the next one. */
-export async function recordAnswer(store: Store, context: Context, text: string): Promise<Result<Session, BrainstormError>> {
-  const { session, sections } = context;
-  const answered = session.current;
-  if (!answered || pendingQuestion(session) || !text.trim()) return fail('no-question', 'There is no open question to answer');
-  const answers = { ...session.answers, [answered.section]: [...(session.answers[answered.section] ?? []), text.trim()] };
-  const next: Session = {
-    ...session,
-    answers,
-    current: nextQuestion(sections, answers, answered) ?? null,
-    transcript: [...session.transcript, { role: 'user', text: text.trim(), section: answered.section, step: answered.step }],
-  };
-  await save(store, next);
-  return ok(next);
+export interface SectionEdit {
+  key: string;
+  value?: string;
+  rows?: { id?: string; text: string; origin?: Origin }[];
 }
 
 /**
- * Adds an answer to any section of the template without waiting for its question (owner decision, T5).
- * The open question stays open; Update intent.md picks the answer up like any other.
+ * The user's edits. A changed value becomes the user's own text; emptying a suggestion counts as Clear, so
+ * the assistant does not fill that section again. Rows keep their ID; an edited suggested row becomes the user's.
  */
-export async function addToSection(store: Store, context: Context, heading: string, text: string): Promise<Result<Session, BrainstormError>> {
-  const { session, sections } = context;
-  if (!sections.some((s) => s.heading === heading)) return fail('invalid-input', `The template has no section "${heading}"`);
-  const answer = text.trim();
-  if (!answer) return fail('invalid-input', 'Write something to add');
-  const answers = { ...session.answers, [heading]: [...(session.answers[heading] ?? []), answer] };
-  // If this was the section being asked about, move past its question.
-  const answeredCurrent = session.current?.section === heading && !session.answers[heading]?.length;
-  const next: Session = {
-    ...session,
-    answers,
-    current: answeredCurrent ? nextQuestion(sections, answers) ?? null : session.current,
-    transcript: [...session.transcript, { role: 'user', text: answer, section: heading }],
-  };
-  await save(store, next);
-  return ok(next);
+export function applyEdits(context: Context, edits: SectionEdit[]): Result<Explore, BrainstormError> {
+  const state = structuredClone(context.state);
+  for (const edit of edits) {
+    const template = context.sections.find((s) => s.heading === edit.key);
+    if (!template) return fail('unknown-section', `No section ${edit.key}`);
+    const current = sectionOf(state, edit.key, template.list);
+    const next: SectionState = { ...current };
+    if (template.list && edit.rows) {
+      next.rows = edit.rows.map((row, i) => {
+        const before = row.id ? current.rows?.find((r) => r.id === row.id) : current.rows?.[i];
+        const changed = !before || before.text !== row.text;
+        const rowOrigin: Origin = changed ? 'user' : (before?.origin ?? 'user');
+        return { ...(row.id ? { id: row.id } : {}), text: row.text, origin: rowOrigin };
+      });
+    } else if (!template.list && edit.value !== undefined && (edit.value !== current.value || current.origin === 'suggested')) {
+      // The user typed here: the text is theirs, even when it matches the suggestion word for word.
+      if (edit.value.trim() === '' && current.origin === 'suggested') next.cleared = true;
+      next.value = edit.value;
+      next.origin = 'user';
+    }
+    replaceSection(state, next);
+  }
+  return ok(state);
 }
 
-/** Records the assistant's wording of the pending question. */
-export async function recordQuestion(store: Store, session: Session, text: string): Promise<Result<Session, BrainstormError>> {
-  const asking = pendingQuestion(session);
-  if (!asking) return fail('no-question', 'No question is pending');
-  const next: Session = { ...session, transcript: [...session.transcript, { role: 'assistant', text: text.trim(), ...asking }] };
-  // A question alone changes nothing worth a commit: it is committed with the answer that follows.
-  await save(store, next, { commit: false });
-  return ok(next);
+function replaceSection(state: Explore, section: SectionState): void {
+  const at = state.sections.findIndex((s) => s.key === section.key);
+  if (at >= 0) state.sections[at] = section;
+  else state.sections.push(section);
 }
 
-/** Messages for the model: the style as instructions, the section to cover, then the conversation. */
-export function questionPrompt(context: Context, asking: Question): ChatMessage[] {
-  const { session, sections, style } = context;
-  const section = sections.find((s) => s.heading === asking.section);
-  const task = asking.step === 'ask'
-    ? `Ask one question so the proposer can fill the section "${asking.section}"${section?.guidance ? ` (${section.guidance})` : ''}.`
-    : `Ask one follow-up question, in your style, that probes the proposer's answer for "${asking.section}".`;
-  return [
-    { role: 'system', content: style.instructions },
-    { role: 'system', content: `The intent template is ${templateLabel(session.template)}. ${task} Reply with the question only.` },
-    { role: 'user', content: `My idea: ${session.title}. ${session.idea}`.trim() },
-    ...session.transcript.map((e): ChatMessage => ({ role: e.role, content: e.text })),
-  ];
-}
-
-/** The question Keel asks when no model is available. */
-export function fallbackQuestion(context: Context, asking: Question): string {
-  const section = context.sections.find((s) => s.heading === asking.section);
-  return asking.step === 'ask'
-    ? `${asking.section}: ${section?.guidance || 'what should go here?'}`
-    : `What would make you confident about your answer for ${asking.section}?`;
-}
-
-/** Writes intent.md from the template and the answers, recording template and style. */
-export async function draftIntent(store: Store, given: Context): Promise<Result<StoredDocument, BrainstormError>> {
-  if (!requiredCaptured(given.sections, given.session.answers)) return fail('not-ready', 'Every required section needs an answer first');
-  const assigned = await assignRequirementIds(store, given);
-  if (!assigned.ok) return assigned;
-  const context = assigned.value;
-  const { session } = context;
-  const created = await createDocument(store, {
-    kind: 'intent', title: session.title, body: intentBody(context),
-    template: session.template, extra: { brainstorm_style: session.brainstorm_style },
-  });
-  if (!created.ok) return fail(created.error === 'already-exists' ? 'already-drafted' : 'invalid-input', created.message);
-  await save(store, { ...session, in_intent: answerCounts(session) });
-  return created;
-}
-
-function answerCounts(session: Session): Record<string, number> {
-  return Object.fromEntries(Object.entries(session.answers).map(([h, a]) => [h, a.length]));
-}
-
-/** Answers given since intent.md last took the brainstorm, per section, as they will appear there. */
-export function newAnswers(session: Session): Record<string, string[]> {
-  const rendered = renderedAnswers(session);
-  return Object.fromEntries(Object.entries(rendered)
-    .map(([h, answers]) => [h, answers.slice(session.in_intent[h] ?? 0).filter((a) => a.trim())] as const)
-    .filter(([, answers]) => answers.length > 0));
-}
-
-/** The intent body the current answers would give. */
-export function intentBody(context: Context): string {
-  return fillSections(renderTemplate(context.templateContent, { title: context.session.title }).body, renderedAnswers(context.session));
-}
-
-/** Answers as they appear in intent.md: requirement statements carry their REQ IDs. */
-export function renderedAnswers(session: Session): Session['answers'] {
-  const requirements = session.answers[REQUIREMENTS_SECTION];
-  return requirements ? { ...session.answers, [REQUIREMENTS_SECTION]: renderRequirements(requirements, session.req_ids) } : session.answers;
-}
-
-/** Gives new requirement statements their IDs, reserved in project.md, and records them in the brainstorm. */
-export async function assignRequirementIds(store: Store, context: Context): Promise<Result<Context, BrainstormError>> {
-  const answers = context.session.answers[REQUIREMENTS_SECTION] ?? [];
-  const ids = context.session.req_ids;
-  const fresh = unassigned(requirementCandidates(answers), ids);
-  if (fresh.length === 0) return ok(context);
-  const reserved = await reserveRequirementIds(store, fresh.length, maxReqNumber(answers.join('\n')));
-  if (!reserved.ok) return fail('invalid-input', reserved.message);
-  const session: Session = { ...context.session, req_ids: { ...ids, ...Object.fromEntries(fresh.map((statement, i) => [statement, reserved.value[i] ?? ''])) } };
-  await save(store, session);
-  return ok({ ...context, session });
-}
+export type SectionAction =
+  | { op: 'accept'; key: string; row?: number }
+  | { op: 'clear'; key: string; row?: number }
+  | { op: 'apply'; key: string; thread?: number }
+  | { op: 'dismiss'; key: string }
+  | { op: 'add-row'; key: string };
 
 /**
- * Sections with answers given since intent.md last took the brainstorm. Edits made to intent.md
- * itself do not count. Only a draft intent takes updates; an approved one changes through approval.
+ * Accept or Clear a suggestion, Apply a rewrite offered in a comment or a reply (to the comment's section, or for
+ * a cross-reference to the section it names), Dismiss a comment, or add the row a Requirements comment offers.
  */
-export function intentUpdate(store: Store, context: Context): Result<{ sections: string[]; status: string }, BrainstormError> {
-  const intent = readDocument(store, 'docs/intent.md');
-  if (!intent.ok) return fail('not-drafted', 'intent.md has not been drafted yet');
-  const fresh = newAnswers(context.session);
-  const sections = context.sections.map((s) => s.heading).filter((h) => h in fresh);
-  return ok({ sections, status: intent.value.header.status });
+export function applyAction(context: Context, action: SectionAction): Result<Explore, BrainstormError> {
+  const state = structuredClone(context.state);
+  const template = context.sections.find((s) => s.heading === action.key);
+  if (!template) return fail('unknown-section', `No section ${action.key}`);
+  const section = { ...sectionOf(state, action.key, template.list) };
+  if (action.op === 'accept' || action.op === 'clear') {
+    if (template.list) {
+      const rows = [...(section.rows ?? [])];
+      const picked = action.row === undefined ? rows.map((r, i) => (r.origin === 'suggested' ? i : -1)).filter((i) => i >= 0) : [action.row];
+      if (action.op === 'accept') {
+        section.rows = rows.map((r, i) => (picked.includes(i) && r.origin === 'suggested' ? { ...r, origin: 'accepted' as const } : r));
+      } else {
+        section.rows = rows.filter((r, i) => !(picked.includes(i) && r.origin === 'suggested'));
+        section.cleared = true;
+      }
+    } else if (section.origin === 'suggested') {
+      if (action.op === 'accept') section.origin = 'accepted';
+      else Object.assign(section, { value: '', origin: 'user', cleared: true });
+    }
+  } else if (action.op === 'apply') {
+    const offer = action.thread === undefined ? section.comment?.rewrite : section.thread[action.thread]?.rewrite;
+    if (offer === undefined) return fail('no-change', 'Nothing to apply');
+    if (template.list) section.rows = offer.split('\n').map((l) => l.replace(/^\s*[-*]\s*/, '').trim()).filter(Boolean).map((text) => ({ text, origin: 'accepted' as const }));
+    else Object.assign(section, { value: offer, origin: 'accepted' });
+    if (action.thread === undefined && section.comment) section.comment = { ...section.comment, applied: true };
+    else if (action.thread !== undefined) section.thread = section.thread.map((t, i) => (i === action.thread ? { ...t, applied: true } : t));
+  } else if (action.op === 'dismiss') {
+    if (section.comment) section.comment = { ...section.comment, dismissed: true };
+  } else if (action.op === 'add-row') {
+    const row = section.comment?.addRow;
+    if (!template.list || !row) return fail('no-change', 'Nothing to add');
+    section.rows = [...(section.rows ?? []), { text: row, origin: 'accepted' }];
+    if (section.comment) section.comment = { ...section.comment, applied: true };
+  }
+  replaceSection(state, section);
+  return ok(state);
 }
 
-/**
- * Adds the new answers to the end of their sections in intent.md, as its next version. The rest of
- * intent.md, including hand edits and removed requirements, stays as it is.
- */
-export async function updateIntent(store: Store, given: Context): Promise<Result<StoredDocument, BrainstormError>> {
-  const update = intentUpdate(store, given);
-  if (!update.ok) return update;
-  if (update.value.status !== 'draft') return fail('intent-locked', `intent.md is ${update.value.status}; it no longer takes brainstorm updates`);
-  if (update.value.sections.length === 0) return fail('no-change', 'intent.md already has every answer');
-  const assigned = await assignRequirementIds(store, given);
-  if (!assigned.ok) return assigned;
-  const { session } = assigned.value;
-  const intent = readDocument(store, 'docs/intent.md');
-  if (!intent.ok) return fail('not-drafted', intent.message);
-  const fresh = newAnswers(session);
-  const body = update.value.sections.reduce((text, h) => appendToSection(text, h, (fresh[h] ?? []).join('\n\n')), intent.value.body);
-  const saved = await saveDocument(store, 'docs/intent.md', {
-    reason: `Brainstorm: add answers for ${update.value.sections.join(', ')}`,
-    body,
-  });
-  if (!saved.ok) return fail('invalid-input', saved.message);
-  await save(store, { ...session, in_intent: answerCounts(session) });
-  return saved;
+/** A brainstorm for documents Keel adopts (task R9): each template section with text in intent.md is the user's. */
+export function exploreFromIntent(input: { title: string; idea: string; template: string; style: string; intentBody: string; templateContent: string }): Explore {
+  const sections = parseSections(input.templateContent);
+  const state = emptyState(input, sections);
+  for (const { heading, list } of sections) {
+    const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const match = new RegExp(`^## ${escaped}\\s*\\n([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm').exec(input.intentBody);
+    const text = (match?.[1] ?? '').replace(/<!--[\s\S]*?-->/g, '').trim();
+    if (!text || text === '_Not written yet._') continue;
+    const section = sectionOf(state, heading, list);
+    if (list) {
+      section.rows = text.split('\n')
+        .map((l) => /^\s*[-*]\s*(?:(REQ-\d{3,})\s+)?(.*)$/.exec(l))
+        .filter((m): m is RegExpExecArray => Boolean(m?.[2]?.trim()))
+        .map((m) => ({ ...(m[1] ? { id: m[1] } : {}), text: (m[2] ?? '').trim(), origin: 'user' as const }));
+    } else section.value = text;
+    replaceSection(state, section);
+  }
+  state.drafted = Object.fromEntries(state.sections.map((s) => [s.key, sectionText(s)]));
+  return state;
 }
 
-/** Project setup: changes the template or style; the next question follows the new template. */
-export async function changeSetup(store: Store, change: { template: string; style: string }): Promise<Result<Session, BrainstormError>> {
-  const session = readSession(store);
-  if (!session.ok) return session;
+/** A section's text as it goes into intent.md (rows as "- REQ-001 text"), for diffs and drafts. */
+export function sectionText(section: SectionState): string {
+  if (section.rows) return section.rows.filter((r) => r.origin !== 'suggested' && r.text.trim()).map((r) => `- ${r.id ? `${r.id} ` : ''}${r.text.trim()}`).join('\n');
+  return section.origin === 'suggested' ? '' : section.value.trim();
+}
+
+/** Project setup: changes the template or style. Sections keep their text by heading. */
+export async function changeSetup(store: Store, change: { template: string; style: string }): Promise<Result<Explore, BrainstormError>> {
+  const state = readExplore(store);
+  if (!state.ok) return state;
   const loaded = loadSetup(store.root, change);
   if (!loaded.ok) return loaded;
-  const sections = loaded.value;
-  const keep = session.value.current && sections.some((s) => s.heading === session.value.current?.section);
-  const next: Session = {
-    ...session.value, template: change.template, brainstorm_style: change.style,
-    current: keep ? session.value.current : nextQuestion(sections, session.value.answers) ?? null,
-  };
-  await save(store, next);
+  const next: Explore = { ...state.value, template: change.template, style: change.style };
+  next.sections = [
+    ...loaded.value.map((s) => sectionOf(state.value, s.heading, s.list)),
+    ...state.value.sections.filter((s) => !loaded.value.some((t) => t.heading === s.key)),
+  ];
+  writeExplore(store, next);
+  await commitFiles(store.root, [EXPLORE_FILE], 'Brainstorm: project setup');
   const project = readProject(store.root);
   if (project.ok) await updateConfig(store, { templates: { ...project.value.templates, intent: change.template }, style: change.style }, 'Keel: project setup');
   return ok(next);
@@ -328,34 +364,4 @@ function loadSetup(library: string, choice: { template: string; style: string })
   if (!template.ok) return template;
   if (!readStyle(library, choice.style).ok) return fail('unknown-style', `No style ${choice.style}`);
   return ok(parseSections(template.value));
-}
-
-/** One commit per stretch of brainstorm turns (owner decision): later turns are folded into it. */
-export function brainstormCommitMessage(session: Session): string {
-  const captured = Object.keys(session.answers).filter((h) => isCaptured(session.answers, h));
-  return `Brainstorm: ${captured.length ? `captured ${captured.join(', ')}` : 'start'}`;
-}
-
-/** The transcript file: the session in front matter for Keel, a readable transcript for people. */
-export function sessionFile(session: Session): string {
-  return matter.stringify(`\n${readable(session)}`, session);
-}
-
-async function save(store: Store, session: Session, options: { commit?: boolean } = {}): Promise<void> {
-  // Keep the turn unsaved rather than write a file Keel cannot commit (task R5).
-  const blocker = await commitBlocker(store.root);
-  if (blocker) throw new RepoBusyError(blocker);
-  mkdirSync(dirname(join(store.root, BRAINSTORM_FILE)), { recursive: true });
-  writeFileAtomic(join(store.root, BRAINSTORM_FILE), sessionFile(session));
-  if (options.commit === false) return;
-  await commitSquashing(store.root, [BRAINSTORM_FILE], brainstormCommitMessage(session), 'Brainstorm:');
-}
-
-// The body is for people reading the repository; Keel reads the front matter.
-function readable(session: Session): string {
-  const lines = [`# Brainstorm: ${session.title}`, '', session.idea, ''];
-  for (const e of session.transcript) {
-    lines.push(e.role === 'assistant' ? `**Keel** (${e.section}): ${e.text}` : `**Proposer**: ${e.text}`, '');
-  }
-  return `${lines.join('\n').trim()}\n`;
 }

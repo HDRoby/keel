@@ -23,7 +23,7 @@ Given('an initialised folder', async () => {
 });
 
 When('I initialise it with the title {string}, the standard intent template and the Coach style', async ({ page }, title: string) => {
-  await startIdea(page, { title, template: 'Standard intent v3', style: 'Coach' });
+  await startIdea(page, { title, template: 'Standard intent v4', style: 'Coach' });
 });
 
 When('I initialise it', async ({ page }) => {

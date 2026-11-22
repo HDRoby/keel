@@ -20,14 +20,17 @@ export default async function IntentPage({ searchParams }: StageProps) {
     <StageLayout page={page} error={error}
       meta={intent.ok ? `${page.project.id} · intent.md · ${intent.value.header.id}` : undefined}
       actions={<>
-        <Link href={`/explore`} className="button">Back to brainstorm</Link>
+        <Link href="/explore" className="button">Change in Explore</Link>
         {intent.ok && intent.value.header.status === 'approved' && <Link href={`/spec`} className="button primary">Go to spec</Link>}
       </>}>
+      {intent.ok && (
+        <p role="note" className="notice">This file is assembled from the sections in Explore, with no model call. To change it, <Link href="/explore">change it in Explore</Link>{intent.value.header.status === 'approved' ? ': once approved, your edits are saved as a change request.' : ' and draft it again.'}</p>
+      )}
       {intent.ok ? (
         <DocumentReview home={store.root} document="intent" doc={intent.value} reviewer={reviewer}
           aside={<MockReferences document="intent" references={listMocks(dir)} requirements={requirementIds(dir)} />} />
       ) : (
-        <section className="card"><p>Every required section is captured. <Link href={`/explore`}>Draft intent.md in Explore</Link>.</p></section>
+        <section className="card"><p>No intent.md yet. Fill in the required sections and <Link href="/explore">draft it in Explore</Link>.</p></section>
       )}
     </StageLayout>
   );

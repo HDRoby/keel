@@ -22,7 +22,7 @@ import { listTemplates, parseTemplateRef, readTemplate, templateName, templateOp
 
 export const dynamic = 'force-dynamic';
 
-const DEFAULTS = { intent: 'standard-intent@3', spec: 'requirements-and-design-spec@2', plan: 'implementation-plan@2' };
+const DEFAULTS = { intent: 'standard-intent@4', spec: 'requirements-and-design-spec@2', plan: 'implementation-plan@2' };
 const FORM_ID = 'initialise';
 
 function mdFiles(dir: string): string[] {

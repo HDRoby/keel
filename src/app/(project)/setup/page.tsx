@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { setupAction } from '../actions';
 import { ErrorAlert, PageHead, Topbar } from '@/components/Shell';
 import { StandardsPicker } from '@/components/StandardsPicker';
-import { readSession } from '@/lib/brainstorm/session';
+import { readExplore } from '@/lib/brainstorm/session';
 import { listStyles } from '@/lib/brainstorm/styles';
 import { listStandards } from '@/lib/standards/library';
 import { serverStore } from '@/lib/store/server-store';
@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 export default async function SetupPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
   const store = serverStore();
-  const session = readSession(store);
+  const session = readExplore(store);
   if (!session.ok) notFound();
   const project = readProject(store.root);
   const chosen = project.ok ? project.value.standards : [];
@@ -30,7 +30,7 @@ export default async function SetupPage({ searchParams }: { searchParams: Promis
             <label>Intent template <select name="template" defaultValue={session.value.template}>
               {templateOptions(store.root, 'intent', 'all').map((t) => <option key={t.ref} value={t.ref}>{t.name}</option>)}
             </select></label>
-            <label>Brainstorm style <select name="style" defaultValue={session.value.brainstorm_style}>
+            <label>Brainstorm style <select name="style" defaultValue={session.value.style}>
               {listStyles(store.root).map((s) => <option key={s.ref} value={s.ref}>{s.name}</option>)}
             </select></label>
             <StandardsPicker standards={listStandards(store.root)} chosen={chosen} />

@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
-import { answerCurrent, chatEntries, startIdea } from './support';
+import { section, startIdea } from './support';
 
 const { Given, When, Then } = createBdd();
 
@@ -27,10 +27,14 @@ When('I switch the brainstorm model to provider "OpenAI" in Settings', async ({ 
 });
 
 When('I send a message in the brainstorm', async ({ page }) => {
+  // A reply under the comment on a section: the assistant answers in that section's thread.
   await startIdea(page);
-  await answerCurrent(page, 'Who should use this?');
+  await section(page, 'Who it is for').getByRole('textbox', { name: 'Who it is for', exact: true }).click();
+  const reply = page.getByRole('textbox', { name: 'Reply on Who it is for' });
+  await reply.fill('Who should use this?');
+  await reply.press('Enter');
 });
 
 Then('I get a reply from the new provider', async ({ page }) => {
-  await expect(chatEntries(page).last()).toHaveText('Reply from OpenAI: I read "Who should use this?".');
+  await expect(page.getByRole('list', { name: 'Thread on Who it is for' }).getByRole('listitem').last()).toHaveText('Reply from OpenAI: I read "Who should use this?".');
 });

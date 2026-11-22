@@ -13,6 +13,8 @@ The mockup uses a company design system for its look. Keel uses the same layout,
 
 ## Tokens
 
+Exact values are in `docs/ui/keel-tokens.css` (tokens) and `docs/ui/keel-components.css` (components), measured from the mockup. Where this table differs, those files win. The table below names the roles.
+
 Put these in `src/app/globals.css` as CSS variables and use only the variables in components.
 
 ### Colour
@@ -77,6 +79,7 @@ System font stack; monospace for paths, IDs and code.
 - **Header bar** (top of the content, white, bottom border): page title, and a subtitle "Keel · <folder path>".
 - **Content**: padding 24, `max-width: 1400px`, cards stacked with gap 24. Forms that are read top to bottom (Initialise, Explore) are centred with `max-width: 900px`.
 - Before initialisation the menu has only **This folder · Initialise**.
+- In setup mode (a startup check failed, CR-0012) the menu has only **Setup**: Startup check, Settings, and Project setup when the project config is the problem; the project group is shown locked.
 
 ## Page header
 
@@ -131,8 +134,9 @@ For each screen, compare with `docs/mocks/<screen>.png` and the source in `docs/
 | Spec | `/spec` | `Spec.dc.html` | Tabs: Requirements, Design (decision OptionCards), Acceptance scenarios (ScenarioCards by requirement), Flagged concerns, Clickable mock (prompt pack, drop area, mock sets); Feasibility and Decision |
 | Plan | `/plan` | `Plan.dc.html` | Versions, diff, impact, tasks |
 | Handoff | `/handoff` | `Handoff.dc.html` | FileTree with states, "Write to folder", conflict Notice, optional Push, Read-back card |
-| Changes | `/changes` | `Changes.dc.html` | As in the mock (CR-0003, Next) |
+| Changes | `/changes`, `/changes/[id]` | `ChangesList.dc.html`, `Changes.dc.html` | List read from changes/ with computed status and Next to apply; request page with what changed, approval, impact by requirement, change package (CR-0003) |
 | Roadmap | `/roadmap` | `Roadmap.dc.html` | Now (read-only), Next, Later, Not doing collapsed, "Start in its own folder" |
 | Templates, Styles, Standards | `/templates`, `/styles`, `/standards` | same names | Library page pattern |
 | Settings | `/settings` | `Settings.dc.html` | Two sections as above |
+| Startup check | `/check` | `Startup.dc.html` | Check rows with OK, Needs fixing or Waiting; warning notice; setup-mode menu (CR-0012) |
 | Stage bar | component | `StageBar.dc.html` | All states |

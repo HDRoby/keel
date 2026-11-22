@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { draftIntent, loadContext, recordAnswer, recordQuestion, startIdea } from '../brainstorm/session';
+import { fillSections } from '../brainstorm/fill';
+import { startIdea } from '../brainstorm/session';
+import { draftIntent } from '../generate/intent';
 import { ensureSeed } from '../seed';
 import { createDocument, readDocument } from '../store/documents';
 import { fileHistory } from '../store/git';
@@ -15,15 +17,8 @@ async function withDraftIntent(): Promise<{ store: TestStore }> {
   ensureSeed(store.root, join(process.cwd(), 'seed'));
   const started = await startIdea(store, { title: 'Gated', idea: '', author: 'Ada', template: 'lightweight-intent@1', style: 'coach@1' });
   if (!started.ok) throw new Error(started.message);
-  for (let i = 0; i < 6; i += 1) {
-    const ctx = loadContext(store);
-    if (!ctx.ok) throw new Error(ctx.message);
-    await recordQuestion(store, ctx.value.session, 'Q?');
-    const again = loadContext(store);
-    if (again.ok) await recordAnswer(store, again.value, `Answer ${i}`);
-  }
-  const ctx = loadContext(store);
-  if (!ctx.ok || !(await draftIntent(store, ctx.value)).ok) throw new Error('draft failed');
+  const filled = fillSections(store, { Problem: 'Answer 0', Outcome: 'Answer 1', Requirements: ['Answer 2'] });
+  if (!filled.ok || !(await draftIntent(store)).ok) throw new Error('draft failed');
   return { store };
 }
 

@@ -1,34 +1,39 @@
 # Change requests to apply
 
-These change requests come from the owner's review of the Keel mockup on 2026-11-22. Apply them **in order**; each one builds on the one before.
+These change requests come from the owner's review of the Keel mockup on 2026-11-22. Apply them **in the order below** (CR-0003 runs third, after CR-0005, which was built first); each one builds on the one before. Once CR-0003 is in, Keel's Changes page shows this list with each request's status.
+
+**Status on 2026-11-22:** CR-0004 done and merged. CR-0005 done on branch `cr-0005` (R10), not merged yet. Next: CR-0003.
 
 | Order | Change request | What it does | Tasks |
 | --- | --- | --- | --- |
 | 1 | [CR-0004](CR-0004/CR-0004.md) | One project per folder (the code repository), `.keel/` for config and libraries, keys in `~/.config/keel`, handoff into the folder, read-back from local git, Initialise screen | R1 to R9 |
 | 2 | [CR-0005](CR-0005/CR-0005.md) | Explore: template sections with live comments from the assistant, Requirements as a section, intent.md assembled without a model call | R10 |
-| 3 | [CR-0006](CR-0006/CR-0006.md) | Spec: edit acceptance scenarios, at least one per requirement | R11 |
-| 4 | [CR-0007](CR-0007/CR-0007.md) | Spec: design as decisions with options proposed by the assistant | R12 |
-| 5 | [CR-0008](CR-0008/CR-0008.md) | Every screen looks like the mockup: UI guide, shared components, guard rails | R13 |
-| 6 | [CR-0009](CR-0009/CR-0009.md) | Clickable mock made elsewhere from the spec (prompt pack), attached back as a versioned mock set; gate setting | R14 |
-| 7 | [CR-0010](CR-0010/CR-0010.md) | Opening a folder: new, already Keel, existing project (baseline), existing project with its own AI setup (merge, rules as standards) | R15 |
+| 3 | [CR-0003](CR-0003/CR-0003.md) | Change requests across stages, and the Changes page listing every request in changes/ (this list included) with computed status | R18 |
+| 4 | [CR-0006](CR-0006/CR-0006.md) | Spec: edit acceptance scenarios, at least one per requirement | R11 |
+| 5 | [CR-0007](CR-0007/CR-0007.md) | Spec: design as decisions with options proposed by the assistant | R12 |
+| 6 | [CR-0008](CR-0008/CR-0008.md) | Every screen looks like the mockup: UI guide, shared components, guard rails | R13 |
+| 7 | [CR-0009](CR-0009/CR-0009.md) | Clickable mock made elsewhere from the spec (prompt pack), attached back as a versioned mock set; gate setting | R14 |
+| 8 | [CR-0010](CR-0010/CR-0010.md) | Opening a folder: new, already Keel, existing project (baseline), existing project with its own AI setup (merge, rules as standards) | R15 |
+| 9 | [CR-0011](CR-0011/CR-0011.md) | Ollama is the default provider; Settings lists the models on this computer and offers them per task | R16 |
+| 10 | [CR-0012](CR-0012/CR-0012.md) | Startup check: valid settings, working model access and a valid project config, or setup mode until fixed | R17 |
 
 Each folder has the change request, task files, scenarios and a `PROMPT.md` to paste into the coding agent.
 
-## Requirement IDs after all seven
+## Requirement IDs after all ten
 
 | ID | Requirement | Changed by |
 | --- | --- | --- |
 | REQ-001 | Template sections with live assistant comments | CR-0005 |
 | REQ-002 | intent.md assembled from the sections; IDs at draft time; edits after approval become a change request | CR-0005 |
 | REQ-004 | At least one scenario per requirement, edited in the Spec | CR-0006 |
-| REQ-005 | Plan needs Go, a scenario per requirement, every design topic decided, and (if set) a current clickable mock | CR-0006, CR-0007, CR-0009 |
+| REQ-005 | Plan needs Go, a scenario per requirement, every design topic decided, and (if set) a current clickable mock; setup mode while a startup check fails | CR-0006, CR-0007, CR-0009, CR-0012 |
 | REQ-006 | Handoff writes into the folder and merges with existing agent files; push optional | CR-0004, CR-0010 |
 | REQ-007 | Read-back from local git, including uncommitted edits | CR-0004 |
-| REQ-009 | Keys in the user config folder | CR-0004 |
+| REQ-009 | Keys in the user config folder; Ollama is the default, local models listed | CR-0004, CR-0011 |
 | REQ-010 | Clickable mock prompt and versioned mock sets | CR-0009 |
 | REQ-012 | One project per folder with `.keel/`; four opening cases and baseline for existing projects | CR-0004 (new), CR-0010 |
 | REQ-013 | Design as decisions with options | CR-0007 (new) |
-| REQ-014 | Reserved for CR-0003 (change requests across stages, Next) | — |
+| REQ-014 | Change requests across stages; the Changes page lists every request in `changes/` | CR-0003 (new) |
 
 ## Run them
 

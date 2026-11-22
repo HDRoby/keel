@@ -1,8 +1,10 @@
 'use server';
 // Start, Project setup, drafting the intent (REQ-001, REQ-011), reviews and decisions (REQ-005).
+import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { addToSection, changeSetup, draftIntent, loadContext, startIdea, updateIntent } from '@/lib/brainstorm/session';
+import { changeSetup, startIdea } from '@/lib/brainstorm/session';
+import { draftIntent, saveChangeRequest } from '@/lib/generate/intent';
 import { formFields } from '@/lib/form-fields';
 import { readStandard } from '@/lib/standards/library';
 import { projectState, recordDecision, review } from '@/lib/gates/approvals';
@@ -46,6 +48,7 @@ export async function adoptAction(form: FormData): Promise<void> {
   if (!input.success) redirect('/?error=Invalid+request');
   const adopted = await adoptProject(serverStore(), input.data.author);
   if (!adopted.ok) redirect(`/?error=${encodeURIComponent(adopted.message)}`);
+  revalidatePath('/', 'layout');
   redirect(at('intent'));
 }
 
@@ -56,6 +59,8 @@ export async function startAction(form: FormData): Promise<void> {
   const { description, spec, plan, ...rest } = input.data;
   const started = await startIdea(serverStore(), { ...rest, idea: description, templates: { spec, plan } });
   if (!started.ok) redirect(`/?error=${encodeURIComponent(started.message)}`);
+  // The sidebar in the root layout shows the project now, not "Not initialised".
+  revalidatePath('/', 'layout');
   redirect(at('explore'));
 }
 
@@ -74,17 +79,18 @@ export async function setupAction(form: FormData): Promise<void> {
   redirect(at('explore'));
 }
 
-/** Drafts intent.md, or saves new brainstorm answers as its next version once it exists. */
-export async function draftIntentAction(form: FormData): Promise<void> {
+/** Draft intent.md: assembled from the Explore sections, with no model call (REQ-002). */
+export async function draftIntentAction(): Promise<void> {
   await guard('explore');
-  const input = z.strictObject({ mode: z.enum(['draft', 'update']) }).safeParse(formFields(form));
-  if (!input.success) redirect('/?error=Invalid+request');
-  const store = serverStore();
-  const context = loadContext(store);
-  const write = input.data.mode === 'draft' ? draftIntent : updateIntent;
-  const drafted = context.ok ? await write(store, context.value) : context;
-  const query = drafted.ok ? 'drafted=1' : `error=${encodeURIComponent(drafted.message)}`;
-  redirect(`${at('explore')}?${query}`);
+  const drafted = await draftIntent(serverStore());
+  redirect(`${at('explore')}?${drafted.ok ? 'drafted=1' : `error=${encodeURIComponent(drafted.message)}`}`);
+}
+
+/** After approval: the edits in Explore become a draft change request; intent.md stays as approved. */
+export async function saveChangeRequestAction(): Promise<void> {
+  await guard('explore');
+  const saved = await saveChangeRequest(serverStore());
+  redirect(`${at('explore')}?${saved.ok ? `saved=${encodeURIComponent(saved.value.header.id)}` : `error=${encodeURIComponent(saved.message)}`}`);
 }
 
 const reviewForm = z.strictObject({
@@ -137,19 +143,6 @@ async function guard(page: string): Promise<void> {
 
 function withError(path: string, result: Result<unknown>): string {
   return result.ok ? path : `${path}?error=${encodeURIComponent(result.message)}`;
-}
-
-const addForm = z.strictObject({ section: z.string().min(1).max(200), text: z.string().trim().min(1).max(20_000) });
-
-/** Adds an answer to a section of the proposer's choice. */
-export async function addToSectionAction(form: FormData): Promise<void> {
-  await guard('explore');
-  const input = addForm.safeParse(formFields(form));
-  if (!input.success) redirect('/?error=Invalid+request');
-  const store = serverStore();
-  const context = loadContext(store);
-  const added = context.ok ? await addToSection(store, context.value, input.data.section, input.data.text) : context;
-  redirect(withError(at('explore'), added));
 }
 
 const generateForm = z.strictObject({ template: ref.optional() });

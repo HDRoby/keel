@@ -5,6 +5,7 @@ export interface Section {
   heading: string;
   required: boolean;
   guidance: string;
+  list: boolean;   // one row per item (Requirements): "<!-- required · list · … -->", or a section named Requirements
 }
 
 export type Answers = Record<string, string[]>;
@@ -19,11 +20,12 @@ const SECTION = /^## (.+)\n(?:<!--\s*(required|optional)\s*(?:·\s*(.*?))?\s*-->
 /** The "## " sections of a template, with the required/optional marker and guidance from its comment. */
 export function parseSections(content: string): Section[] {
   const body = matter(content, {}).content;
-  return [...body.matchAll(SECTION)].map((m) => ({
-    heading: (m[1] ?? '').trim(),
-    required: m[2] === 'required',
-    guidance: (m[3] ?? '').trim(),
-  }));
+  return [...body.matchAll(SECTION)].map((m) => {
+    const heading = (m[1] ?? '').trim();
+    const rest = (m[3] ?? '').trim();
+    const marked = /^list\b\s*(?:·\s*)?/.exec(rest);
+    return { heading, required: m[2] === 'required', guidance: marked ? rest.slice(marked[0].length).trim() : rest, list: Boolean(marked) || heading === 'Requirements' };
+  });
 }
 
 export function isCaptured(answers: Answers, heading: string): boolean {

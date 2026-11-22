@@ -40,23 +40,61 @@ a{color:#3366ff}a:hover{color:#2447b3}
       <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;">
         <div style="display: flex; flex-direction: column; gap: 4px;">
           <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Model provider</h2>
-          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Your own key. Usage is billed by the provider.</span>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{providerNote}}</span>
         </div>
-        <sc-if value="{{tested}}" hint-placeholder-val="{{ false }}">
-          <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="success" icon="check">Connected</x-import>
-        </sc-if>
+        <span style="{{connStyle}}">{{connLabel}}</span>
       </div>
       <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
         <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Select" label="Provider" options="{{providers}}" value="{{provider}}" on-change="{{setProvider}}"></x-import>
-        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" label="API key" value="••••••••••••••••4f2a" description="Stored encrypted in ~/.config/keel. Never written to the project folder, documents, git or logs."></x-import>
+        <sc-if value="{{isLocal}}" hint-placeholder-val="{{ true }}">
+          <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" label="Server address" value="http://localhost:11434" description="Ollama's default address. No API key needed: nothing leaves this computer."></x-import>
+        </sc-if>
+        <sc-if value="{{notLocal}}" hint-placeholder-val="{{ false }}">
+          <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" label="API key" value="••••••••••••••••4f2a" description="Stored encrypted in ~/.config/keel. Never written to the project folder, documents, git or logs."></x-import>
+        </sc-if>
       </div>
-      <div style="display: flex;">
-        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="outline" on-click="{{test}}">Test connection</x-import>
+
+      <sc-if value="{{isLocal}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <sc-if value="{{ollamaUp}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;">
+                <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">Models on this computer</span>
+                <span style="font-size: 12px; line-height: 16px; color: #6b7180;">{{ollamaChecked}}</span>
+              </div>
+              <div style="display: flex; flex-direction: column; border: 1px solid #e0e5e8; border-radius: 8px; overflow: hidden;">
+                <div style="display: grid; grid-template-columns: minmax(0, 1.6fr) 90px 90px 110px minmax(0, 1.4fr); gap: 12px; padding: 8px 12px; background: #f6f7f9; font-size: 12px; line-height: 16px; font-weight: 500; color: #6b7180;">
+                  <span>Model</span><span>Size</span><span>Parameters</span><span>Context</span><span>Good for</span>
+                </div>
+                <sc-for list="{{localModels}}" as="lm" hint-placeholder-count="4">
+                  <div style="display: grid; grid-template-columns: minmax(0, 1.6fr) 90px 90px 110px minmax(0, 1.4fr); gap: 12px; align-items: center; padding: 8px 12px; border-top: 1px solid #f0f2f5; font-size: 13px; line-height: 19px;">
+                    <span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #000;">{{lm.name}}</span>
+                    <span style="color: #434952;">{{lm.size}}</span>
+                    <span style="color: #434952;">{{lm.params}}</span>
+                    <span style="color: #434952;">{{lm.ctx}}</span>
+                    <span style="{{lm.fitStyle}}">{{lm.fit}}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <span style="font-size: 12px; line-height: 16px; color: #6b7180;">Read from the Ollama server's model list. To add a model, run <span style="font-family: ui-monospace, Menlo, monospace; color: #25282d;">ollama pull &lt;name&gt;</span> and check again.</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ollamaDown}}" hint-placeholder-val="{{ false }}">
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="warning" title="Ollama is not running" standalone="{{yes}}">Keel could not reach http://localhost:11434. Start Ollama (open the app, or run ollama serve), then check again. Or choose another provider above.</x-import>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="outline" on-click="{{test}}">{{testLabel}}</x-import>
+        <sc-if value="{{isLocal}}" hint-placeholder-val="{{ true }}">
+          <button type="button" onClick="{{toggleOllama}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; color: #6b7180; cursor: pointer; text-decoration: underline dotted;">{{toggleOllamaLabel}}</button>
+        </sc-if>
       </div>
       <h3 style="margin: 8px 0 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Model per task</h3>
       <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
-        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Select" label="Brainstorm chat" options="{{models}}" value="fast"></x-import>
-        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Select" label="Intent, spec and plan" options="{{models}}" value="capable"></x-import>
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Select" label="Section comments" options="{{models}}" value="{{fastValue}}"></x-import>
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Select" label="Spec and plan" options="{{models}}" value="capable"></x-import>
         <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Select" label="Feasibility review" options="{{models}}" value="capable"></x-import>
         <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" label="Author name" value="Roberto Basile" description="From git config user.name"></x-import>
               </div>
@@ -97,6 +135,7 @@ a{color:#3366ff}a:hover{color:#2447b3}
       <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
         <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Select" label="Commits" options="{{commitModes}}" value="auto"></x-import>
         <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Select" label="Check this folder for agent changes" options="{{intervals}}" value="60"></x-import>
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Select" label="Clickable mock before the plan" options="{{mockGates}}" value="recommended" description="Applies when the Form decision has a UI"></x-import>
       </div>
       <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Keel commits only its own files (.keel/, its documents and the handoff files) as "Keel: …" commits. Remote: origin · github.com/roberto/keel. Push stays manual.</span>
       <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Toggle" label="Notify me when an agent changes a document" checked="{{notify}}" on-change="{{setNotify}}"></x-import>
@@ -109,7 +148,7 @@ a{color:#3366ff}a:hover{color:#2447b3}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { provider: 'anthropic', tested: false, fidelity: 'wire', autoMock: false, notify: true, saved: false };
+    this.state = { provider: 'local', ollama: 'up', tested: true, fidelity: 'wire', autoMock: false, notify: true, saved: false };
   }
   renderVals() {
     const R = window.React;
@@ -120,23 +159,42 @@ class Component extends DCLogic {
       anthropic: [ { value: 'capable', label: 'Claude · most capable' }, { value: 'fast', label: 'Claude · fast' } ],
       openai: [ { value: 'capable', label: 'GPT · most capable' }, { value: 'fast', label: 'GPT · fast' } ],
       azure: [ { value: 'capable', label: 'Your deployment · large' }, { value: 'fast', label: 'Your deployment · small' } ],
-      local: [ { value: 'capable', label: 'Local model · large' }, { value: 'fast', label: 'Local model · small' } ]
+      local: [ { value: 'capable', label: 'qwen3:32b · 32B' }, { value: 'fast', label: 'llama3.2:3b · 3B' }, { value: 'gpt-oss', label: 'gpt-oss:20b · 20B' }, { value: 'gemma', label: 'gemma3:12b · 12B' } ]
     };
     return {
       yes: true,
       saved: st.saved,
       save: () => this.setState({ saved: true }),
       providers: [
+        { value: 'local', label: 'Ollama (on this computer)' },
         { value: 'anthropic', label: 'Anthropic' },
         { value: 'openai', label: 'OpenAI' },
         { value: 'azure', label: 'Azure OpenAI (your tenant)' },
-        { value: 'local', label: 'Local, OpenAI-compatible (e.g. Ollama)' }
+        { value: 'compat', label: 'Other OpenAI-compatible server' }
       ],
+      isLocal: st.provider === 'local',
+      notLocal: st.provider !== 'local',
+      ollamaUp: st.ollama === 'up',
+      ollamaDown: st.ollama !== 'up',
+      ollamaChecked: '4 models · checked just now',
+      toggleOllama: () => this.setState({ ollama: st.ollama === 'up' ? 'down' : 'up' }),
+      toggleOllamaLabel: st.ollama === 'up' ? 'Mockup: show "Ollama not running"' : 'Mockup: show running',
+      testLabel: st.provider === 'local' ? 'Check again' : 'Test connection',
+      providerNote: st.provider === 'local' ? 'The default. Runs on this computer: free, private, no key. Larger models are slower.' : 'Your own key. Usage is billed by the provider.',
+      connLabel: st.provider === 'local' ? (st.ollama === 'up' ? 'Running · 4 models' : 'Not running') : (st.tested ? 'Connected' : 'Not tested'),
+      connStyle: 'font-size: 12px; line-height: 16px; padding: 2px 10px; border-radius: 999px; ' + ((st.provider === 'local' ? st.ollama === 'up' : st.tested) ? 'background: #e6f6ec; color: #1a7f43;' : (st.provider === 'local' ? 'background: #fff4e0; color: #8a5a00;' : 'background: #f0f2f5; color: #6b7180;')),
+      localModels: [
+        { name: 'qwen3:32b', size: '20 GB', params: '32B', ctx: '40K tokens', fit: 'Intent, spec and plan; feasibility', good: true },
+        { name: 'gpt-oss:20b', size: '14 GB', params: '20B', ctx: '128K tokens', fit: 'Long documents, plan', good: true },
+        { name: 'gemma3:12b', size: '8.1 GB', params: '12B', ctx: '128K tokens', fit: 'Section comments', good: true },
+        { name: 'llama3.2:3b', size: '2.0 GB', params: '3B', ctx: '128K tokens', fit: 'Fast comments only; too small for the spec', good: false }
+      ].map((m) => Object.assign({}, m, { fitStyle: 'font-size: 12px; line-height: 16px; color: ' + (m.good ? '#006b45' : '#8a5a00') + ';' })),
       provider: st.provider,
-      setProvider: (v) => this.setState({ provider: v, tested: false, saved: false }),
+      setProvider: (v) => { const val = v && v.target ? v.target.value : v; this.setState({ provider: val, tested: false, saved: false }); },
       tested: st.tested,
       test: () => this.setState({ tested: true }),
-      models: modelSets[st.provider],
+      models: modelSets[st.provider] || modelSets.openai,
+      fastValue: st.provider === 'local' ? 'gemma' : 'fast',
       intentT: [ { value: 'std', label: 'Standard intent · v3' }, { value: 'light', label: 'Lightweight intent · v1' } ],
       specT: [ { value: 'std', label: 'Requirements and design spec · v2' }, { value: 'short', label: 'Short spec · v1' } ],
       planT: [ { value: 'std', label: 'Implementation plan · v2' } ],
@@ -149,6 +207,7 @@ class Component extends DCLogic {
       systems: [ { value: 'swo', label: 'Company design system' }, { value: 'none', label: 'None (neutral style)' } ],
       autoMock: st.autoMock,
       setAutoMock: (e) => this.setState({ autoMock: chk(e), saved: false }),
+      mockGates: [ { value: 'recommended', label: 'Recommended: warn if missing or out of date' }, { value: 'required', label: 'Required: Generate plan stays locked' }, { value: 'off', label: 'Off' } ],
       commitModes: [ { value: 'auto', label: 'Commit Keel\'s files automatically' }, { value: 'off', label: 'Write files, I commit myself' } ],
       intervals: [ { value: '60', label: 'Every minute and when I switch back to Keel' }, { value: 'focus', label: 'Only when I switch back to Keel' }, { value: 'manual', label: 'Only when I ask' } ],
       notify: st.notify,
@@ -162,7 +221,7 @@ class Component extends DCLogic {
           { id: 'plan', label: 'Plan', href: 'Plan.dc.html' },
           { id: 'handoff', label: 'Handoff', href: 'Handoff.dc.html' },
           { id: 'roadmap', label: 'Roadmap', href: 'Roadmap.dc.html' },
-          { id: 'changes', label: 'Changes', href: 'Changes.dc.html' } ] },
+          { id: 'changes', label: 'Changes', href: 'ChangesList.dc.html' } ] },
         { label: 'Library (.keel)', icon: 'folder', items: [
           { id: 'templates', label: 'Templates', href: 'Templates.dc.html' },
           { id: 'styles', label: 'Brainstorm styles', href: 'Styles.dc.html' },

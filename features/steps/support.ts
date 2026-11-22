@@ -1,12 +1,15 @@
 // Shared helpers for the scenarios. The dev server works on one temporary project folder and one
 // temporary user folder (playwright.config.ts); every scenario starts with both empty.
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, type Page } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
+import { fillSections } from '../../src/lib/brainstorm/fill';
+import { startIdea as startExplore } from '../../src/lib/brainstorm/session';
 import { recordDecision, review } from '../../src/lib/gates/approvals';
+import { saveExploreTiming } from '../../src/lib/settings/settings';
 import { generatePlan } from '../../src/lib/generate/plan';
 import { generateSpec } from '../../src/lib/generate/spec';
 import { openIndex, type Store } from '../../src/lib/store/db';
@@ -16,6 +19,8 @@ import { initialiseProject } from '../../src/lib/store/workspace';
 /** The folders the dev server uses (playwright.config.ts). */
 export const BDD_PROJECT = join(tmpdir(), 'keel-bdd-project');
 export const BDD_USER = join(tmpdir(), 'keel-bdd-user');
+/** One line per model call made by the fake provider (playwright.config.ts: KEEL_FAKE_LOG). */
+export const FAKE_LOG = join(tmpdir(), 'keel-bdd-fake.log');
 
 const { Before } = createBdd();
 
@@ -25,7 +30,15 @@ Before(async () => {
   for (const entry of readdirSync(BDD_PROJECT)) rmSync(join(BDD_PROJECT, entry), { recursive: true, force: true });
   rmSync(BDD_USER, { recursive: true, force: true });
   mkdirSync(BDD_USER, { recursive: true });
+  // Reviews after a 1-second pause and at most one a second, so scenarios do not wait 5 and 10 seconds.
+  saveExploreTiming({ user: BDD_USER }, { pauseSeconds: 1, intervalSeconds: 1 });
+  writeFileSync(FAKE_LOG, '');
 });
+
+/** How many model calls the fake provider has made so far in this scenario. */
+export function modelCalls(): number {
+  return existsSync(FAKE_LOG) ? readFileSync(FAKE_LOG, 'utf8').split('\n').filter(Boolean).length : 0;
+}
 
 /** git in the project folder. */
 export function git(...args: string[]): string {
@@ -50,32 +63,59 @@ export async function startIdea(page: Page, options: { template?: string; style?
   await page.getByLabel('Title').fill(options.title ?? 'Readme helper');
   await page.getByLabel('Description').fill('Help newcomers run any repository.');
   await page.getByLabel('Your name').fill('Ada Lovelace');
-  await page.getByRole('radiogroup', { name: 'Intent template' }).getByRole('radio', { name: options.template ?? 'Standard intent v3', exact: true }).check();
+  await page.getByRole('radiogroup', { name: 'Intent template' }).getByRole('radio', { name: options.template ?? 'Standard intent v4', exact: true }).check();
   await page.getByRole('radiogroup', { name: 'Brainstorm style' }).getByRole('radio', { name: options.style ?? 'Challenger', exact: true }).check();
   await page.getByRole('button', { name: 'Initialise and start brainstorm' }).click();
   await page.waitForURL(/\/explore$/);
-  await expect(chatEntries(page)).toHaveCount(1);
+  await reviewed(page);
 }
 
-/** The messages shown in the brainstorm chat. */
-export function chatEntries(page: Page) {
-  return page.getByRole('region', { name: 'Brainstorm' }).getByRole('listitem');
+/** Waits until the assistant has reviewed all sections and no review is running. */
+export async function reviewed(page: Page): Promise<void> {
+  await expect(page.getByRole('status', { name: 'Review status' })).toContainText('Assistant reviewed all sections', { timeout: 15_000 });
 }
 
-/** Answers the open question and waits for the assistant's next question. */
-export async function answerCurrent(page: Page, text = 'An answer the proposer can defend.'): Promise<void> {
-  const before = await chatEntries(page).count();
-  await page.getByLabel('Your answer').fill(text);
-  await page.getByRole('button', { name: 'Send' }).click();
-  await expect(chatEntries(page)).toHaveCount(before + 2);
-  await expect(page.getByLabel('Your answer')).toBeEnabled();
+/** A section's card in Explore. */
+export function section(page: Page, key: string) {
+  return page.getByRole('region', { name: key, exact: true });
 }
 
-/** Answers until every required section is captured, so the intent can be drafted. */
-export async function answerRequiredSections(page: Page): Promise<void> {
-  const draft = page.getByRole('button', { name: 'Draft intent.md' });
-  for (let i = 0; i < 20 && (await draft.isDisabled()); i += 1) await answerCurrent(page);
+/** A text section's field. */
+export function field(page: Page, key: string) {
+  return section(page, key).getByRole('textbox', { name: key, exact: true });
+}
+
+/** Fills the required sections in the page, as the user types them, so Draft intent.md is enabled. */
+export async function fillRequiredSections(page: Page): Promise<void> {
+  const draft = page.getByRole('button', { name: /^Draft intent\.md/ });
+  if (await draft.isEnabled()) return;
+  const texts: [string, string][] = [['Problem', 'Newcomers cannot find how to run a project.'], ['Who it is for', 'Developers new to a repository.'], ['Desired outcome', 'Anyone runs a project in five minutes.']];
+  for (const [key, text] of texts) {
+    const box = field(page, key);
+    // A suggestion from the assistant is replaced by the user's own text.
+    if (!(await box.inputValue()) || (await box.getAttribute('class'))?.includes('suggested')) await box.fill(text);
+  }
+  const rows = section(page, 'Requirements');
+  const accept = rows.getByRole('button', { name: 'Accept' });
+  if (await accept.count()) {
+    await accept.first().click();   // a row the assistant suggested from Desired outcome
+  } else {
+    await rows.getByRole('button', { name: '+ Add requirement' }).click();
+    await rows.getByRole('textbox').last().fill('Show the run command');
+  }
   await expect(draft).toBeEnabled();
+}
+
+/** A project initialised with Explore's sections filled through the same functions the page uses. */
+export async function exploreWith(values: Record<string, string | string[]>, template = 'standard-intent@4'): Promise<Store> {
+  const store = bddStore();
+  const made = await startExplore(store, { title: 'Expense tracker', idea: 'Track what the team spends.', author: 'Ada Lovelace', template, style: 'challenger@1' });
+  if (!made.ok) throw new Error(made.message);
+  if (Object.keys(values).length) {
+    const filled = fillSections(store, values);
+    if (!filled.ok) throw new Error(filled.message);
+  }
+  return store;
 }
 
 export function intentHeader(): Record<string, unknown> {
