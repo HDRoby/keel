@@ -44,8 +44,9 @@ function migrateOnce(env: Env): void {
   if (env.KEEL_USER_DIR?.trim() && !env.KEEL_HOME?.trim()) return;
   try {
     migrateLegacySettings(userDir(env), legacyHome(env));
-  } catch {
+  } catch (error) {
     // An unreadable old workspace is not a reason to stop Keel; the user enters the settings again.
+    console.warn(`Could not move settings from ${legacyHome(env)}: ${error instanceof Error ? error.message.split('\n')[0] : 'unknown error'}`);
   }
 }
 

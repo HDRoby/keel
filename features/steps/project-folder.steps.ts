@@ -3,7 +3,9 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
+import { review } from '../../src/lib/gates/approvals';
 import { providerConfig } from '../../src/lib/settings/settings';
+import { createDocument } from '../../src/lib/store/documents';
 import { bddStore, BDD_PROJECT, BDD_USER, git, initialisedFolder, pending, startIdea } from './support';
 
 const { Given, When, Then } = createBdd();
@@ -50,9 +52,10 @@ Then('the folder is a git repository', async () => {
   expect(git('rev-parse', '--show-toplevel')).toMatch(/keel-bdd-project$/);
 });
 
-// Opening Keel on a folder: R3 (npx keel) and R4 (Initialise at /, no Projects page).
-When('I open Keel on it', async ({ $testInfo }) => {
-  pending($testInfo, 'R3 and R4');
+// Opening Keel on a folder. `npx keel <folder>` starts the server with KEEL_PROJECT_DIR and opens "/"
+// (src/cli/keel-command.test.ts); the dev server here already runs on the scenario's folder.
+When('I open Keel on it', async ({ page }) => {
+  await page.goto('/');
 });
 
 Then('I see the Initialise screen with the folder path', async ({ $testInfo }) => {
@@ -63,12 +66,21 @@ Then('there is no Projects page', async ({ $testInfo }) => {
   pending($testInfo, 'R4');
 });
 
-Given('a folder initialised by Keel with an approved intent', async ({ $testInfo }) => {
-  pending($testInfo, 'R3 and R4');
+Given('a folder initialised by Keel with an approved intent', async () => {
+  const store = await initialisedFolder('Expense tracker');
+  await createDocument(store, {
+    kind: 'intent', title: 'Expense tracker', template: 'standard-intent@3',
+    body: '# Intent: Expense tracker\n\n## Requirements\n\n- REQ-001 Record an expense\n',
+  });
+  expect((await review(store, 'intent', { action: 'approve', by: 'Ada Lovelace', comment: '' })).ok).toBe(true);
+  store.index.close();
 });
 
-Then('I see the Spec stage', async ({ $testInfo }) => {
-  pending($testInfo, 'R4');
+Then('I see the Spec stage', async ({ page }) => {
+  await page.waitForURL(/\/spec$/);
+  const spec = page.getByRole('navigation', { name: 'Stages' }).getByRole('link', { name: /^\d · Spec\b/ });
+  await expect(spec).toHaveAttribute('aria-current', 'step');
+  await expect(page.getByRole('form', { name: 'Generate spec' })).toBeVisible();
 });
 
 // Keys stay in the user config folder (ADR-0011). Made up for the test.

@@ -17,8 +17,8 @@ export const dynamic = 'force-dynamic';
 
 const DEFAULT_TEMPLATE = 'standard-intent@3';
 
-export default async function StartPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { error } = await searchParams;
+export default async function StartPage({ searchParams }: { searchParams: Promise<{ error?: string; title?: string; description?: string }> }) {
+  const { error, title, description } = await searchParams;
   const { root } = serverStore();
   if (isInitialised(root)) redirect('/');
   const home = previewRoot();
@@ -43,8 +43,8 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
         <ErrorAlert error={error} />
         <form action={startAction}>
           <section className="card stack">
-            <label>Title <input name="title" required placeholder="A working title" /></label>
-            <label>The idea in a sentence or two <textarea name="idea" rows={3} placeholder="What is the problem, and who has it?" /></label>
+            <label>Title <input name="title" required placeholder="A working title" defaultValue={title} /></label>
+            <label>The idea in a sentence or two <textarea name="idea" rows={3} placeholder="What is the problem, and who has it?" defaultValue={description} /></label>
             <label>Your name <input name="author" defaultValue={author} required /></label>
           </section>
 

@@ -13,9 +13,10 @@ This repository is the **handoff package for building Keel itself**. It was prod
 ## What v0.1 is
 
 - A **local web app**: one command starts it and opens it in the browser.
-- **Single user.** Your API keys and repositories stay on your machine.
+- **One project per folder.** Keel opens one folder, the git repository the coding agent builds in, and keeps its config and libraries in `.keel/`.
+- **Single user.** Your API keys stay on your machine, in `~/.config/keel` (never in the project folder).
 - **TypeScript full stack**: Next.js (React) UI and API routes in one app.
-- **Storage**: markdown documents in a git repository per project (source of truth) plus a local SQLite file as an index and settings store.
+- **Storage**: markdown documents in the project's own git repository (source of truth) plus a rebuildable SQLite index in `.keel/cache/`.
 - **Model providers**: Anthropic, OpenAI, Azure OpenAI and local models through an OpenAI-compatible endpoint (Ollama).
 
 ## Commands
@@ -23,7 +24,9 @@ This repository is the **handoff package for building Keel itself**. It was prod
 | Task | Command |
 | --- | --- |
 | Install | `npm install` |
-| Run locally | `npm run dev` (then open http://localhost:3000) |
+| Run on a folder | `npx keel [path]` (from this repository: `node bin/keel.mjs [path]`; `--create`, `--title`, `--port`, `--no-open`) |
+| Run the dev server on a folder | `KEEL_PROJECT_DIR=/path/to/folder npm run dev` |
+| Rebuild the index | `npm run keel -- reindex --dir /path/to/folder` |
 | Unit tests | `npm test` |
 | Acceptance scenarios | `npm run test:bdd` |
 | Lint and types | `npm run lint` and `npm run typecheck` |
