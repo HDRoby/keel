@@ -103,6 +103,6 @@ src/           the app (Next.js, TypeScript)
 
 ## Status
 
-Keel v0.1 plus the change requests in [`changes/README.md`](changes/README.md). Applied so far: CR-0003 to CR-0009. Still to come: opening existing projects (CR-0010), Ollama as the default (CR-0011), the startup check (CR-0012) and complete change packages (CR-0013). The user guide marks features that are not built yet.
+Keel v0.1 plus the change requests in [`changes/README.md`](changes/README.md). Applied so far: CR-0003 to CR-0010. Still to come: Ollama as the default (CR-0011), the startup check (CR-0012) and complete change packages (CR-0013). The user guide marks features that are not built yet.
 
 "Keel" is a working name.
