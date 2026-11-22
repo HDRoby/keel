@@ -1,0 +1,14 @@
+.bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-1); background: var(--surface-card); border-radius: var(--radius-card); box-shadow: var(--box-shadow-1); padding: var(--spacing-1); }
+.stage { display: flex; gap: var(--spacing-1); align-items: flex-start; min-height: 56px; padding: 8px 12px; border-radius: var(--radius-m); border: 1px solid transparent; color: var(--text); transition: var(--transition); }
+a.stage:hover { background: var(--surface-hover); text-decoration: none; color: var(--text); }
+.icon { display: flex; padding-top: 0; }
+.text { display: grid; gap: 2px; min-width: 0; }
+.label { font: var(--text-medium-2); color: inherit; }
+.note { font: var(--text-regular-1); color: var(--text-muted); }
+.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+a.active:hover { background: var(--accent-soft); color: var(--accent); }
+.done { color: var(--text-strong); }
+.stale { color: var(--text-strong); }
+.staleNote { color: var(--warn-text); font-weight: 500; }
+.locked { background: var(--bg); border: 1px dashed var(--gray-3); color: var(--text-muted); cursor: not-allowed; }
+.locked { display: flex; gap: 8px; align-items: center; margin: 0; color: var(--text-secondary); }

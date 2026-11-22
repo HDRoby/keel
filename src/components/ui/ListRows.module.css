@@ -1,0 +1,8 @@
+.list { display: grid; gap: 6px; }
+.row { display: grid; grid-template-columns: 80px minmax(0, 1fr) auto; gap: var(--spacing-1); align-items: center; }
+.id { font-family: var(--mono); font-size: 12px; line-height: 18px; color: var(--text-strong); }
+.pending { font-style: italic; color: var(--text-muted); }
+.input { display: grid; gap: 4px; min-width: 0; }
+.input input { width: 100%; }
+.actions { display: inline-flex; gap: 4px; align-items: center; }
+.add { padding-left: 88px; }

@@ -1,0 +1,245 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Changes.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "is_interactive": true,
+      "title": "6b2 \u00b7 Change request detail and approval (CR-0003)",
+      "w": 1440,
+      "x": 7600,
+      "y": 2873
+    },
+    "Explore.dc.html": {
+      "expand": "fill",
+      "h": 1750,
+      "is_interactive": true,
+      "title": "2 \u00b7 Explore: sections with live comments (later)",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "Handoff.dc.html": {
+      "expand": "fill",
+      "h": 1200,
+      "is_interactive": true,
+      "title": "6 \u00b7 Handoff into this folder and read-back from local git",
+      "w": 1440,
+      "x": 1520,
+      "y": 1966
+    },
+    "Intent.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "is_interactive": true,
+      "title": "3 \u00b7 Intent",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "is_interactive": true,
+      "title": "1 \u00b7 Open Keel on a folder (npx keel)",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "NewIdea.dc.html": {
+      "expand": "fill",
+      "h": 1750,
+      "is_interactive": true,
+      "title": "2b \u00b7 Explore: sections with live comments (early stage)",
+      "w": 1440,
+      "x": 6080,
+      "y": 0
+    },
+    "Plan.dc.html": {
+      "expand": "fill",
+      "h": 1250,
+      "is_interactive": true,
+      "title": "5 \u00b7 Plan, versions and impact",
+      "w": 1440,
+      "x": 0,
+      "y": 1750
+    },
+    "Roadmap.dc.html": {
+      "expand": "fill",
+      "h": 1300,
+      "is_interactive": true,
+      "title": "6c \u00b7 Roadmap (Now, Next, Later, Not doing)",
+      "w": 1440,
+      "x": 10640,
+      "y": 1772
+    },
+    "Settings.dc.html": {
+      "expand": "fill",
+      "h": 1600,
+      "is_interactive": true,
+      "title": "8 \u00b7 Settings (you on this computer \u00b7 this project)",
+      "w": 1440,
+      "x": 6080,
+      "y": 2146
+    },
+    "SetupKeel.dc.html": {
+      "expand": "fill",
+      "h": 1100,
+      "is_interactive": true,
+      "title": "1d \u00b7 Project setup for Keel (opened from 2 \u00b7 Explore)",
+      "w": 1440,
+      "x": 10640,
+      "y": 15
+    },
+    "Spec.dc.html": {
+      "expand": "fill",
+      "h": 2000,
+      "is_interactive": true,
+      "title": "4 \u00b7 Spec: requirements, design decisions, scenarios, feasibility",
+      "w": 1440,
+      "x": 4560,
+      "y": 0
+    },
+    "StageBar.dc.html": {
+      "h": 96,
+      "is_interactive": true,
+      "title": "Component \u00b7 Stage bar",
+      "w": 1200,
+      "x": 4560,
+      "y": 2142
+    },
+    "Standards.dc.html": {
+      "expand": "fill",
+      "h": 1300,
+      "is_interactive": true,
+      "title": "7c \u00b7 Standards (conventions and guidelines)",
+      "w": 1440,
+      "x": 9120,
+      "y": 1772
+    },
+    "Start.dc.html": {
+      "expand": "fill",
+      "h": 2700,
+      "is_interactive": true,
+      "title": "1b \u00b7 Initialise: new, Keel, existing and existing-with-AI folders",
+      "w": 1440,
+      "x": 7600,
+      "y": 15
+    },
+    "Startup.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "0 \u00b7 Startup check (runs every time Keel starts)",
+      "w": 1440,
+      "x": -2200,
+      "y": 0
+    },
+    "Styles.dc.html": {
+      "expand": "fill",
+      "h": 1250,
+      "is_interactive": true,
+      "title": "7b \u00b7 Brainstorm styles",
+      "w": 1440,
+      "x": 4524,
+      "y": 2379
+    },
+    "Templates.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "7 \u00b7 Templates",
+      "w": 1440,
+      "x": 3040,
+      "y": 1750
+    },
+    "ChangesList.dc.html": {
+      "expand": "fill",
+      "h": 1150,
+      "is_interactive": true,
+      "title": "6b \u00b7 Changes: every change request, read from changes/",
+      "w": 1440,
+      "x": 12160,
+      "y": 1772
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-20T15:11:49Z",
+    "v": 1
+  },
+  "designSystems": [
+    {
+      "artifact": "https://claude.ai/artifact/MaFJarSEACPnkqY1FY8zZp",
+      "copiedAt": "2026-11-20T15:10:31Z",
+      "namespace": "softwareone",
+      "title": "SoftwareOne Design System",
+      "version": "1795166703-ce12"
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  },
+  "noteOrder": [
+    "t1",
+    "t2",
+    "s1",
+    "c4"
+  ],
+  "notes": {
+    "c4": {
+      "fill": "blue",
+      "size": 20,
+      "text": "CR-0004 (22/11/2026): no Projects page; one folder = one project = the code repository. Config, templates, styles and standards in .keel/. Keys stay in ~/.config/keel. Handoff writes into the folder, push is optional, read-back reads local git. The Build-or-buy project screen was removed: another idea gets its own folder.",
+      "w": 440,
+      "x": -560,
+      "y": 420
+    },
+    "s1": {
+      "fill": "blue",
+      "size": 24,
+      "text": "Start here: select 1 \u00b7 Open Keel and press Play. Keel works on one project per folder (CR-0004): npx keel opens the folder, Initialise creates .keel/, and everything else happens in that folder. The sample data is Keel itself.",
+      "w": 440,
+      "x": -560,
+      "y": 0
+    },
+    "t1": {
+      "kind": "title1",
+      "maxW": 8000,
+      "text": "Keel \u2014 from idea to agent-ready project",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "t2": {
+      "kind": "title1",
+      "maxW": 7520,
+      "text": "Plan, handoff, read-back and templates",
+      "w": 240,
+      "x": 0,
+      "y": 1450
+    }
+  },
+  "order": [
+    "Startup.dc.html",
+    "Main.dc.html",
+    "Start.dc.html",
+    "SetupKeel.dc.html",
+    "Explore.dc.html",
+    "NewIdea.dc.html",
+    "Intent.dc.html",
+    "Spec.dc.html",
+    "Plan.dc.html",
+    "Handoff.dc.html",
+    "ChangesList.dc.html",
+    "Changes.dc.html",
+    "Roadmap.dc.html",
+    "Templates.dc.html",
+    "Styles.dc.html",
+    "Standards.dc.html",
+    "Settings.dc.html",
+    "StageBar.dc.html"
+  ],
+  "pages": [],
+  "title": "Keel \u2014 clickable mockup"
+}

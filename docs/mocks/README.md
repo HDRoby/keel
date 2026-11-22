@@ -28,4 +28,6 @@ These show intent; the spec decides. Compare UI work with them. Exported from th
 
 Explore follows the fill-in-first layout in the clickable mockup (CR-0005). The Spec's Acceptance scenarios tab follows the clickable mockup (CR-0006). The Spec's Design tab follows the clickable mockup (CR-0007). The Projects and Start screens are replaced by Initialise (CR-0004). The earlier PNGs were outdated and have been removed; git history keeps them.
 
-The mockup uses one company's design system for its look. Keel v0.1 should use a neutral design (system font, one accent colour) unless a design system is chosen in Settings.
+Keel uses the mockup's layout, sizes and colours with the system font and no company branding. `docs/ui-guide.md` has the tokens, components and a checklist per screen. The screen sources are in `docs/mocks/source/`.
+
+The PNGs exported on 2026-11-22 are current, except `1b · Initialise this folder (.keel).png`, which predates the four opening cases of CR-0010; the source `Start.dc.html` is current.

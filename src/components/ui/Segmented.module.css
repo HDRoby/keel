@@ -1,0 +1,4 @@
+.segmented { display: inline-flex; align-items: center; gap: 12px; height: 32px; padding: 4px; border-radius: var(--radius-m); background: var(--surface-card); box-shadow: inset 0 0 0 1px var(--gray-3); }
+.option { display: flex; align-items: center; height: 24px; padding: 4px 12px; border-radius: var(--radius-m); font: var(--text-medium-2); color: var(--text-muted); white-space: nowrap; transition: var(--transition); }
+.option:hover { color: var(--text-strong); text-decoration: none; }
+.current, .current:hover { background: var(--brand-primary); color: var(--text-inverse); }

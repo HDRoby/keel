@@ -1,0 +1,2 @@
+.meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font: var(--text-regular-1); line-height: 16px; color: var(--text-muted); }
+.hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

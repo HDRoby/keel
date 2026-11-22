@@ -1,10 +1,16 @@
-// Plan stage (mockup: plan.png): the plan, its approval and history, and its tasks (REQ-004, REQ-005, REQ-008).
-import Link from 'next/link';
+// Plan stage (mock source Plan.dc.html): the plan, its approval and history, and its tasks (REQ-004, REQ-005, REQ-008).
 import { generatePlanAction } from '../actions';
 import { Conflicts } from '@/components/Conflicts';
 import { DocumentReview } from '@/components/DocumentReview';
 import { RegenerateForm } from '@/components/RegenerateForm';
-import { StageLayout } from '@/components/StageBar';
+import { Icon } from '@/components/Icons';
+import { ButtonLink } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { DataTable } from '@/components/ui/DataTable';
+import { LinkButton } from '@/components/ui/LinkButton';
+import { StageLayout } from '@/components/ui/StageBar';
+import { Tag } from '@/components/ui/Tag';
+import css from '../spec/spec.module.css';
 import { SubmitButton } from '@/components/SubmitButton';
 import { conflictsOf } from '@/lib/generate/resolve';
 import { readDocument } from '@/lib/store/documents';
@@ -23,41 +29,33 @@ export default async function PlanPage({ searchParams }: StageProps) {
 
   return (
     <StageLayout page={page} error={error}
-      meta={plan.ok ? `${page.project.id} · plan.md · ${plan.value.header.id}${plan.value.header.from_spec ? ` · from ${String(plan.value.header.from_spec)}` : ''}` : undefined}
-      actions={page.gates.find((g) => g.stage === 'handoff')?.available ? <Link href={`/handoff`} className="button primary">Prepare handoff</Link> : undefined}>
+      meta={plan.ok ? `${page.project.id} · plan.md · ${plan.value.header.id}${plan.value.header.from_spec ? ` · from ${String(plan.value.header.from_spec).replace('@', ' v')}` : ''}` : undefined}
+      actions={page.gates.find((g) => g.stage === 'handoff')?.available ? <ButtonLink href="/handoff" variant="primary"><Icon name="rocket_launch" size={18} /> Prepare handoff</ButtonLink> : undefined}>
       {plan.ok ? (
-        <>
+        <div className={css.panel}>
           <DocumentReview home={store.root} document="plan" doc={plan.value} reviewer={reviewer} collapsed
             before={<Conflicts document="plan" conflicts={conflictsOf(plan.value)} />}
             after={plan.value.header.status === 'draft'
               ? <RegenerateForm document="plan">Regenerating writes the plan and task files again from the current intent, spec and standards.</RegenerateForm>
               : undefined} />
-          <section className="card" aria-labelledby="tasks">
-            <div className="row spread">
-              <h2 id="tasks">Tasks in plan v{plan.value.header.version}</h2>
-              <Link href={`/trace`}>Traceability</Link>
-            </div>
-            <table aria-labelledby="tasks" className="space-above">
-              <thead><tr><th>Task</th><th>Title</th><th>Requirements</th><th>Acceptance scenarios</th></tr></thead>
-              <tbody>
-                {tasks.map((t) => (
-                  <tr key={t.id}>
-                    <td><strong>{t.id}</strong></td>
-                    <td>{t.title}</td>
-                    <td>{t.requirements.map((r) => <span key={r} className="tag">{r}</span>)}</td>
-                    <td>{trace.scenarios.filter((s) => s.requirements.some((r) => t.requirements.includes(r))).map((s) => s.scenario).join('; ') || '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
-        </>
+          <Card title={<span id="tasks">Tasks in plan v{plan.value.header.version}</span>} meta="Each task names the requirements it serves and the scenarios that prove it."
+            actions={<LinkButton href="/trace">Traceability</LinkButton>}>
+            <DataTable label={`Tasks in plan v${plan.value.header.version}`} columns={['Task', 'Title', 'Requirements', 'Acceptance scenarios']}
+              rows={tasks.map((t) => ({ key: t.id, cells: [
+                <strong key="id">{t.id}</strong>,
+                t.title,
+                <span key="reqs" className={css.tags}>{t.requirements.map((r) => <Tag key={r} tone="outline">{r}</Tag>)}</span>,
+                trace.scenarios.filter((sc) => sc.requirements.some((r) => t.requirements.includes(r))).map((sc) => sc.scenario).join('; ') || '—',
+              ] }))} />
+          </Card>
+        </div>
       ) : (
-        <form action={generatePlanAction} aria-label="Generate plan" className="card stack">
-          <h2>Generate plan</h2>
-          <p className="muted">Keel fills the plan template from the intent and spec, and writes one task file per task in tasks/.</p>
-          <div><SubmitButton primary label="Generate plan" busyLabel="Generating plan…" /></div>
-        </form>
+        <Card title="Generate plan">
+          <form action={generatePlanAction} aria-label="Generate plan" className={css.stack}>
+            <p className={css.muted}>Keel fills the plan template from the intent and spec, and writes one task file per task in tasks/.</p>
+            <div><SubmitButton primary label="Generate plan" busyLabel="Generating plan…" /></div>
+          </form>
+        </Card>
       )}
     </StageLayout>
   );

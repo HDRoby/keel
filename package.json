@@ -19,7 +19,8 @@
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "verify": "npm run lint && npm run typecheck && npm test && npm run test:bdd",
-    "keel": "tsx src/cli.ts"
+    "keel": "tsx src/cli.ts",
+    "ui:shots": "tsx scripts/ui-shots.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.12.0",
@@ -27,6 +28,7 @@
     "diff": "^9.0.0",
     "gray-matter": "^4.0.3",
     "js-yaml": "^4.3.2",
+    "material-symbols": "0.48.3",
     "next": "^16.4.6",
     "openai": "^7.62.0",
     "react": "^19.0.0",

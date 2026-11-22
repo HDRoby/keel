@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keel · Spec and feasibility</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/softwareone/tokens.css">
+<link rel="stylesheet" href="ds/softwareone/components/bundle.css">
+<script src="ds/softwareone/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#3366ff}a:hover{color:#2447b3}
+</style>
+</helmet>
+<x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Navigation" groups="{{groups}}" active-id="spec" brand="{{brand}}" header-bar="{{headerBar}}">
+<div style="box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 24px; font-family: var(--font-body, Arial); color: var(--text-body, #25282d); max-width: 1400px;">
+  <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+      <h1 style="margin: 0; font-size: 24px; line-height: 28.13px; font-weight: 700; color: var(--text-primary, #000);">Keel</h1>
+      <span style="font-size: 12px; line-height: 14.4px; color: var(--text-muted, #6b7180);">PRJ-0001 · spec.md · SPC-0001 v3 · from INT-0001 v2</span>
+    </div>
+    <sc-if value="{{isGo}}" hint-placeholder-val="{{ true }}">
+    <a href="Plan.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="arrow_forward" size="5"></x-import>
+        Generate plan
+      </a>
+    </sc-if>
+    <sc-if value="{{notGo}}" hint-placeholder-val="{{ false }}">
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="primary" is-disabled="{{yes}}">Generate plan</x-import>
+    </sc-if>
+  </div>
+  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="warning" title="Pending change CR-0003" standalone="{{yes}}">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+      <span>Intent v3 adds REQ-014 (change requests with approval and impact) and is waiting for approval. If you approve it, this spec becomes out of date.</span>
+      <a href="Changes.dc.html" style="font-weight: 500;">Review change</a>
+    </div>
+  </x-import>
+  <dc-import name="StageBar" current="spec" reached="{{reached}}" decision="{{decision}}" hint-size="100%,72px"></dc-import>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+    <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+      <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Template: Requirements and design spec · v2   ·   Checked against 5 standards</span>
+    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Tabs" variant="inline" items="{{tabs}}" value="{{tab}}" on-change="{{setTab}}"></x-import>
+
+        <sc-if value="{{isReqs}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <p style="margin: 0; font-size: 14px; line-height: 20px; color: #434952;">Every requirement keeps a stable ID from intent to tests. Six come from the intent; five were added while writing the spec.</p>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Grid" columns="{{reqColumns}}" rows="{{reqRows}}"></x-import>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isDesign}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 16px; font-size: 14px; line-height: 20px;">
+            <span style="font-size: 14px; line-height: 20px; color: #434952;">The design is a set of decisions. For each one the assistant proposes options from your requirements, constraints, standards and the code already in this folder. Pick one, or write your own. Each choice is saved as a decision record in docs/decisions/.</span>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; background: {{decBg}};">
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{decIcon}}" size="5" color="{{decColor}}"></x-import>
+              <span style="flex: 1 1 320px; font-size: 14px; line-height: 20px; color: #25282d;">{{decText}}</span>
+            </div>
+            <sc-for list="{{decisions}}" as="dc" hint-placeholder-count="3">
+              <div style="{{dc.boxStyle}}">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                  <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">{{dc.title}}</span>
+                  <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{dc.origin}}</span>
+                  <span style="flex: 1 1 auto;"></span>
+                  <span style="{{dc.statusStyle}}">{{dc.status}}</span>
+                </div>
+
+                <sc-if value="{{dc.collapsed}}" hint-placeholder-val="{{ true }}">
+                  <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="check_circle" size="4" color="#008556"></x-import>
+                      <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{dc.chosenName}}</span>
+                      <span style="flex: 1 1 auto;"></span>
+                      <button type="button" onClick="{{dc.change}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer;">Change</button>
+                    </div>
+                    <span style="font-size: 13px; line-height: 19px; color: #434952;">{{dc.reason}}</span>
+                    <span style="font-size: 12px; line-height: 16px; color: #6b7180;">{{dc.alts}}</span>
+                    <sc-if value="{{dc.hasHistory}}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size: 12px; line-height: 16px; color: #6b7180;">{{dc.history}}</span>
+                    </sc-if>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{dc.open}}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+                      <sc-for list="{{dc.options}}" as="op" hint-placeholder-count="3">
+                        <button type="button" onClick="{{op.pick}}" style="{{op.style}}">
+                          <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                            <span style="font-size: 14px; line-height: 20px; font-weight: 600; color: #000; text-align: left;">{{op.name}}</span>
+                            <span style="{{op.recStyle}}">Recommended</span>
+                          </span>
+                          <span style="font-size: 13px; line-height: 18px; color: #434952; text-align: left;">{{op.summary}}</span>
+                          <span style="font-size: 12px; line-height: 16px; color: #006b45; text-align: left;">+ {{op.pro}}</span>
+                          <span style="font-size: 12px; line-height: 16px; color: #8a5a00; text-align: left;">− {{op.con}}</span>
+                          <span style="{{op.fitStyle}}">{{op.fit}}</span>
+                          <span style="font-size: 11px; line-height: 14px; color: #6b7180; text-align: left;">{{op.reqs}}</span>
+                        </button>
+                      </sc-for>
+                      <div style="{{dc.ownStyle}}">
+                        <span style="font-size: 14px; line-height: 20px; font-weight: 600; color: #000;">Your own option</span>
+                        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" placeholder="Describe the option you want" value="{{dc.own}}" on-change="{{dc.setOwn}}"></x-import>
+                        <span style="font-size: 12px; line-height: 16px; color: #6b7180;">{{dc.ownNote}}</span>
+                      </div>
+                    </div>
+                    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" label="Reason (goes into the decision record)" multiline="{{yes}}" rows="{{two}}" value="{{dc.reasonDraft}}" on-change="{{dc.setReason}}"></x-import>
+                    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+                      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="primary" size="small" is-disabled="{{dc.cannotDecide}}" on-click="{{dc.decide}}">{{dc.decideLabel}}</x-import>
+                      <sc-if value="{{dc.canCancel}}" hint-placeholder-val="{{ false }}">
+                        <button type="button" onClick="{{dc.cancel}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer; color: #6b7180;">Cancel</button>
+                      </sc-if>
+                      <span style="flex: 1 1 280px; font-size: 12px; line-height: 16px; color: #6b7180;">{{dc.decideNote}}</span>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+
+            <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 8px; background: #f6f7f9;">
+              <h3 style="margin: 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Approach (assembled from your decisions)</h3>
+              <sc-for list="{{approach}}" as="ap" hint-placeholder-count="5">
+                <div style="display: flex; gap: 8px; font-size: 13px; line-height: 19px;">
+                  <span style="flex: 0 0 170px; color: #6b7180;">{{ap.topic}}</span>
+                  <span style="{{ap.style}}">{{ap.choice}}</span>
+                </div>
+              </sc-for>
+              <span style="font-size: 12px; line-height: 16px; color: #6b7180;">Components, feasibility ratings and flagged concerns are updated from these choices.</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <h3 style="margin: 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Standards applied</h3>
+              <p style="margin: 0;">Security baseline v2 · TypeScript conventions v3 · BDD style guide v1 · Small steps, tests first v1 (personal) · Plain markdown, readable without Keel v1 (project). Options that follow or break a standard say so.</p>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isMock}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; background: {{mkBg}};">
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{mkIcon}}" size="5" color="{{mkColor}}"></x-import>
+              <span style="flex: 1 1 320px; font-size: 14px; line-height: 20px; color: #25282d;">{{mkStatus}}</span>
+              <a href="Settings.dc.html" style="font-size: 12px; line-height: 16px; font-weight: 500;">Recommended · change in Settings</a>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid #e0e5e8; border-radius: 8px;">
+              <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 360px;">
+                  <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">1 · Make a clickable mock elsewhere</span>
+                  <span style="font-size: 13px; line-height: 19px; color: #434952;">Keel does not draw mocks. It writes a prompt from this spec for a model that builds clickable prototypes, for example Claude. Refine the mock there, then export the screens as PNG, and the HTML source if you can.</span>
+                </div>
+                <div style="display: inline-flex; padding: 2px; border-radius: 8px; background: #f0f2f5;">
+                  <button type="button" onClick="{{showPrompt}}" style="{{promptTab}}">Prompt</button>
+                  <button type="button" onClick="{{showScreens}}" style="{{screensTab}}">Screens it asks for</button>
+                </div>
+              </div>
+              <sc-if value="{{isPromptView}}" hint-placeholder-val="{{ true }}">
+                <pre style="margin: 0; padding: 16px 20px; border-radius: 8px; background: #1e1f24; color: #e6e8ec; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 19px; white-space: pre-wrap; max-height: 300px; overflow: auto;">{{promptText}}</pre>
+              </sc-if>
+              <sc-if value="{{isScreensView}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; border: 1px solid #e0e5e8; border-radius: 8px; overflow: hidden;">
+                  <sc-for list="{{askScreens}}" as="as" hint-placeholder-count="5">
+                    <div style="display: grid; grid-template-columns: 40px minmax(0, 220px) minmax(0, 1fr) 200px; gap: 12px; align-items: center; padding: 8px 12px; border-top: 1px solid #f0f2f5; font-size: 13px; line-height: 19px;">
+                      <span style="font-family: ui-monospace, Menlo, monospace; color: #6b7180;">{{as.n}}</span>
+                      <span style="font-weight: 500; color: #000;">{{as.name}}</span>
+                      <span style="color: #434952;">{{as.shows}}</span>
+                      <span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #2447b3;">{{as.reqs}}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+                <button type="button" onClick="{{copyPrompt}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 32px; box-sizing: border-box; padding: 5px 14px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font: inherit; font-size: 14px; line-height: 20px; font-weight: 500; cursor: pointer;">{{copyLabel}}</button>
+                <button type="button" style="display: inline-flex; align-items: center; gap: 8px; min-height: 32px; box-sizing: border-box; padding: 5px 14px; border: 1px solid #6b7180; border-radius: 8px; background: #ffffff; color: #25282d; font: inherit; font-size: 14px; line-height: 20px; font-weight: 500; cursor: pointer;">Download keel-mock-prompt-spec-v9.md</button>
+                <span style="flex: 1 1 260px; font-size: 12px; line-height: 16px; color: #6b7180;">Built from the requirements, scenarios, design decisions and your UI standards. It asks for realistic sample data and screen names Keel can read back.</span>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid #e0e5e8; border-radius: 8px;">
+              <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">2 · Attach the result</span>
+              <sc-if value="{{canAttach}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px; border: 2px dashed #b6bcc6; border-radius: 8px; background: #fafbfc; text-align: center;">
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="upload_file" size="6" color="#6b7180"></x-import>
+                  <span style="font-size: 14px; line-height: 20px; color: #25282d;">Drop the exported PNG files here, with their HTML sources if you have them</span>
+                  <span style="font-size: 12px; line-height: 16px; color: #6b7180;">Keel matches each file to a screen and its requirements from the file name. You can also paste a link to the live prototype.</span>
+                  <button type="button" onClick="{{attach}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 32px; box-sizing: border-box; padding: 5px 14px; border: 1px solid #6b7180; border-radius: 8px; background: #ffffff; color: #25282d; font: inherit; font-size: 14px; line-height: 20px; font-weight: 500; cursor: pointer;">Choose files</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{reviewing}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <span style="font-size: 13px; line-height: 19px; color: #434952;">{{reviewNote}}</span>
+                  <div style="display: flex; flex-direction: column; border: 1px solid #e0e5e8; border-radius: 8px; overflow: hidden;">
+                    <div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 150px; gap: 12px; padding: 8px 12px; background: #f6f7f9; font-size: 12px; line-height: 16px; font-weight: 500; color: #6b7180;">
+                      <span>File</span><span>Screen</span><span>Requirements</span><span>Match</span>
+                    </div>
+                    <sc-for list="{{newFiles}}" as="nf" hint-placeholder-count="5">
+                      <div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 150px; gap: 12px; align-items: center; padding: 8px 12px; border-top: 1px solid #f0f2f5; font-size: 13px; line-height: 19px;">
+                        <span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{nf.file}}</span>
+                        <span style="color: #25282d;">{{nf.screen}}</span>
+                        <span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #2447b3;">{{nf.reqs}}</span>
+                        <span style="{{nf.matchStyle}}">{{nf.match}}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+                    <button type="button" onClick="{{confirm}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 32px; box-sizing: border-box; padding: 5px 14px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font: inherit; font-size: 14px; line-height: 20px; font-weight: 500; cursor: pointer;">Save as mock set 2 (spec v9)</button>
+                    <button type="button" onClick="{{cancelAttach}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer; color: #6b7180;">Cancel</button>
+                    <span style="font-size: 12px; line-height: 16px; color: #6b7180;">Saved to docs/mocks/, with a README listing each screen, its requirements, the spec version and the export date.</span>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Mock sets</span>
+              <sc-for list="{{mockSets}}" as="ms" hint-placeholder-count="2">
+                <div style="{{ms.boxStyle}}">
+                  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="photo_library" size="5" color="#3366ff"></x-import>
+                    <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{ms.title}}</span>
+                    <span style="flex: 1 1 auto;"></span>
+                    <span style="{{ms.tagStyle}}">{{ms.tag}}</span>
+                  </div>
+                  <span style="font-size: 12px; line-height: 16px; color: #6b7180;">{{ms.meta}}</span>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <sc-for list="{{ms.screens}}" as="sn" hint-placeholder-count="4">
+                      <span style="font-size: 12px; line-height: 16px; padding: 2px 8px; border-radius: 6px; background: #f6f7f9; color: #434952;">{{sn}}</span>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Other references</span>
+              <sc-for list="{{specRefs}}" as="rf" hint-placeholder-count="2">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid #e0e5e8; border-radius: 8px;">
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{rf.icon}}" size="4" color="#3366ff"></x-import>
+                  <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{rf.name}}</span>
+                  <span style="font-size: 12px; line-height: 16px; color: #6b7180;">{{rf.kind}} · {{rf.note}}</span>
+                </div>
+              </sc-for>
+              <div style="display: flex;">
+                <button type="button" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer;">+ Attach another reference (link, image, PDF)</button>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isScen}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+              <span style="flex: 1 1 320px; font-size: 14px; line-height: 20px; color: #434952;">Behaviour scenarios in plain language, grouped by requirement. Each one is tagged with its requirement and becomes a failing test for the coding agent. Every requirement needs at least one; add more for failure cases and edge cases.</span>
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Switcher" options="{{scenViews}}" value="{{scenView}}" on-change="{{setScenView}}" size="small"></x-import>
+            </div>
+            <sc-if value="{{scenPreview}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; background: {{coverageBg}};">
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{coverageIcon}}" size="5" color="{{coverageColor}}"></x-import>
+                  <span style="flex: 1 1 320px; font-size: 14px; line-height: 20px; color: #25282d;">{{coverageText}}</span>
+                </div>
+                <sc-for list="{{reqGroups}}" as="rg" hint-placeholder-count="4">
+                  <div style="{{rg.boxStyle}}">
+                    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" type="outline" color="primary">{{rg.id}}</x-import>
+                      <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{rg.text}}</span>
+                      <span style="flex: 1 1 auto;"></span>
+                      <span style="{{rg.countStyle}}">{{rg.count}}</span>
+                    </div>
+                    <sc-for list="{{rg.scenarios}}" as="sc" hint-placeholder-count="1">
+                      <div style="{{sc.cardStyle}}">
+                        <sc-if value="{{sc.viewing}}" hint-placeholder-val="{{ true }}">
+                          <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                              <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{sc.name}}</span>
+                              <span style="{{sc.tagStyle}}">{{sc.tag}}</span>
+                              <span style="flex: 1 1 auto;"></span>
+                              <button type="button" onClick="{{sc.edit}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer;">Edit</button>
+                            </div>
+                            <sc-for list="{{sc.steps}}" as="stp" hint-placeholder-count="3">
+                              <div style="display: flex; gap: 8px; font-size: 14px; line-height: 20px;">
+                                <span style="flex: 0 0 48px; font-weight: 500; color: #3366ff;">{{stp.kw}}</span>
+                                <span style="color: #25282d;">{{stp.text}}</span>
+                              </div>
+                            </sc-for>
+                            <sc-if value="{{sc.suggested}}" hint-placeholder-val="{{ false }}">
+                              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding-top: 4px;">
+                                <span style="font-size: 12px; line-height: 16px; color: #2447b3;">{{sc.why}}</span>
+                                <button type="button" onClick="{{sc.accept}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer;">Accept</button>
+                                <button type="button" onClick="{{sc.remove}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer; color: #6b7180;">Clear</button>
+                              </div>
+                            </sc-if>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{sc.editing}}" hint-placeholder-val="{{ false }}">
+                          <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" label="Scenario" value="{{sc.name}}" on-change="{{sc.setName}}"></x-import>
+                            <sc-for list="{{sc.editSteps}}" as="es" hint-placeholder-count="3">
+                              <div style="display: flex; align-items: center; gap: 8px;">
+                                <select onChange="{{es.setKw}}" value="{{es.kw}}" style="flex: none; width: 76px; height: 32px; border: 1px solid #b6bcc6; border-radius: 6px; background: #ffffff; font: inherit; font-size: 13px; color: #3366ff; font-weight: 500;">
+                                  <option value="Given">Given</option><option value="When">When</option><option value="Then">Then</option><option value="And">And</option><option value="But">But</option>
+                                </select>
+                                <div style="flex: 1 1 auto; min-width: 0;">
+                                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" value="{{es.text}}" placeholder="Describe behaviour, not clicks" on-change="{{es.setText}}"></x-import>
+                                </div>
+                                <button type="button" onClick="{{es.remove}}" title="Remove step" style="flex: none; width: 28px; height: 28px; border: 0; background: none; color: #6b7180; font-size: 16px; cursor: pointer;">×</button>
+                              </div>
+                            </sc-for>
+                            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+                              <button type="button" onClick="{{sc.addStep}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer;">+ Add step</button>
+                              <span style="flex: 1 1 auto;"></span>
+                              <button type="button" onClick="{{sc.remove}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer; color: #b42318;">Delete scenario</button>
+                              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="primary" size="small" on-click="{{sc.done}}">Done</x-import>
+                            </div>
+                            <span style="font-size: 12px; line-height: 16px; color: #6b7180;">Start with Given, then When, then Then. The tag @{{rg.id}} is added for you.</span>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                    <div style="display: flex; flex-wrap: wrap; gap: 16px;">
+                      <button type="button" onClick="{{rg.add}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer;">+ Add scenario</button>
+                      <sc-if value="{{rg.canSuggest}}" hint-placeholder-val="{{ false }}">
+                        <button type="button" onClick="{{rg.suggest}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer;">Suggest a failure case</button>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{scenSource}}" hint-placeholder-val="{{ false }}">
+              <pre style="margin: 0; padding: 16px; border-radius: 8px; background: #f4f6f8; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 18px; color: #25282d; white-space: pre-wrap;">{{gherkin}}</pre>
+            </sc-if>
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Written following the BDD style guide · v1 (company standard). Saved as features/*.feature with the spec. Once the spec is approved, edits here become a change request.</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isConcerns}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="warning" title="Name is not clear to use" standalone="{{yes}}">"Keel" is used by several developer tools, and KEEL is a registered US trademark for computer programs. Fine as a codename; check before any public launch. Owner: you.</x-import>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="warning" title="Crowded market (REQ-001, REQ-006)" standalone="{{yes}}">GitHub Spec Kit, AWS Kiro and Traycer already cover spec, plan and code for engineers. Keel must stand out at the front of the process: intent, feasibility and the decision, for anyone.</x-import>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="info" title="Open question carried from intent" standalone="{{yes}}">How should a change upstream affect later documents? Not in this spec. Decide before the plan, or raise a change request.</x-import>
+          </div>
+        </sc-if>
+      </div>
+    </x-import>
+    </div>
+
+    <div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Feasibility review</h2>
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Engineering review by the assistant · you make the call</span>
+          </div>
+          <sc-for list="{{lenses}}" as="l" hint-placeholder-count="6">
+            <div style="display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid #e0e5e8;">
+              <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+                <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{l.name}}</span>
+                <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{l.note}}</span>
+              </div>
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="{{l.color}}">{{l.rating}}</x-import>
+            </div>
+          </sc-for>
+        </div>
+      </x-import>
+
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Decision</h2>
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Template: Decision record · v1</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="{{goType}}" on-click="{{pickGo}}">Go</x-import>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="{{parkType}}" on-click="{{pickPark}}">Park</x-import>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="{{noType}}" color="danger" on-click="{{pickNo}}">No-go</x-import>
+          </div>
+          <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" label="Reason" multiline="{{yes}}" rows="{{three}}" value="{{reason}}" on-change="{{setReason}}"></x-import>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{decisionNote}}</span>
+          <sc-if value="{{notGo}}" hint-placeholder-val="{{ false }}">
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="info" title="{{lockTitle}}" standalone="{{yes}}">{{lockText}}</x-import>
+          </sc-if>
+        </div>
+      </x-import>
+    </div>
+  </div>
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { mk: 'old', mkView: 'prompt', copied: false, dec: null, scen: null, editing: '', scenView: 'preview', tab: 'reqs', decision: 'go', reason: 'Clear gap before the spec. Plain markdown in git keeps it simple. Start single user; keep Keel as the codename for now.' };
+  }
+  renderVals() {
+    const R = window.React;
+    const DS = window.SoftwareOneDesignSystem_52b182;
+    const d = this.state.decision;
+    const labels = { go: 'Go', park: 'Park', nogo: 'No-go' };
+    const FEATURES0 = [
+      { name: 'Brainstorm', scenarios: [
+        { name: 'The assistant asks about the next missing section', req: 'REQ-001', steps: [ ['Given', 'a new idea using "Standard intent · v3"'], ['And', 'the problem is already captured'], ['When', 'I answer the current question'], ['Then', 'the assistant asks about "Desired outcome"'] ] } ] },
+      { name: 'Intent document', scenarios: [
+        { name: 'The intent carries its metadata', req: 'REQ-002', steps: [ ['Given', 'a brainstorm with every required section answered'], ['When', 'I draft intent.md'], ['Then', 'its header has id, author, created, status and version'], ['And', 'the status is "draft"'] ] } ] },
+      { name: 'Traceability', scenarios: [
+        { name: 'A changed requirement shows its impact', req: 'REQ-004', steps: [ ['Given', 'REQ-003 is linked to task T2 and to a scenario'], ['When', 'REQ-003 changes in a new intent version'], ['Then', 'task T2 and that scenario are listed as affected'] ] } ] },
+      { name: 'Stage gating', scenarios: [
+        { name: 'Spec is locked until the intent is approved', req: 'REQ-005', steps: [ ['Given', 'a project whose intent is still a draft'], ['When', 'I open the Spec stage'], ['Then', 'the stage is locked'], ['And', 'I see "Needs an approved intent"'] ] },
+        { name: 'Approving the intent unlocks the spec', req: 'REQ-005', steps: [ ['Given', 'a project whose intent is a draft'], ['When', 'I approve the intent'], ['Then', 'the Spec stage is available'] ] } ] },
+      { name: 'Handoff', scenarios: [
+        { name: 'The scaffold contains the documents and failing stubs', req: 'REQ-006', steps: [ ['Given', 'an approved plan'], ['When', 'I generate the handoff package'], ['Then', 'it contains AGENTS.md, docs/intent.md, docs/spec.md and docs/plan.md'], ['And', 'every scenario has a failing step stub'] ] } ] },
+      { name: 'Read-back', scenarios: [
+        { name: 'An agent change to the plan shows up for review', req: 'REQ-007', steps: [ ['Given', 'a project pushed to a repository'], ['When', 'the coding agent commits a change to docs/plan.md'], ['Then', 'Keel shows the change as pending'], ['And', 'accepting it creates plan v5'] ] } ] }
+    ];
+    const SCREENS = [
+      ['01', 'Open Keel on a folder', 'Terminal: npx keel on a new and an existing folder', 'REQ-012'],
+      ['02', 'Initialise this folder', 'Folder, what Keel creates, templates, style, standards', 'REQ-003, REQ-011, REQ-012'],
+      ['03', 'Explore', 'Template sections with live comments, requirements list', 'REQ-001, REQ-002'],
+      ['04', 'Intent', 'Assembled intent.md, approval, history, mock references', 'REQ-002, REQ-005, REQ-010'],
+      ['05', 'Spec', 'Requirements, design decisions, scenarios, feasibility, decision', 'REQ-004, REQ-005, REQ-013'],
+      ['06', 'Plan', 'Tasks, versions, diff and impact', 'REQ-004, REQ-008'],
+      ['07', 'Handoff', 'Files written to the folder, push, read-back', 'REQ-006, REQ-007'],
+      ['08', 'Settings', 'You on this computer, this project', 'REQ-009, REQ-012'],
+      ['09', 'Templates', 'Library grouped by kind', 'REQ-003']
+    ];
+    const mk = this.state.mk;
+    const promptText = [
+      '# Clickable mock request: Keel (spec v9)',
+      '',
+      'Build a clickable prototype of the screens below, one screen per artboard, linked so I can click through.',
+      'Use realistic sample data from this project, not placeholder text. Keep one visual style across all screens.',
+      '',
+      '## The product',
+      'Problem: ideas wait for someone to write them up; the steps before the build run at human speed.',
+      'First user: a single product-minded engineer. Later: product managers.',
+      'Form: local web app opened with `npx keel` on one folder (ADR-0005).',
+      '',
+      '## Requirements (keep the IDs)',
+      '- REQ-001 Template sections with live assistant comments',
+      '- REQ-002 intent.md assembled from the sections',
+      '- REQ-004 At least one acceptance scenario per requirement',
+      '- REQ-005 Stage gating: Explore, Intent, Spec, Plan, Handoff',
+      '- … (all 13 requirements in the file)',
+      '',
+      '## Screens',
+    ].concat(SCREENS.map((x) => x[0] + ' · ' + x[1] + ': ' + x[2] + ' (' + x[3] + ')')).concat([
+      '',
+      '## Rules',
+      '- Follow the UI standard: docs/ui-guide.md (tokens and components, attached).',
+      '- Show locked and empty states where the scenarios describe them.',
+      '',
+      '## When you export',
+      'Name each file: spec-v9 · <number> · <screen> · <REQ IDs>.png',
+      'Export the HTML source of each screen too, with the same name.'
+    ]).join('\n');
+    const newFiles = SCREENS.slice(0, 7).map((x, i) => ({
+      file: 'spec-v9 · ' + x[0] + ' · ' + x[1] + ' · ' + x[3].split(',')[0] + (i === 2 ? '.png + .html' : '.png + .html'),
+      screen: x[1], reqs: x[3],
+      match: i === 5 ? 'Check: no REQ in name' : 'From the file name',
+      matchStyle: 'font-size: 12px; line-height: 16px; ' + (i === 5 ? 'color: #8a5a00;' : 'color: #1a7f43;')
+    })).concat([{ file: 'image (3).png', screen: 'Not matched', reqs: '—', match: 'Choose a screen', matchStyle: 'font-size: 12px; line-height: 16px; color: #b42318;' }]);
+    const pillS = (bg, fg) => 'font-size: 12px; line-height: 16px; padding: 1px 8px; border-radius: 999px; background: ' + bg + '; color: ' + fg + ';';
+    const set1 = { title: 'Mock set 1 · from spec v8', meta: '9 screens, PNG only · exported 20/11/2026 · docs/mocks/set-1/', screens: SCREENS.map((x) => x[1]), current: mk === 'old' };
+    const set2 = { title: 'Mock set 2 · from spec v9', meta: '7 screens, PNG and HTML · exported 22/11/2026 · docs/mocks/set-2/', screens: SCREENS.slice(0, 7).map((x) => x[1]), current: true };
+    const sets = (mk === 'saved' ? [set2, Object.assign({}, set1, { current: false })] : [set1]).map((x) => ({
+      title: x.title, meta: x.meta, screens: x.screens,
+      tag: x === set2 ? 'Current' : (mk === 'saved' ? 'Replaced by set 2' : 'Out of date · made from spec v8, the spec is v9'),
+      tagStyle: x === set2 ? pillS('#e6f6ec', '#1a7f43') : (mk === 'saved' ? pillS('#f0f2f5', '#6b7180') : pillS('#fff4e0', '#8a5a00')),
+      boxStyle: 'display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 8px; border: 1px solid ' + (x === set2 ? '#e0e5e8' : (mk === 'saved' ? '#e0e5e8' : '#f3d39a')) + ';' + (mk === 'saved' && x !== set2 ? ' opacity: .7;' : '')
+    }));
+    const tabStyle = (on) => 'border: 0; padding: 4px 12px; border-radius: 6px; font: inherit; font-size: 13px; line-height: 18px; cursor: pointer; ' + (on ? 'background: #ffffff; color: #000; font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,.08);' : 'background: transparent; color: #6b7180;');
+    const TOPICS = [
+      { id: 'form', title: 'Form', origin: 'From the spec template', options: [
+        { id: 'local', name: 'Local web app (npx keel)', rec: true, summary: 'A local server on 127.0.0.1 that opens the browser on one folder.', pro: 'No install for the folder, keys stay on the computer', con: 'No sharing between people yet', fit: 'Fits Constraints: single user first', ok: true, reqs: 'REQ-001, REQ-006, REQ-012' },
+        { id: 'vscode', name: 'VS Code extension', summary: 'Keel inside the editor.', pro: 'Close to the code', con: 'Product managers will not install VS Code', fit: 'Conflicts with Who it is for: product managers', ok: false, reqs: 'REQ-001' },
+        { id: 'saas', name: 'Hosted web service', summary: 'A shared site with accounts.', pro: 'Easy to share', con: 'Stores keys and code off the computer; needs accounts', fit: 'Conflicts with Constraints: single user first', ok: false, reqs: 'REQ-009' } ] },
+      { id: 'stack', title: 'Language and framework', origin: 'Found package.json in this folder', options: [
+        { id: 'keep', name: 'Keep current: TypeScript, Next.js 16', rec: true, summary: 'The stack already in this folder.', pro: 'No rewrite; one language end to end', con: 'Next.js upgrades every year', fit: 'Fits TypeScript conventions v3', ok: true, reqs: 'All' },
+        { id: 'py', name: 'Python, FastAPI and React', summary: 'API in Python, UI in React.', pro: 'Good LLM libraries', con: 'Two languages; rewrite of what exists', fit: 'Breaks TypeScript conventions v3', ok: false, reqs: 'All' },
+        { id: 'go', name: 'Go and htmx', summary: 'One binary with server-rendered pages.', pro: 'Single file to install', con: 'Rewrite; fewer UI components', fit: 'Breaks TypeScript conventions v3', ok: false, reqs: 'All' } ] },
+      { id: 'storage', title: 'Storage', origin: 'From the spec template', options: [
+        { id: 'git', name: 'Git in the project folder, SQLite cache', rec: true, summary: 'Markdown files in this repository; .keel/cache/index.db rebuilt when needed.', pro: 'History and diffs for free; readable without Keel', con: 'Commits must stay limited to Keel files', fit: 'Fits Plain markdown v1', ok: true, reqs: 'REQ-002, REQ-008, REQ-012' },
+        { id: 'sqlite', name: 'SQLite only', summary: 'Everything in one database file.', pro: 'Simple queries', con: 'Documents not readable without Keel', fit: 'Breaks Plain markdown v1', ok: false, reqs: 'REQ-008' },
+        { id: 'pg', name: 'PostgreSQL', summary: 'A database server.', pro: 'Ready for many users', con: 'A server to run for one person', fit: 'Conflicts with Constraints: single user first', ok: false, reqs: 'REQ-008' } ] },
+      { id: 'readback', title: 'Read-back mechanism', origin: 'Added by the assistant for REQ-007', options: [
+        { id: 'local', name: 'Read the local git repository', rec: true, summary: 'Commits and uncommitted edits in docs/, tasks/ and features/.', pro: 'Instant, no token', con: 'Only sees what is in this folder', fit: 'Fits Security baseline v2: no token needed', ok: true, reqs: 'REQ-007' },
+        { id: 'poll', name: 'Poll the GitHub API', summary: 'Fetch the pushed branch on a schedule.', pro: 'Sees changes made elsewhere', con: 'Needs a token; delays of minutes', fit: 'Adds a concern: token storage (Security baseline v2)', ok: false, reqs: 'REQ-007' },
+        { id: 'hook', name: 'GitHub webhooks', summary: 'GitHub calls Keel when the agent pushes.', pro: 'Immediate', con: 'Needs a public address', fit: 'Conflicts with Form: local web app', ok: false, reqs: 'REQ-007' } ] },
+      { id: 'models', title: 'Model access', origin: 'From the spec template', options: [
+        { id: 'sdk', name: 'Provider layer over official SDKs', rec: true, summary: 'Anthropic and OpenAI SDKs, plus any OpenAI-compatible endpoint (Azure, Ollama).', pro: 'Full control, no extra service', con: 'Four adapters to maintain', fit: 'Fits Constraints: any LLM', ok: true, reqs: 'REQ-009' },
+        { id: 'litellm', name: 'LiteLLM proxy', summary: 'A local proxy that speaks one API for all providers.', pro: 'One adapter', con: 'A Python service to run next to Keel', fit: 'Adds a second runtime', ok: false, reqs: 'REQ-009' },
+        { id: 'aisdk', name: 'Vercel AI SDK', summary: 'One TypeScript library for many providers.', pro: 'One adapter, TypeScript', con: 'Another dependency between Keel and the providers', fit: 'Fits TypeScript conventions v3', ok: true, reqs: 'REQ-009' } ] },
+      { id: 'testing', title: 'Testing', origin: 'From the spec template', options: [
+        { id: 'pw', name: 'Vitest, Playwright and playwright-bdd', rec: true, summary: 'Unit tests next to the code; Gherkin scenarios run in a real browser.', pro: 'Runs the .feature files as they are', con: 'Browser tests are slower', fit: 'Fits BDD style guide v1', ok: true, reqs: 'REQ-004, all scenarios' },
+        { id: 'cuc', name: 'Jest and Cucumber.js', summary: 'Classic Cucumber runner.', pro: 'Well known', con: 'No browser by default', fit: 'Fits BDD style guide v1', ok: true, reqs: 'REQ-004' },
+        { id: 'vit', name: 'Vitest only', summary: 'No acceptance runner.', pro: 'Fast', con: 'Scenarios are not run', fit: 'Breaks BDD style guide v1', ok: false, reqs: 'REQ-004' } ] }
+    ];
+    const DEC0 = {
+      form: { chosen: 'local', reason: 'Product managers will not install VS Code, and keys must stay on the computer.', adr: 'ADR-0005', history: 'Earlier: VS Code extension, dropped on 20/11/2026 (ADR-0002).' },
+      stack: { chosen: 'keep', reason: 'The folder already has a working TypeScript and Next.js app, and the TypeScript conventions standard applies.', adr: 'ADR-0006' },
+      storage: { chosen: 'git', reason: 'Git gives history, diffs and an audit trail; documents stay readable without Keel.', adr: 'ADR-0007' },
+      readback: { chosen: 'local', reason: 'The agent works in the same folder, so its changes are already on disk.', adr: 'ADR-0012', history: 'Supersedes ADR-0008: poll the GitHub API (changed by CR-0004).' }
+    };
+    const dec = this.state.dec || DEC0;
+    const setDec = (id, patch) => this.setState({ dec: Object.assign({}, dec, { [id]: Object.assign({}, dec[id] || {}, patch) }) });
+    let nextAdr = 13;
+    Object.keys(dec).forEach((k) => { const n = dec[k].adr ? parseInt(dec[k].adr.slice(4), 10) : 0; if (n >= nextAdr) nextAdr = n + 1; });
+    const pill = (bg, fg) => 'font-size: 12px; line-height: 16px; padding: 1px 8px; border-radius: 999px; background: ' + bg + '; color: ' + fg + ';';
+    const decisions = TOPICS.map((t) => {
+      const d = dec[t.id] || {};
+      const decided = !!d.chosen;
+      const open = !decided || !!d.editing;
+      const sel = d.pick !== undefined ? d.pick : (d.chosen || (t.options.find((o) => o.rec) || {}).id);
+      const opt = (id) => t.options.find((o) => o.id === id);
+      const chosenName = d.chosen === 'own' ? d.ownChosen : (opt(d.chosen) || {}).name;
+      const recReason = (o) => o ? (o.pro + '. ' + o.fit + '.') : '';
+      const reasonDraft = d.reasonDraft !== undefined ? d.reasonDraft : (sel === d.chosen && d.reason ? d.reason : (sel === 'own' ? '' : recReason(opt(sel))));
+      const own = d.own !== undefined ? d.own : '';
+      return {
+        title: t.title, origin: t.origin,
+        status: decided ? 'Decided · ' + d.adr : 'To decide',
+        statusStyle: decided ? pill('#e6f6ec', '#1a7f43') : pill('#fff4e0', '#8a5a00'),
+        boxStyle: 'display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; border-radius: 8px; border: 1px solid ' + (open ? '#3366ff' : '#e0e5e8') + ';' + (open ? ' box-shadow: 0 0 0 3px #ebf0ff;' : ''),
+        collapsed: decided && !d.editing, open: open,
+        chosenName: chosenName || '',
+        reason: d.reason || '',
+        alts: 'Alternatives considered: ' + t.options.filter((o) => o.id !== d.chosen).map((o) => o.name).join(', ') + '.',
+        hasHistory: !!d.history, history: d.history || '',
+        change: () => setDec(t.id, { editing: true, pick: d.chosen, reasonDraft: undefined }),
+        options: t.options.map((o) => ({
+          name: o.name, summary: o.summary, pro: o.pro, con: o.con, fit: o.fit, reqs: 'Serves ' + o.reqs,
+          recStyle: o.rec ? pill('#e8eeff', '#2447b3') : 'display: none;',
+          fitStyle: 'font-size: 12px; line-height: 16px; text-align: left; font-weight: 500; color: ' + (o.ok ? '#006b45' : '#b42318') + ';',
+          style: 'display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 8px; cursor: pointer; font-family: inherit; text-align: left; ' + (sel === o.id ? 'background: #ebf0ff; border: 1px solid #3366ff;' : 'background: #ffffff; border: 1px solid #e0e5e8;'),
+          pick: () => setDec(t.id, { pick: o.id, reasonDraft: undefined })
+        })),
+        own: own,
+        setOwn: (e) => setDec(t.id, { own: e && e.target ? e.target.value : e, pick: 'own' }),
+        ownStyle: 'display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 8px; ' + (sel === 'own' ? 'background: #ebf0ff; border: 1px solid #3366ff;' : 'background: #ffffff; border: 1px dashed #b6bcc6;'),
+        ownNote: sel === 'own' && own ? 'The assistant reviews your option against the requirements and standards when you decide.' : 'Not in the list? Write it here.',
+        reasonDraft: reasonDraft,
+        setReason: (e) => setDec(t.id, { reasonDraft: e && e.target ? e.target.value : e }),
+        cannotDecide: (sel === 'own' && !String(own).trim()) || !sel,
+        decideLabel: decided ? 'Save change' : 'Decide',
+        canCancel: decided && !!d.editing,
+        cancel: () => setDec(t.id, { editing: false, pick: undefined, reasonDraft: undefined }),
+        decideNote: decided
+          ? 'The spec is a draft, so this rewrites ' + d.adr + '. After the spec is approved, a change becomes a change request and a new record supersedes the old one.'
+          : 'Saved as ADR-' + String(nextAdr).padStart(4, '0') + ' in docs/decisions/, with the alternatives you did not pick.',
+        decide: () => {
+          const changed = decided && d.chosen !== sel;
+          setDec(t.id, {
+            chosen: sel, ownChosen: sel === 'own' ? own : d.ownChosen, editing: false, pick: undefined, reasonDraft: undefined,
+            reason: reasonDraft || (sel === 'own' ? 'Chosen by the owner. The assistant found no conflict with the requirements or standards.' : recReason(opt(sel))),
+            adr: d.adr || ('ADR-' + String(nextAdr).padStart(4, '0')),
+            history: changed ? 'Changed from ' + ((opt(d.chosen) || {}).name || d.ownChosen) + ' on 22/11/2026.' + (d.history ? ' ' + d.history : '') : d.history
+          });
+        }
+      };
+    });
+    const doneCount = TOPICS.filter((t) => (dec[t.id] || {}).chosen).length;
+    const approach = TOPICS.map((t) => { const d = dec[t.id] || {}; const o = t.options.find((x) => x.id === d.chosen); const name = d.chosen === 'own' ? d.ownChosen : (o && o.name); return { topic: t.title, choice: name || 'Not decided yet', style: 'flex: 1 1 auto; ' + (name ? 'color: #000;' : 'color: #b54708; font-style: italic;') }; });
+    const REQS = [
+      ['REQ-001', 'Template-driven brainstorm with an LLM'], ['REQ-002', 'intent.md with metadata'], ['REQ-003', 'Versioned, editable templates'],
+      ['REQ-004', 'Traceable requirement IDs'], ['REQ-005', 'Stage gating and approvals'], ['REQ-006', 'Repository scaffold for any coding agent'],
+      ['REQ-007', 'Read back changes made in the repository'], ['REQ-008', 'Version history with diffs and impact'], ['REQ-009', 'Any model provider: Anthropic, OpenAI, Azure, local'],
+      ['REQ-010', 'Attach mock references linked to requirements'], ['REQ-011', 'Brainstorm styles as versioned skill files']
+    ];
+    const FAIL = {
+      'REQ-001': ['The intent stays locked while a required section is empty', [['Given', 'Desired outcome is empty'], ['When', 'I look at the Draft intent.md button'], ['Then', 'it is disabled'], ['And', 'I see which sections are still needed']]],
+      'REQ-005': ['A plan cannot be generated after a Park decision', [['Given', 'the latest decision is Park'], ['When', 'I open the Plan stage'], ['Then', 'the stage is locked'], ['And', 'I see "Needs a Go decision"']]],
+      'REQ-006': ['The handoff never contains a key', [['Given', 'an Anthropic key is saved in my settings'], ['When', 'I write the handoff to the folder'], ['Then', 'no file in the folder contains the key']]],
+      'REQ-007': ['Keel ignores its own commits', [['Given', 'Keel commits a new spec version'], ['When', 'Keel checks the folder'], ['Then', 'there are no changes to review']]]
+    };
+    let scen = this.state.scen;
+    if (!scen) {
+      scen = [];
+      FEATURES0.forEach((ft) => ft.scenarios.forEach((x, i) => scen.push({ id: x.req + '-' + ft.name + '-' + i, feature: ft.name, req: x.req, name: x.name, steps: x.steps.map((p) => [p[0], p[1]]) })));
+      scen.push({ id: 'sug-REQ-005', feature: 'Stage gating', req: 'REQ-005', name: FAIL['REQ-005'][0], steps: FAIL['REQ-005'][1], suggested: true });
+    }
+    const save = (next, editing) => this.setState({ scen: next, editing: editing === undefined ? this.state.editing : editing });
+    const upd = (id, fn) => save(scen.map((x) => x.id === id ? fn(Object.assign({}, x, { steps: x.steps.map((p) => p.slice()) })) : x));
+    const featureFor = (req, text) => { const hit = scen.find((x) => x.req === req && !x.suggested); return hit ? hit.feature : text; };
+    const tag = (txt, bg, fg) => 'font-size: 12px; line-height: 16px; padding: 1px 8px; border-radius: 999px; background: ' + bg + '; color: ' + fg + ';';
+    const reqGroups = REQS.map((r) => {
+      const list = scen.filter((x) => x.req === r[0]);
+      const real = list.filter((x) => !x.suggested && x.steps.length);
+      const isFirst = !real.length;
+      return {
+        id: r[0], text: r[1],
+        count: real.length ? real.length + ' scenario' + (real.length > 1 ? 's' : '') : 'No scenario yet',
+        countStyle: real.length ? 'font-size: 12px; line-height: 16px; color: #6b7180;' : tag('', '#fdecea', '#b42318'),
+        boxStyle: 'display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 8px; border: 1px solid ' + (real.length ? '#e0e5e8' : '#f5c2bd') + ';',
+        canSuggest: !!FAIL[r[0]] && !list.some((x) => x.name === FAIL[r[0]][0]),
+        suggest: () => save(scen.concat([{ id: 'sug-' + r[0] + '-' + Date.now(), feature: featureFor(r[0], r[1]), req: r[0], name: FAIL[r[0]][0], steps: FAIL[r[0]][1].map((p) => p.slice()), suggested: true }])),
+        add: () => { const id = 'new-' + Date.now(); save(scen.concat([{ id: id, feature: featureFor(r[0], r[1]), req: r[0], name: '', steps: [['Given', ''], ['When', ''], ['Then', '']], isNew: true }]), id); },
+        scenarios: list.map((x) => {
+          const editing = this.state.editing === x.id;
+          return {
+            name: x.name || 'Untitled scenario',
+            viewing: !editing, editing: editing,
+            suggested: !!x.suggested,
+            why: 'Suggested by the assistant: a failure case for ' + r[0] + '.',
+            tag: x.suggested ? 'Suggested' : (x.edited ? 'Edited' : (x.isNew ? 'New' : '')),
+            tagStyle: x.suggested ? tag('', '#e8eeff', '#2447b3') : (x.edited || x.isNew ? tag('', '#f0f2f5', '#434952') : 'display: none;'),
+            cardStyle: 'display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 6px; ' + (editing ? 'border: 1px solid #3366ff; box-shadow: 0 0 0 3px #ebf0ff;' : (x.suggested ? 'border: 1px dashed #8fa8ff; background: #f7f9ff; font-style: italic;' : 'border-left: 2px solid #e0e5e8;')),
+            steps: x.steps.map((p) => ({ kw: p[0], text: p[1] })),
+            editSteps: x.steps.map((p, i) => ({
+              kw: p[0], text: p[1],
+              setKw: (e) => upd(x.id, (y) => { y.steps[i][0] = e && e.target ? e.target.value : e; y.edited = !y.isNew; return y; }),
+              setText: (e) => upd(x.id, (y) => { y.steps[i][1] = e && e.target ? e.target.value : e; y.edited = !y.isNew; return y; }),
+              remove: () => upd(x.id, (y) => { y.steps.splice(i, 1); y.edited = !y.isNew; return y; })
+            })),
+            setName: (e) => upd(x.id, (y) => { y.name = e && e.target ? e.target.value : e; y.edited = !y.isNew; return y; }),
+            addStep: () => upd(x.id, (y) => { y.steps.push(['And', '']); return y; }),
+            edit: () => this.setState({ scen: scen, editing: x.id }),
+            done: () => save(scen.map((y) => y.id === x.id ? Object.assign({}, y, { steps: y.steps.filter((p) => String(p[1]).trim()), suggested: false }) : y).filter((y) => y.id !== x.id || y.name || y.steps.length), ''),
+            accept: () => save(scen.map((y) => y.id === x.id ? Object.assign({}, y, { suggested: false, isNew: true }) : y)),
+            remove: () => save(scen.filter((y) => y.id !== x.id), '')
+          };
+        })
+      };
+    });
+    const uncovered = reqGroups.filter((g) => g.count === 'No scenario yet');
+    const totalReal = scen.filter((x) => !x.suggested && x.steps.length).length;
+    const coverageText = uncovered.length
+      ? (REQS.length - uncovered.length) + ' of ' + REQS.length + ' requirements have a scenario. ' + uncovered.map((g) => g.id).join(', ') + (uncovered.length > 1 ? ' have' : ' has') + ' none yet. The plan needs at least one scenario per requirement.'
+      : 'Every requirement has at least one scenario (' + totalReal + ' in all). Add more for failure cases where it matters.';
+    const FEATURES = [];
+    scen.filter((x) => !x.suggested && x.steps.length).forEach((x) => { let ft = FEATURES.find((y) => y.name === x.feature); if (!ft) { ft = { name: x.feature, scenarios: [] }; FEATURES.push(ft); } ft.scenarios.push(x); });
+    return {
+      yes: true,
+      three: 3,
+      reqGroups: reqGroups,
+      mkStatus: mk === 'saved' ? 'Mock set 2 is current: 7 screens made from spec v9. The plan links its tasks to these screens.' : 'The mock set was made from spec v8 and is out of date. This project has a UI (Form: local web app), so a current mock set is recommended before the plan.',
+      mkIcon: mk === 'saved' ? 'check_circle' : 'warning',
+      mkColor: mk === 'saved' ? '#008556' : '#b54708',
+      mkBg: mk === 'saved' ? '#f2faf6' : '#fff8eb',
+      isPromptView: this.state.mkView === 'prompt',
+      isScreensView: this.state.mkView === 'screens',
+      promptTab: tabStyle(this.state.mkView === 'prompt'),
+      screensTab: tabStyle(this.state.mkView === 'screens'),
+      showPrompt: () => this.setState({ mkView: 'prompt' }),
+      showScreens: () => this.setState({ mkView: 'screens' }),
+      promptText: promptText,
+      askScreens: SCREENS.map((x) => ({ n: x[0], name: x[1], shows: x[2], reqs: x[3] })),
+      copyLabel: this.state.copied ? 'Copied' : 'Copy prompt',
+      copyPrompt: () => this.setState({ copied: true }),
+      canAttach: mk !== 'review',
+      reviewing: mk === 'review',
+      reviewNote: '15 files received. 7 screens matched from their names; 1 needs a check and 1 image is not matched yet.',
+      newFiles: newFiles,
+      attach: () => this.setState({ mk: 'review' }),
+      cancelAttach: () => this.setState({ mk: 'old' }),
+      confirm: () => this.setState({ mk: 'saved' }),
+      mockSets: sets,
+      two: 2,
+      decisions: decisions,
+      approach: approach,
+      decText: doneCount === TOPICS.length ? 'All ' + TOPICS.length + ' decisions are made. Each has a decision record in docs/decisions/.' : doneCount + ' of ' + TOPICS.length + ' decisions made. Generate plan needs every decision, and a scenario for every requirement.',
+      decIcon: doneCount === TOPICS.length ? 'check_circle' : 'warning',
+      decColor: doneCount === TOPICS.length ? '#008556' : '#b54708',
+      decBg: doneCount === TOPICS.length ? '#f2faf6' : '#fff8eb',
+      coverageText: coverageText,
+      coverageIcon: uncovered.length ? 'warning' : 'check_circle',
+      coverageColor: uncovered.length ? '#b54708' : '#008556',
+      coverageBg: uncovered.length ? '#fff8eb' : '#f2faf6',
+      tabs: [
+        { value: 'reqs', label: 'Requirements', count: 11 },
+        { value: 'design', label: 'Design' },
+        { value: 'scenarios', label: 'Acceptance scenarios', count: scen.filter((x) => !x.suggested && x.steps.length).length },
+        { value: 'concerns', label: 'Flagged concerns', count: 3 },
+        { value: 'mock', label: 'Clickable mock', icon: 'attach_file' }
+      ],
+      tab: this.state.tab,
+      setTab: (v) => this.setState({ tab: v }),
+      isReqs: this.state.tab === 'reqs',
+      isDesign: this.state.tab === 'design',
+      isConcerns: this.state.tab === 'concerns',
+      isScen: this.state.tab === 'scenarios',
+      scenViews: [ { value: 'preview', label: 'Preview' }, { value: 'source', label: 'Gherkin' } ],
+      scenView: this.state.scenView,
+      setScenView: (v) => this.setState({ scenView: v }),
+      scenPreview: this.state.scenView === 'preview',
+      scenSource: this.state.scenView === 'source',
+      features: FEATURES.map((f) => ({ name: f.name, scenarios: f.scenarios.map((x) => ({ name: x.name, req: x.req, steps: x.steps.map((st) => ({ kw: st[0], text: st[1] })) })) })),
+      gherkin: FEATURES.map((f) => ['Feature: ' + f.name].concat([].concat.apply([], f.scenarios.map((x) => ['', '  @' + x.req, '  Scenario: ' + x.name].concat(x.steps.map((st) => '    ' + st[0] + ' ' + st[1]))))).join('\n')).join('\n\n'),
+      isMock: this.state.tab === 'mock',
+      specRefs: [
+        { icon: 'link', name: 'Keel clickable mockup', kind: 'Design canvas link', reqs: ['REQ-001', 'REQ-002', 'REQ-005', 'REQ-008', 'REQ-010'], concerns: [], note: 'From the intent · REQ-008 and REQ-010 linked during the spec' },
+        { icon: 'image', name: 'stage-bar.png', kind: 'Image', reqs: ['REQ-005'], concerns: [], note: 'From the intent' }
+      ],
+      reqColumns: [
+        { key: 'id', label: 'ID', width: 100, render: (r) => R.createElement('span', { style: { fontWeight: 500, color: '#3366ff' } }, r.id) },
+        { key: 'text', label: 'Requirement' },
+        { key: 'source', label: 'Source', width: 110, render: (r) => R.createElement(DS.Chip, { color: r.source === 'Intent' ? 'primary' : 'gray' }, r.source) }
+      ],
+      reqRows: [
+        { id: 'REQ-001', text: 'Template-driven brainstorm with an LLM', source: 'Intent' },
+        { id: 'REQ-002', text: 'intent.md with metadata', source: 'Intent' },
+        { id: 'REQ-003', text: 'Versioned, editable templates', source: 'Intent' },
+        { id: 'REQ-004', text: 'Traceable requirement IDs', source: 'Intent' },
+        { id: 'REQ-005', text: 'Stage gating and approvals', source: 'Intent' },
+        { id: 'REQ-006', text: 'Repository scaffold for any coding agent', source: 'Intent' },
+        { id: 'REQ-007', text: 'Read back changes made in the repository', source: 'Spec' },
+        { id: 'REQ-008', text: 'Version history with diffs and impact', source: 'Spec' },
+        { id: 'REQ-009', text: 'Any model provider: Anthropic, OpenAI, Azure, local', source: 'Spec' },
+        { id: 'REQ-010', text: 'Attach mock references linked to requirements', source: 'Spec' },
+        { id: 'REQ-011', text: 'Brainstorm styles as versioned skill files', source: 'Spec' }
+      ],
+      lenses: [
+        { name: 'Architecture fit', note: 'Web app, markdown in git, provider layer: standard parts', rating: 'Good', color: 'success' },
+        { name: 'Integration', note: 'GitHub App for push and read-back; several LLM APIs', rating: 'Medium', color: 'warning' },
+        { name: 'Security and data', note: 'Stores API keys and repository tokens (Security baseline v2, rules 1 to 3)', rating: 'Medium', color: 'warning' },
+        { name: 'Effort', note: 'About 10 tasks for a single-user first version', rating: 'Medium', color: 'warning' },
+        { name: 'Risk', note: 'Crowded spec-driven tools market; name not clear to use', rating: 'Medium', color: 'warning' },
+        { name: 'Build or buy', note: 'Existing tools start at the spec and target engineers', rating: 'Build', color: 'primary' }
+      ],
+      goType: d === 'go' ? 'primary' : 'outline',
+      parkType: d === 'park' ? 'primary' : 'outline',
+      noType: d === 'nogo' ? 'primary' : 'outline',
+      pickGo: () => this.setState({ decision: 'go' }),
+      pickPark: () => this.setState({ decision: 'park' }),
+      pickNo: () => this.setState({ decision: 'nogo' }),
+      reason: this.state.reason,
+      setReason: (e) => this.setState({ reason: e && e.target ? e.target.value : e }),
+      decision: d,
+      reached: d === 'go' ? 'handoff' : 'spec',
+      isGo: d === 'go',
+      notGo: d !== 'go',
+      lockTitle: d === 'park' ? 'Plan and handoff are locked while the project is parked' : 'Plan and handoff are locked after a No-go',
+      lockText: d === 'park' ? 'Options: resolve the flagged concerns and change the decision to Go, go back to the intent to narrow the scope, or leave it parked. A parked project keeps its folder; open it again with npx keel any time.' : 'Options: revise the intent and generate a new spec, or remove the project from the Projects list. The decision record is kept either way.',
+      decisionNote: labels[d] + ' · recorded as docs/decisions/0001-' + d + '.md by Roberto Basile · 20/11/2026 14:31',
+      groups: [
+        { label: 'Project · Keel', icon: 'lightbulb', items: [
+          { id: 'setup', label: 'Project setup', href: 'SetupKeel.dc.html' },
+          { id: 'explore', label: 'Explore', href: 'Explore.dc.html' },
+          { id: 'intent', label: 'Intent', href: 'Intent.dc.html' },
+          { id: 'spec', label: 'Spec', href: 'Spec.dc.html' },
+          { id: 'plan', label: 'Plan', href: 'Plan.dc.html' },
+          { id: 'handoff', label: 'Handoff', href: 'Handoff.dc.html' },
+          { id: 'roadmap', label: 'Roadmap', href: 'Roadmap.dc.html' },
+          { id: 'changes', label: 'Changes', href: 'ChangesList.dc.html' } ] },
+        { label: 'Library (.keel)', icon: 'folder', items: [
+          { id: 'templates', label: 'Templates', href: 'Templates.dc.html' },
+          { id: 'styles', label: 'Brainstorm styles', href: 'Styles.dc.html' },
+          { id: 'standards', label: 'Standards', href: 'Standards.dc.html' } ] },
+        { label: 'Settings', icon: 'settings', items: [
+          { id: 'settings', label: 'Settings', href: 'Settings.dc.html' } ] }
+      ],
+      brand: R.createElement('span', { style: { fontSize: 18, lineHeight: '26px', fontWeight: 700, color: '#000' } }, 'Keel'),
+      headerBar: R.createElement(DS.NavigationHeaderBar, { title: 'Spec and feasibility', subtitle: 'Keel · ~/keel' })
+    };
+  }
+}
+</script>
+</body>
+</html>

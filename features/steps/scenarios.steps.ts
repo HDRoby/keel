@@ -115,9 +115,9 @@ Then('a suggested scenario appears under REQ-005', async ({ page }) => {
 });
 
 Then('REQ-005 still counts one scenario until I accept it', async ({ page }) => {
-  await expect(group(page, 'REQ-005').locator('.pill')).toHaveText('1 scenario');
+  await expect(group(page, 'REQ-005').locator('[data-count]')).toHaveText('1 scenario');
   await group(page, 'REQ-005').getByRole('button', { name: 'Accept' }).click();
-  await expect(group(page, 'REQ-005').locator('.pill')).toHaveText('2 scenarios');
+  await expect(group(page, 'REQ-005').locator('[data-count]')).toHaveText('2 scenarios');
 });
 
 Given('the decision is Go', async () => {

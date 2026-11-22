@@ -1,0 +1,23 @@
+.board { display: grid; gap: var(--spacing-2); }
+.head { display: flex; justify-content: space-between; gap: var(--spacing-3); align-items: flex-start; flex-wrap: wrap; }
+.lead { flex: 1 1 360px; display: grid; gap: 4px; }
+.title { margin: 0; font: var(--text-medium-4); color: var(--text-strong); }
+.muted { margin: 0; font-size: 13px; line-height: 19px; color: var(--text-secondary); }
+.note { margin: 0; font: var(--text-regular-1); line-height: 16px; color: var(--text-muted); }
+.section { display: grid; }
+.preview { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.small { font: var(--text-regular-1); color: var(--text-muted); }
+.quote { margin: 0; }
+.flat { margin: 0; }
+.applied { margin: 0; font: var(--text-regular-1); color: var(--ok-text); }
+.thread { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.mine { justify-self: end; max-width: 80%; background: var(--surface-card); border-radius: var(--radius-m); padding: 6px 10px; color: var(--text); font-size: 13px; line-height: 19px; }
+.theirs { font-size: 14px; line-height: 21px; color: var(--text-secondary); display: grid; gap: 4px; }
+.suggestion { display: flex; gap: var(--spacing-1); align-items: baseline; flex-wrap: wrap; font: var(--text-regular-1); color: var(--text-muted); }
+.key { display: inline-flex; align-items: center; gap: 4px; }
+.key::before { content: ''; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); }
+.key[data-kind='challenge']::before { background: var(--warn); }
+.key[data-kind='link']::before { background: var(--link); }
+.key[data-kind='ok']::before { background: var(--ok); }
+.column { width: 100%; max-width: 900px; margin: 0 auto; display: grid; gap: var(--spacing-2); }
+.column > p { margin: 0; }

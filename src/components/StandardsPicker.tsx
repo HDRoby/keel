@@ -1,22 +1,16 @@
-// Standards choice cards for Start and Project setup (owner decision, T6).
+// Standards choice cards for Initialise and Project setup (owner decision, T6; docs/ui-guide.md OptionCard).
+import { OptionCard, OptionGrid } from '@/components/ui/OptionCard';
 import type { Standard } from '@/lib/standards/library';
 
 export function StandardsPicker({ standards, chosen }: { standards: Standard[]; chosen: string[] }) {
+  if (standards.length === 0) return <p>No standards in the library.</p>;
   return (
-    <fieldset className="bare">
-      <legend className="visually-hidden">Standards</legend>
-      {standards.length === 0 && <p>No standards in the library.</p>}
-      <div className="options">
-        {standards.map((s) => (
-          <label key={s.ref} className="option">
-            <span className="option-tag">{s.owner} · v{s.version}</span>
-            <input type="checkbox" name="standards" value={s.ref} defaultChecked={chosen.includes(s.ref)} aria-label={`${s.name} v${s.version}`} />
-            <span className="option-title">{s.name} v{s.version}</span>
-            <span className="option-text">{s.description}</span>
-            <span className="option-foot">Applies to {s.appliesTo.join(', ') || 'nothing yet'}</span>
-          </label>
-        ))}
-      </div>
-    </fieldset>
+    <OptionGrid label="Standards" columns="two">
+      {standards.map((s) => (
+        <OptionCard key={s.ref} label={`${s.name} v${s.version}`} title={s.name} tag={`${s.owner} · v${s.version}`} summary={s.description}
+          foot={`Applies to ${s.appliesTo.join(', ') || 'nothing yet'}`}
+          control={<input type="checkbox" name="standards" value={s.ref} defaultChecked={chosen.includes(s.ref)} aria-label={`${s.name} v${s.version}`} />} />
+      ))}
+    </OptionGrid>
   );
 }

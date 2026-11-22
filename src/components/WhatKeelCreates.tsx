@@ -1,8 +1,13 @@
 'use client';
 // "What Keel creates in this folder" on the Initialise screen (task R4, mockup 1b). A reference, not a step:
 // every path Keel will create, what it is for and when, updated as the choices in the form change.
-// Folders start closed; paths that depend on a choice are shown in another colour.
-import { Fragment, useEffect, useMemo, useState } from 'react';
+// Folders start closed; paths that depend on a choice are shown in another colour (docs/ui-guide.md FileTree).
+import { useEffect, useMemo, useState } from 'react';
+import { Card } from './ui/Card';
+import { FileTree, type FileRow } from './ui/FileTree';
+import { LinkButton } from './ui/LinkButton';
+import { Tag, type TagTone } from './ui/Tag';
+import styles from './WhatKeelCreates.module.css';
 
 type When = 'Now' | 'As you approve' | 'At handoff';
 
@@ -101,13 +106,20 @@ function topNames(rows: Row[]): Row[] {
   return rows.map((r) => (r.children ? { ...r, name: r.path } : r));
 }
 
-function count(row: Row): number {
-  return row.children ? row.children.reduce((n, c) => n + count(c), 0) : 1;
-}
-
 function allFolders(rows: Row[]): string[] {
   return rows.flatMap((r) => (r.children ? [r.path, ...allFolders(r.children)] : []));
 }
+
+const WHEN_TONE: Record<When, TagTone> = { Now: 'accent', 'As you approve': 'neutral', 'At handoff': 'handoff' };
+
+function toFileRow(row: Row): FileRow {
+  return {
+    path: row.path, name: row.name, what: row.purpose, when: <Tag tone={WHEN_TONE[row.when]}>{row.when}</Tag>,
+    kind: row.ignored ? 'ignored' : row.dependent ? 'dependent' : 'plain', children: row.children?.map(toFileRow),
+  };
+}
+
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 export function WhatKeelCreates({ formId, library }: { formId: string; library: CreatesLibrary }) {
   const [choices, setChoices] = useState<Choices>({ title: '', description: '', intent: '', spec: '', plan: '', style: '', standards: [] });
@@ -129,62 +141,37 @@ export function WhatKeelCreates({ formId, library }: { formId: string; library: 
   const rows = useMemo(() => topNames(rowsFor(library, choices)), [library, choices]);
   const initialiseFiles = 2 + library.templates.length + library.agentKit.length + library.styles.length + library.standards.length + 1;
   const chosen = library.standards.filter((s) => choices.standards.includes(s.ref));
-  const toggle = (path: string) => setOpen((now) => {
-    const next = new Set(now);
-    if (next.has(path)) next.delete(path);
-    else next.add(path);
-    return next;
-  });
-
-  const render = (row: Row, depth: number): React.ReactNode => {
-    const isOpen = open.has(row.path);
-    const className = [row.dependent ? 'dependent' : '', row.ignored ? 'ignored' : ''].filter(Boolean).join(' ') || undefined;
-    return (
-      <Fragment key={row.path}>
-        <tr className={className}>
-          <td style={{ paddingLeft: 12 + depth * 18 }}>
-            {row.children ? (
-              <button type="button" className="tree-toggle" aria-expanded={isOpen} onClick={() => toggle(row.path)}>
-                {isOpen ? '▾' : '▸'} <code>{row.name}</code>{!isOpen && <span className="muted"> {count(row)} file{count(row) === 1 ? '' : 's'}</span>}
-              </button>
-            ) : <code>{row.name}</code>}
-          </td>
-          <td>{row.purpose}</td>
-          <td>{row.when}</td>
-        </tr>
-        {row.children && isOpen && row.children.map((c) => render(c, depth + 1))}
-      </Fragment>
-    );
-  };
+  const subagents = library.agentKit.filter((n) => !n.startsWith('review@')).length;
+  const tiles: [string, string, string][] = [
+    ['The idea', `${choices.title || 'The title'}${choices.description ? ' and the description' : ''} go into .keel/brainstorm/explore.md and start the brainstorm.`, '1 file'],
+    ['Intent template and style', `${library.templateNames[choices.intent] ?? 'The intent template'} with ${library.styleNames[choices.style] ?? 'the chosen style'} shape docs/intent.md.`, '1 file, as you approve'],
+    ['Document templates', `${library.templateNames[choices.spec] ?? 'The spec'} and ${library.templateNames[choices.plan] ?? 'the plan'} shape docs/spec.md, docs/plan.md and the tasks.`, '2 files and one per task'],
+    ['Agent kit', `${plural(subagents, 'subagent')} in .claude/agents/ and REVIEW.md for the coding agent.`, `${plural(library.agentKit.length, 'file')} at handoff`],
+    ['Standards', chosen.length ? `${chosen.map((c) => c.name).join(', ')}, as skills in .claude/skills/.` : 'None chosen yet. Each becomes a skill in .claude/skills/.', `${plural(chosen.length, 'file')} at handoff`],
+  ];
 
   return (
-    <section className="card" aria-labelledby="creates-heading">
-      <h2 id="creates-heading">What Keel creates in this folder</h2>
-      <ul className="creates-notes">
-        <li><strong>The idea</strong>: {choices.title || 'the title'}{choices.description ? ' and the description' : ''} go into <code>.keel/brainstorm/explore.md</code> (1 file).</li>
-        <li><strong>Intent template and style</strong>: {library.templateNames[choices.intent] ?? 'the intent template'} with {library.styleNames[choices.style] ?? 'the chosen style'} shape <code>docs/intent.md</code> (1 file, as you approve).</li>
-        <li><strong>Document templates</strong>: {library.templateNames[choices.spec] ?? 'spec'} and {library.templateNames[choices.plan] ?? 'plan'} shape <code>docs/spec.md</code>, <code>docs/plan.md</code> and the task files (2 files and one per task).</li>
-        <li><strong>Agent kit</strong>: {library.agentKit.filter((n) => !n.startsWith('review@')).length} subagents in <code>.claude/agents/</code> and <code>REVIEW.md</code> at handoff ({library.agentKit.length} files).</li>
-        <li><strong>Standards</strong>: {chosen.length ? chosen.map((s) => s.name).join(', ') : 'none chosen'}, as skills in <code>.claude/skills/</code> at handoff ({chosen.length} file{chosen.length === 1 ? '' : 's'}).</li>
-      </ul>
-      <p className="muted creates-key"><span className="key dependent">Depends on your choices</span> zero to many files · <span className="key ignored">Ignored by git</span></p>
-      <div className="flush-table">
-        <table aria-label="Paths Keel creates">
-          <thead>
-            <tr>
-              <th>Path <span className="table-actions">
-                <button type="button" className="link" onClick={() => setOpen(new Set(allFolders(rows)))}>Expand all</button>
-                {' · '}
-                <button type="button" className="link" onClick={() => setOpen(new Set())}>Collapse all</button>
-              </span></th>
-              <th>What it is for</th>
-              <th>When</th>
-            </tr>
-          </thead>
-          <tbody>{rows.map((r) => render(r, 0))}</tbody>
-        </table>
+    <Card title="What Keel creates in this folder">
+      <div className={styles.body}>
+        <p className={styles.intro}>Your choices below decide which files Keel writes. Initialise only creates <code>.keel/</code>. Documents follow as you approve them, and the agent files at Handoff. The file list is a reference: open a folder to see what is inside.</p>
+        <div className={styles.tiles}>
+          {tiles.map(([title, text, count]) => (
+            <div key={title} className={styles.tile}><strong>{title}</strong><span>{text}</span><span className={styles.count}>{count}</span></div>
+          ))}
+        </div>
+        <FileTree label="Paths Keel creates" rows={rows.map(toFileRow)} legend={['plain', 'dependent', 'ignored']}
+          legendExtra={<span className={styles.when}>When: <Tag tone="accent">Now</Tag> <Tag>As you approve</Tag> <Tag tone="handoff">At handoff</Tag></span>}
+          headerActions={<><LinkButton onClick={() => setOpen(new Set(allFolders(rows)))}>Expand all</LinkButton><LinkButton onClick={() => setOpen(new Set())}>Collapse all</LinkButton></>}
+          isOpen={(path) => open.has(path)}
+          onToggle={(path, isOpen) => setOpen((now) => {
+            if (now.has(path) === isOpen) return now;
+            const next = new Set(now);
+            if (isOpen) next.add(path);
+            else next.delete(path);
+            return next;
+          })} />
+        <p className={styles.note} role="status">Initialise writes {initialiseFiles} files, all inside <code>.keel/</code>, as one Keel commit. Nothing else in the folder changes until you approve a document or write the handoff.</p>
       </div>
-      <p className="muted space-above" role="status">Initialise writes {initialiseFiles} files, all inside <code>.keel/</code>. Nothing else in the folder changes until you approve documents.</p>
-    </section>
+    </Card>
   );
 }

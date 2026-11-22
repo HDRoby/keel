@@ -1,0 +1,174 @@
+/*
+  Keel design tokens, taken from the design tokens the clickable mockup uses (2026-11-22).
+  The names match the var(--…) references in the mock sources (docs/mocks/source/*.dc.html),
+  so a value read there can be used as is.
+
+  Changes from the mockup: the brand font is replaced by the system font stack (--font-body);
+  the typography shorthands are named --text-regular-2 and so on. No dark theme yet.
+  Icons: "Material Symbols Outlined" (Google Fonts, Apache 2.0) via --font-icon.
+*/
+:root {
+  --brand-primary: #3366ff;
+  --brand-danger: #dc182c;
+  --brand-success: #008556;
+  --brand-warning: #a15d26;
+  --brand-type: #000000;
+  --brand-white: #ffffff;
+  --gray-1: #f4f6f8;
+  --gray-2: #e0e5e8;
+  --gray-3: #aeb1b9;
+  --gray-4: #6b7180;
+  --gray-5: #434952;
+  --gray-6: #25282d;
+  --alerts-danger-1: #fce8ea;
+  --alerts-danger-2: #ee8c96;
+  --alerts-danger-3: #bb1425;
+  --alerts-danger-4: #8f101d;
+  --alerts-info-1: #ebf0ff;
+  --alerts-info-2: #85a3ff;
+  --alerts-info-3: #2447b3;
+  --alerts-info-4: #1a3380;
+  --alerts-success-1: #e6f9f2;
+  --alerts-success-2: #80e1ae;
+  --alerts-success-3: #00784d;
+  --alerts-success-4: #005838;
+  --alerts-warning-1: #fdf2e9;
+  --alerts-warning-2: #f1b178;
+  --alerts-warning-3: #e87d1e;
+  --alerts-warning-4: #733f11;
+  --tertiary-blue-1: #cae4ff;
+  --tertiary-blue-2: #4da6ff;
+  --tertiary-blue-3: #2775c4;
+  --tertiary-blue-4: #1f5c99;
+  --tertiary-cyan-1: #bffaff;
+  --tertiary-cyan-2: #00ebff;
+  --tertiary-cyan-3: #007d8c;
+  --tertiary-cyan-4: #004a59;
+  --tertiary-green-1: #d3ffd8;
+  --tertiary-green-2: #4eff64;
+  --tertiary-yellow-1: #fff6ca;
+  --tertiary-yellow-2: #fedc2b;
+  --chart-purple-1: rgb(234,236,255);
+  --chart-purple-2: rgb(149,155,255);
+  --chart-purple-3: rgb(53,32,191);
+  --chart-blue-1: rgb(202,228,255);
+  --chart-blue-2: rgb(77,166,255);
+  --chart-blue-3: rgb(39,117,196);
+  --chart-orange-1: rgb(241,177,120);
+  --chart-orange-2: rgb(232,125,30);
+  --chart-teal-1: rgb(0,125,140);
+  --chart-teal-2: rgb(0,74,89);
+  --chart-gridline: rgb(224,229,232);
+  --chart-axis: rgb(37,40,45);
+  --chart-label: rgb(107,113,128);
+  --text-primary: var(--brand-type);
+  --text-body: var(--gray-6);
+  --text-secondary: var(--gray-5);
+  --text-muted: var(--gray-4);
+  --text-disabled: var(--gray-4);
+  --text-inverse: var(--brand-white);
+  --text-link: var(--brand-primary);
+  --text-link-hover: var(--alerts-info-3);
+  --surface-page: var(--gray-1);
+  --surface-card: var(--brand-white);
+  --surface-raised: var(--brand-white);
+  --surface-subtle: var(--gray-1);
+  --surface-hover: var(--gray-1);
+  --surface-selected: var(--alerts-info-1);
+  --surface-inverse: var(--gray-6);
+  --border-default: var(--gray-2);
+  --border-strong: var(--gray-4);
+  --border-focus: var(--brand-primary);
+  --status-success-bg: var(--alerts-success-1);
+  --status-success-fg: var(--alerts-success-3);
+  --status-danger-bg: var(--alerts-danger-1);
+  --status-danger-fg: var(--alerts-danger-3);
+  --status-warning-bg: var(--alerts-warning-1);
+  --status-warning-fg: var(--brand-warning);
+  --status-info-bg: var(--alerts-info-1);
+  --status-info-fg: var(--alerts-info-3);
+  --status-neutral-bg: var(--gray-1);
+  --status-neutral-fg: var(--gray-5);
+  --row-background-color: var(--brand-white);
+  --focus-default: 0px 0px 0px #85a3ff;
+  --shadow-1: 0px 1px 3px #6b718033,0px 1px 16px #6b71801a;
+  --shadow-2: 0px 1px 5px #0000004d,0px 4px 10px #00000026;
+  --shadow-3: 0px 4px 6px #0000004d,0px 8px 15px #00000026;
+  --shadow-card-hover: 0px 4px 5px #33384024,0px 2px 4px #33384033,0px 1px 10px #3338401f;
+  --shadow-dropdown: 0px 1px 16px #3338401a,0px 1px 3px #33384033,0px 4px 5px #33384026;
+  --box-shadow-1: 0 1px 3px 0 rgba(107,113,128,0.2),0 1px 16px 0 rgba(107,113,128,0.1);
+  --box-shadow-2: 0 1px 3px 0 rgba(51,56,64,0.2),0 2px 1px -1px rgba(51,56,64,0.12),0 1px 1px 0 rgba(51,56,64,0.14);
+  --spacing-1: 8px;
+  --spacing-2: 16px;
+  --spacing-3: 24px;
+  --spacing-4: 32px;
+  --spacing-5: 40px;
+  --spacing-6: 48px;
+  --spacing-7: 56px;
+  --spacing-8: 64px;
+  --spacing-9: 72px;
+  --spacing-10: 80px;
+  --radius-s: 4px;
+  --radius-m: 8px;
+  --radius-l: 16px;
+  --font-size-1: 12px;
+  --font-size-2: 14px;
+  --font-size-3: 16px;
+  --font-size-4: 18px;
+  --font-size-5: 20px;
+  --font-size-6: 24px;
+  --line-height-1: 14.4px;
+  --line-height-2: 20px;
+  --line-height-3: 19.2px;
+  --line-height-4: 26px;
+  --line-height-5: 24px;
+  --line-height-6-regular: 28.13px;
+  --line-height-6-medium: 28.8px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  --z-bottom: -2;
+  --z-below: -1;
+  --z-0: 0;
+  --z-above: 1;
+  --z-above-2: 2;
+  --z-top: 102;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-icon: "Material Symbols Outlined";
+  --text-regular-1: 400 12px/14.4px var(--font-body);
+  --text-regular-2: 400 14px/20px var(--font-body);
+  --text-regular-3: 400 16px/19.2px var(--font-body);
+  --text-regular-4: 400 18px/26px var(--font-body);
+  --text-regular-5: 400 20px/24px var(--font-body);
+  --text-regular-6: 400 24px/28.13px var(--font-body);
+  --text-medium-1: 500 12px/14.4px var(--font-body);
+  --text-medium-2: 500 14px/20px var(--font-body);
+  --text-medium-3: 500 16px/19.2px var(--font-body);
+  --text-medium-4: 500 18px/26px var(--font-body);
+  --text-medium-5: 500 20px/24px var(--font-body);
+  --text-medium-6: 500 24px/28.8px var(--font-body);
+  --text-bold-1: 700 12px/14.4px var(--font-body);
+  --text-bold-2: 700 14px/20px var(--font-body);
+  --text-bold-3: 700 16px/19.2px var(--font-body);
+  --text-bold-4: 700 18px/26px var(--font-body);
+  --text-bold-5: 700 20px/24px var(--font-body);
+  --text-bold-6: 700 24px/28.13px var(--font-body);
+  --text-icon-1: 400 12px/12px var(--font-icon);
+  --text-icon-2: 400 14px/14px var(--font-icon);
+  --text-icon-3: 400 16px/16px var(--font-icon);
+  --text-icon-4: 400 18px/18px var(--font-icon);
+  --text-icon-5: 400 20px/20px var(--font-icon);
+  --text-icon-6: 300 24px/24px var(--font-icon);
+  --text-icon-7: 300 40px/40px var(--font-icon);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --radius-card: 16px;
+  --radius-control: 8px;
+  --radius-row: 6px;
+  --radius-pill: 999px;
+}
+
+body { margin: 0; font-family: var(--font-body); font-size: 14px; line-height: 20px; color: var(--gray-6); background: var(--gray-1); -webkit-font-smoothing: antialiased; }
+* { box-sizing: border-box; }
+a { color: var(--brand-primary); text-decoration: none; }
+a:hover { color: var(--alerts-info-3); text-decoration: underline; }
+.material-symbols-outlined, [data-icon] { font-family: var(--font-icon); font-weight: normal; font-style: normal; line-height: 1; letter-spacing: normal; text-transform: none; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased; }

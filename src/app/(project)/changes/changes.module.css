@@ -1,0 +1,14 @@
+.stack { display: grid; gap: var(--spacing-2); }
+.flat { margin: 0; }
+.muted { margin: 0; font: var(--text-regular-1); line-height: 16px; color: var(--text-muted); }
+.cell { display: grid; gap: 2px; }
+.checks { border: 0; padding: 0; margin: 0; display: flex; gap: 16px; flex-wrap: wrap; }
+.checks label { display: inline-flex; align-items: center; gap: 6px; font-weight: 400; }
+.legend { font: var(--text-medium-2); color: var(--text-strong); padding: 0; margin-bottom: 8px; }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.columns { display: flex; flex-wrap: wrap; gap: var(--spacing-3); align-items: flex-start; }
+.main { flex: 999 1 560px; min-width: 0; display: grid; gap: var(--spacing-3); }
+.side { flex: 1 1 360px; min-width: 0; display: grid; gap: var(--spacing-3); }
+.diff { border: 1px solid var(--border-default); border-radius: var(--radius-m); overflow: hidden; }
+.impact { border: 1px solid var(--border-default); border-radius: var(--radius-m); padding: 12px 14px; display: grid; gap: 8px; }
+.list { margin: 0; padding-left: 20px; display: grid; gap: 4px; }

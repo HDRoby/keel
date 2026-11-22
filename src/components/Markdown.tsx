@@ -1,14 +1,14 @@
 // Renders Keel's plain markdown as React elements (headings, paragraphs, lists, tables, code blocks,
-// **bold**, `code`, [links](url) and REQ IDs). It never injects HTML: text is always escaped by React,
+// **bold**, _emphasis_, `code`, [links](url) and REQ IDs). It never injects HTML: text is always escaped by React,
 // HTML comments (template guidance) are dropped, and only http(s), relative and #anchor links are kept.
 import type { ReactNode } from 'react';
 
 const SAFE_URL = /^(https?:\/\/|\/|#|\.\.?\/|[\w.-]+(\/|$))/i;
 
-/** Inline markdown: `code`, **bold**, [text](url) and REQ-xxx tags. */
+/** Inline markdown: `code`, **bold**, _emphasis_, [text](url) and REQ-xxx tags. */
 export function inline(text: string, key = ''): ReactNode[] {
   const out: ReactNode[] = [];
-  const pattern = /(`[^`]+`)|(\*\*[^*]+\*\*)|(\[[^\]]+\]\([^)\s]+\))|(\bREQ-\d{3,}\b)/g;
+  const pattern = /(`[^`]+`)|(\*\*[^*]+\*\*)|(\[[^\]]+\]\([^)\s]+\))|(\bREQ-\d{3,}\b)|((?<!\w)_[^_\n]+_(?!\w))/g;
   let last = 0;
   for (const m of text.matchAll(pattern)) {
     const at = m.index ?? 0;
@@ -22,7 +22,8 @@ export function inline(text: string, key = ''): ReactNode[] {
       out.push(SAFE_URL.test(href) && !/^javascript:/i.test(href)
         ? <a key={k} href={href} rel="noopener noreferrer" target={/^https?:/.test(href) ? '_blank' : undefined}>{label}</a>
         : label);
-    } else out.push(<span key={k} className="req">{token}</span>);
+    } else if (m[4]) out.push(<span key={k} className="req">{token}</span>);
+    else out.push(<em key={k}>{inline(token.slice(1, -1), k)}</em>);
     last = at + token.length;
   }
   if (last < text.length) out.push(text.slice(last));
@@ -73,7 +74,7 @@ export function Markdown({ text }: { text: string }) {
       const items: string[] = [];
       for (; i < lines.length && /^\s*([-*]|\d+\.)\s+/.test(lines[i] ?? ''); i += 1) items.push((lines[i] ?? '').replace(/^\s*([-*]|\d+\.)\s+/, ''));
       const List = ordered ? 'ol' : 'ul';
-      blocks.push(<List key={key}>{items.map((t, n) => <li key={n}>{inline(t, `${key}i${n}`)}</li>)}</List>);
+      blocks.push(<List key={key} className={items.every((t) => /^REQ-\d{3,}\b/.test(t)) ? 'req-list' : undefined}>{items.map((t, n) => <li key={n}>{inline(t, `${key}i${n}`)}</li>)}</List>);
       continue;
     }
     const para: string[] = [];

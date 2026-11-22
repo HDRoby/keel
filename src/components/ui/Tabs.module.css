@@ -1,0 +1,6 @@
+.tabs { display: flex; gap: var(--spacing-1); border-bottom: 1px solid var(--border-default); margin: -8px 0 var(--spacing-2); background: var(--surface-card); overflow-x: auto; }
+.tab { position: relative; display: flex; align-items: center; gap: var(--spacing-1); padding: 21px 16px 20px; font-size: 16px; line-height: 19.2px; color: var(--text-strong); white-space: nowrap; }
+.tab:hover { color: var(--accent); text-decoration: none; }
+.current { color: var(--accent); font-weight: 500; }
+.current::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 4px; background: var(--accent); }
+.count { font: var(--text-regular-1); padding: 0 3px; border-radius: var(--radius-s); background: var(--alerts-info-4); color: var(--alerts-info-2); }

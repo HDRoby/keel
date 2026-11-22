@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stage bar</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/softwareone/tokens.css">
+<link rel="stylesheet" href="ds/softwareone/components/bundle.css">
+<script src="ds/softwareone/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<nav aria-label="Project stages" style="box-sizing: border-box; width: 100%; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; background: #ffffff; border-radius: 16px; box-shadow: 0 1px 3px rgba(107,113,128,.2), 0 1px 16px rgba(107,113,128,.1); font-family: var(--font-body, Arial);">
+  <sc-for list="{{stages}}" as="s" hint-placeholder-count="5">
+    <sc-if value="{{s.open}}" hint-placeholder-val="{{ true }}">
+      <a href="{{s.href}}" style="{{s.style}}">
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{s.icon}}" size="5" color="{{s.iconColor}}"></x-import>
+        <span style="display: flex; flex-direction: column; min-width: 0;">
+          <span style="font-size: 14px; line-height: 20px; font-weight: 500;">{{s.label}}</span>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{s.note}}</span>
+        </span>
+      </a>
+    </sc-if>
+    <sc-if value="{{s.locked}}" hint-placeholder-val="{{ false }}">
+      <div aria-disabled="true" title="{{s.note}}" style="{{s.style}}">
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="lock" size="5" color="#6b7180"></x-import>
+        <span style="display: flex; flex-direction: column; min-width: 0;">
+          <span style="font-size: 14px; line-height: 20px; font-weight: 500;">{{s.label}}</span>
+          <span style="font-size: 12px; line-height: 14.4px;">{{s.note}}</span>
+        </span>
+      </div>
+    </sc-if>
+  </sc-for>
+</nav>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"current":{"editor":"enum","options":["explore","intent","spec","plan","handoff"],"default":"plan"},"reached":{"editor":"enum","options":["explore","intent","spec","plan","handoff"],"default":"handoff"},"decision":{"editor":"enum","options":["go","park","nogo"],"default":"go"},"project":{"editor":"enum","options":["PRJ-0001","PRJ-0002"],"default":"PRJ-0001"},"stale":{"editor":"text","default":""},"$preview":{"width":1200,"height":96}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const current = this.props.current ?? 'plan';
+    const reached = this.props.reached ?? 'handoff';
+    const decision = this.props.decision ?? 'go';
+    const project = this.props.project ?? 'PRJ-0001';
+    const ids = ['explore', 'intent', 'spec', 'plan', 'handoff'];
+    const ci = ids.indexOf(current);
+    const ri = ids.indexOf(reached);
+    const labels = ['1 · Explore', '2 · Intent', '3 · Spec', '4 · Plan', '5 · Handoff'];
+    const hrefs = project === 'PRJ-0002'
+      ? ['NewIdea.dc.html', 'Intent.dc.html', 'Spec.dc.html', 'Plan.dc.html', 'Handoff.dc.html']
+      : ['Explore.dc.html', 'Intent.dc.html', 'Spec.dc.html', 'Plan.dc.html', 'Handoff.dc.html'];
+    const doneNotes = project === 'PRJ-0002'
+      ? ['Brainstorm · 2 of 6 captured', 'Draft', 'Draft', 'Draft', 'Ready']
+      : ['Brainstorm · all required sections', 'intent.md v2 · Approved', 'spec.md v3 · Go decision', 'plan.md v4 · Approved', 'Pushed · 2 changes to review'];
+    const planReason = decision === 'park' ? 'Spec decision is Park' : (decision === 'nogo' ? 'Spec decision is No-go' : 'Needs a Go decision on the spec');
+    const lockedNotes = ['', 'Needs a problem and an outcome', 'Needs an approved intent', planReason, 'Needs an approved plan'];
+    const stale = String(this.props.stale ?? '').split(',').map((x) => x.trim()).filter(Boolean);
+    const base = 'flex: 1 1 180px; min-width: 0; display: flex; align-items: center; gap: 8px; box-sizing: border-box; min-height: 56px; padding: 8px 16px; border-radius: 8px; text-decoration: none; ';
+    const stages = ids.map((id, i) => {
+      const locked = i > ri && i !== ci;
+      const active = i === ci;
+      const isStale = !locked && stale.indexOf(id) >= 0;
+      return {
+        label: labels[i], href: hrefs[i], open: !locked, locked: locked,
+        note: locked ? lockedNotes[i] : (isStale ? 'Out of date · review CR-0003' : doneNotes[i]),
+        icon: active ? 'radio_button_checked' : (isStale ? 'error' : 'check_circle'),
+        iconColor: active ? 'var(--brand-primary, #3366ff)' : (isStale ? 'var(--alerts-warning-3, #b35a00)' : 'var(--alerts-success-3, #008556)'),
+        style: base + (active
+          ? 'background: #ebf0ff; color: #3366ff; border: 1px solid #3366ff;'
+          : (locked ? 'background: #f4f6f8; color: #6b7180; border: 1px dashed #aeb1b9; cursor: not-allowed;' : 'background: transparent; color: #25282d; border: 1px solid transparent;'))
+      };
+    });
+    return { stages: stages };
+  }
+}
+</script>
+</body>
+</html>

@@ -35,6 +35,7 @@ Package versions in `package.json` are starting points. Update them to the curre
 3. **Never edit `.feature` files to make a scenario pass.** If a scenario looks wrong, stop and write it under "Questions for the owner" in the task file.
 4. If your work departs from `docs/plan.md`, update `docs/plan.md` in the same commit and say why. Keel reads these changes back.
 5. Keep each task in one pull request, ideally under about 300 changed lines.
+6. UI work follows `docs/ui-guide.md` and the screen sources in `docs/mocks/source/`. Use the components in `src/components/ui/`; add a component there before using a new pattern.
 
 ## Conventions
 

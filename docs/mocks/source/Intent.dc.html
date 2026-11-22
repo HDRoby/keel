@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keel · Intent</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/softwareone/tokens.css">
+<link rel="stylesheet" href="ds/softwareone/components/bundle.css">
+<script src="ds/softwareone/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#3366ff}a:hover{color:#2447b3}
+</style>
+</helmet>
+<x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Navigation" groups="{{groups}}" active-id="intent" brand="{{brand}}" header-bar="{{headerBar}}">
+<div style="box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 24px; font-family: var(--font-body, Arial); color: var(--text-body, #25282d); max-width: 1400px;">
+  <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+      <h1 style="margin: 0; font-size: 24px; line-height: 28.13px; font-weight: 700; color: var(--text-primary, #000);">Keel</h1>
+      <span style="font-size: 12px; line-height: 14.4px; color: var(--text-muted, #6b7180);">PRJ-0001 · intent.md · INT-0001</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <a href="Explore.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #6b7180; border-radius: 8px; background: #ffffff; color: #25282d; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">Change in Explore</a>
+      <a href="Spec.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="arrow_forward" size="5"></x-import>
+        Generate spec
+      </a>
+    </div>
+  </div>
+  <dc-import name="StageBar" current="intent" hint-size="100%,72px"></dc-import>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+    <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+      <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Template: Standard intent · v3</span>
+    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; background: #f6f7f9; font-size: 12px; line-height: 16px; color: #434952;">
+          <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="info" size="4" color="#6b7180"></x-import>
+          <span style="flex: 1 1 360px;">Assembled from the sections you wrote in Explore, with no model call: what you wrote is what is in the file. To change it, edit the sections in Explore. While this is a draft, that makes a new draft version; once approved, it becomes a change request.</span>
+          <a href="Explore.dc.html" style="font-weight: 500;">Change in Explore</a>
+        </div>
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Tabs" variant="inline" items="{{tabs}}" value="{{tab}}" on-change="{{setTab}}"></x-import>
+
+        <sc-if value="{{showPreview}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 16px; font-size: 14px; line-height: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 24px; padding: 16px; border-radius: 8px; background: #f4f6f8;">
+              <sc-for list="{{front}}" as="f" hint-placeholder-count="9">
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+                  <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{f.k}}</span>
+                  <span style="font-size: 14px; line-height: 20px; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{f.v}}</span>
+                </div>
+              </sc-for>
+            </div>
+            <h2 style="margin: 0; font-size: 20px; line-height: 24px; font-weight: 700; color: #000;">Intent: Keel</h2>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <h3 style="margin: 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Problem</h3>
+              <p style="margin: 0;">Coding agents now build software in hours, but the steps before the build still run at human speed. Ideas wait for someone to write them up, and requirements and design pass through meetings and handoffs before an engineer can plan.</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <h3 style="margin: 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Desired outcome</h3>
+              <p style="margin: 0;">A web app where anyone with an idea brainstorms with an LLM, then produces a versioned intent, spec and plan with metadata and traceable requirements. It hands a scaffolded repository to any coding agent (Claude Code, Codex and others) and reads changes back.</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <h3 style="margin: 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Requirements</h3>
+              <sc-for list="{{reqs}}" as="r" hint-placeholder-count="6">
+                <div style="display: flex; gap: 16px; align-items: baseline;">
+                  <span style="flex: 0 0 72px; font-size: 12px; line-height: 14.4px; font-weight: 500; color: #3366ff;">{{r.id}}</span>
+                  <span>{{r.text}}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <h3 style="margin: 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Who it is for</h3>
+              <p style="margin: 0;">Proposers (engineers, product managers, anyone with an idea), coding agents, git hosting (GitHub first), LLM providers.</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <h3 style="margin: 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Constraints</h3>
+              <p style="margin: 0;">Web UI, not a VS Code extension. Not tied to one model or agent. Single user first. Stops at plan and scaffold: no code generation.</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <h3 style="margin: 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Open questions</h3>
+              <p style="margin: 0;">Public name: "Keel" is already used by other developer tools. How should a change upstream affect later documents?</p>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{showMock}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="info" title="Attach mocks made elsewhere" standalone="{{yes}}">Add a link (Figma, Claude Design or similar) or upload an image, PDF or HTML file. Link each one to the requirements it shows. References are saved under docs/mocks/ and handed to the coding agent.</x-import>
+            <sc-for list="{{refRows}}" as="rf" hint-placeholder-count="2">
+              <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid #e0e5e8; border-radius: 8px;">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{rf.icon}}" size="5" color="#3366ff"></x-import>
+                  <span style="flex: 1 1 auto; min-width: 0; font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{rf.name}}</span>
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" type="outline" color="gray">{{rf.kind}}</x-import>
+                </div>
+                <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{rf.where}}</span>
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                  <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Shows</span>
+                  <sc-for list="{{rf.reqs}}" as="r" hint-placeholder-count="2">
+                    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" type="outline" color="{{rf.color}}">{{r}}</x-import>
+                  </sc-for>
+                  <span style="flex: 1 1 auto;"></span>
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="text">Link requirements</x-import>
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="text" color="danger" on-click="{{rf.remove}}">Remove</x-import>
+                </div>
+              </div>
+            </sc-for>
+            <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px;">
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" label="Add a link" placeholder="https://www.figma.com/file/…" value="{{newLink}}" on-change="{{setNewLink}}" style="flex: 1 1 320px;"></x-import>
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="outline" on-click="{{addLink}}">Add link</x-import>
+            </div>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.FileUploader" multiple="{{yes}}" accept=".png,.jpg,.pdf,.html" hint="PNG, JPG, PDF or HTML, up to 10 MB" on-files="{{addFiles}}"></x-import>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{showSource}}" hint-placeholder-val="{{ false }}">
+          <pre style="margin: 0; padding: 16px; border-radius: 8px; background: #f4f6f8; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 18px; color: #25282d; white-space: pre-wrap;">{{source}}</pre>
+        </sc-if>
+      </div>
+    </x-import>
+    </div>
+
+    <div style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+            <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Mock references</h2>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="primary" icon="attach_file">{{refCount}}</x-import>
+          </div>
+          <sc-for list="{{refRows}}" as="pm" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{pm.icon}}" size="4" color="#3366ff"></x-import>
+              <span style="flex: 1 1 auto; min-width: 0; font-size: 14px; line-height: 20px; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{pm.name}}</span>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{pm.kind}}</span>
+            </div>
+          </sc-for>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Manage them in the Mock references tab.</span>
+        </div>
+      </x-import>
+
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+            <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Approval</h2>
+            <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="success" icon="check">Approved</x-import>
+          </div>
+          <p style="margin: 0; font-size: 14px; line-height: 20px; color: #434952;">Approved by Roberto Basile on 20/11/2026 at 14:02. Approving the intent unlocks spec generation.</p>
+          <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="warning" title="Version 3 is waiting for approval" standalone="{{yes}}"><a href="Changes.dc.html" style="font-weight: 500;">Review CR-0003</a></x-import>
+        </div>
+      </x-import>
+
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Version history</h2>
+          <sc-for list="{{history}}" as="h" hint-placeholder-count="2">
+            <div style="display: flex; flex-direction: column; gap: 2px; padding-bottom: 16px; border-bottom: 1px solid #e0e5e8;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{h.v}}</span>
+                <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{h.when}}</span>
+              </div>
+              <span style="font-size: 14px; line-height: 20px; color: #434952;">{{h.what}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </x-import>
+
+    </div>
+  </div>
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1150}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 'preview', newLink: '', refs: [
+        { id: 1, icon: 'link', name: 'Keel clickable mockup', kind: 'Design canvas link', where: 'claude.ai · added 20/11/2026', reqs: ['REQ-001', 'REQ-002', 'REQ-005'], color: 'primary' },
+        { id: 2, icon: 'image', name: 'stage-bar.png', kind: 'Image', where: 'docs/mocks/stage-bar.png · added 20/11/2026', reqs: ['REQ-005'], color: 'primary' }
+      ], mv: 'v2', fidelity: 'wire', screen: 'email', snoozed: false, seats: 120, saved: false, pinned: true, mdraft: '',
+      mockChat: [
+        { author: 'Assistant', mine: false, actor: 'system', date: '18 Nov 2026', at: '10:10', body: 'Here is **mock v1**, generated from intent v1: the reminder email (REQ-001, REQ-002).' },
+        { author: 'Roberto Basile', mine: true, actor: 'client', date: '18 Nov 2026', at: '10:12', body: 'Add a snooze button, and a screen to adjust seats.' },
+        { author: 'Assistant', mine: false, actor: 'system', date: '18 Nov 2026', at: '10:12', body: '**Mock v2** adds both. Snooze is still an open question in the intent, so I marked it on the mock.' }
+      ] };
+  }
+  renderVals() {
+    const R = window.React;
+    const DS = window.SoftwareOneDesignSystem_52b182;
+    const st = this.state;
+    const wire = st.fidelity === 'wire';
+    const v2 = st.mv === 'v2';
+    const font = wire ? 'font-family: ui-monospace, Menlo, Consolas, monospace;' : 'font-family: var(--font-body, Arial);';
+    const m = wire ? {
+      canvas: 'display: flex; justify-content: center; padding: 24px; background: #fafafa; min-height: 420px;',
+      sheet: font + ' width: 100%; max-width: 560px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px; padding: 24px; background: #ffffff; border: 2px dashed #aeb1b9; border-radius: 4px; color: #434952; font-size: 13px; line-height: 20px;',
+      h: 'margin: 0; font-size: 16px; line-height: 22px; font-weight: 700; color: #25282d;', p: 'margin: 0;',
+      meta: 'font-size: 11px; line-height: 16px; color: #6b7180;',
+      row: 'display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px dashed #aeb1b9;',
+      field: 'display: flex; flex-direction: column; gap: 4px; padding: 8px; border: 1px dashed #aeb1b9;',
+      primary: font + ' min-height: 36px; padding: 6px 16px; border: 2px solid #434952; border-radius: 4px; background: #e0e5e8; color: #25282d; font-size: 13px; cursor: pointer;',
+      secondary: font + ' min-height: 36px; padding: 6px 16px; border: 1px dashed #434952; border-radius: 4px; background: #ffffff; color: #25282d; font-size: 13px; cursor: pointer;',
+      note: 'padding: 8px; border: 1px dashed #aeb1b9; background: #f4f6f8; font-size: 12px; line-height: 16px;'
+    } : {
+      canvas: 'display: flex; justify-content: center; padding: 24px; background: #f4f6f8; min-height: 420px;',
+      sheet: font + ' width: 100%; max-width: 560px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px; padding: 24px; background: #ffffff; border-radius: 16px; box-shadow: 0 1px 3px rgba(107,113,128,.2), 0 1px 16px rgba(107,113,128,.1); color: #25282d; font-size: 14px; line-height: 20px;',
+      h: 'margin: 0; font-size: 20px; line-height: 24px; font-weight: 700; color: #000;', p: 'margin: 0;',
+      meta: 'font-size: 12px; line-height: 14.4px; color: #6b7180;',
+      row: 'display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid #e0e5e8;',
+      field: 'display: flex; flex-direction: column; gap: 4px; padding: 8px 12px; border: 1px solid #6b7180; border-radius: 8px;',
+      primary: font + ' min-height: 36px; padding: 7px 15px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font-size: 14px; font-weight: 500; cursor: pointer;',
+      secondary: font + ' min-height: 36px; padding: 7px 15px; border: 1px solid #ebf0ff; border-radius: 8px; background: #ebf0ff; color: #3366ff; font-size: 14px; font-weight: 500; cursor: pointer;',
+      note: 'padding: 8px 12px; border-radius: 8px; background: #ebf0ff; color: #2447b3; font-size: 12px; line-height: 16px;'
+    };
+    const onSeats = st.screen === 'seats' && v2;
+    const mockVals = {
+      yes: true,
+      ms: m,
+      refRows: st.refs.map((r) => Object.assign({}, r, { remove: () => this.setState({ refs: st.refs.filter((x) => x.id !== r.id) }) })),
+      refCount: st.refs.length + (st.refs.length === 1 ? ' reference' : ' references'),
+      newLink: st.newLink,
+      setNewLink: (e) => this.setState({ newLink: e && e.target ? e.target.value : e }),
+      addLink: () => { const u = (st.newLink || '').trim(); if (!u) return; this.setState({ newLink: '', refs: st.refs.concat([{ id: Date.now(), icon: 'link', name: u.replace(/^https?:\/\//, '').slice(0, 48), kind: 'Link', where: 'added just now', reqs: ['Not linked yet'], color: 'gray' }]) }); },
+      addFiles: (files) => { const list = Array.prototype.slice.call(files || []); if (!list.length) return; this.setState({ refs: st.refs.concat(list.map((f, i) => ({ id: Date.now() + i, icon: 'image', name: f.name || 'file', kind: 'File', where: 'docs/mocks/' + (f.name || 'file') + ' · added just now', reqs: ['Not linked yet'], color: 'gray' }))) }); },
+      mockVersions: [ { value: 'v2', label: 'Mock v2 · 2 screens' }, { value: 'v1', label: 'Mock v1 · 1 screen' } ],
+      mv: st.mv,
+      setMv: (v) => this.setState({ mv: v, screen: 'email', snoozed: false, saved: false, pinned: false }),
+      fidelityOptions: [ { value: 'wire', label: 'Wireframe' }, { value: 'ds', label: 'Design system' } ],
+      fidelity: st.fidelity,
+      setFidelity: (v) => this.setState({ fidelity: v }),
+      pinIcon: R.createElement(DS.Icon, { name: 'push_pin', size: 5 }),
+      pin: () => this.setState({ pinned: true }),
+      pinned: st.pinned, notPinned: !st.pinned,
+      pinnedLabel: 'Mock ' + st.mv + ' pinned to this intent',
+      screenLabel: (onSeats ? 'Screen 2 of 2 · Adjust seats' : (v2 ? 'Screen 1 of 2 · Reminder email' : 'Screen 1 of 1 · Reminder email')) + ' · mock-' + st.mv + '.html',
+      onEmail: !onSeats, onSeats: onSeats,
+      hasSnooze: v2, snoozed: st.snoozed && v2, noSeatsScreen: !v2 && st.screen === 'seats',
+      goSeats: () => this.setState({ screen: 'seats', saved: false }),
+      goEmail: () => this.setState({ screen: 'email' }),
+      snooze: () => this.setState({ snoozed: true }),
+      newSeats: st.seats,
+      minus: () => this.setState({ seats: Math.max(0, st.seats - 10), saved: false }),
+      plus: () => this.setState({ seats: st.seats + 10, saved: false }),
+      save: () => this.setState({ saved: true }), saved: st.saved,
+      subs: [
+        { name: 'Microsoft 365 E3', seats: '120 seats', date: '20/12/2026' },
+        { name: 'Adobe Acrobat Pro', seats: '35 seats', date: '20/12/2026' },
+        { name: 'Microsoft Teams Premium', seats: '40 seats', date: '22/12/2026' }
+      ],
+      screenMap: v2 ? [
+        { screen: 'Reminder email', reqs: ['REQ-001', 'REQ-002'], color: 'primary' },
+        { screen: 'Adjust seats', reqs: ['New: add to spec'], color: 'gray' },
+        { screen: 'Snooze button', reqs: ['Open question'], color: 'warning' }
+      ] : [ { screen: 'Reminder email', reqs: ['REQ-001', 'REQ-002'], color: 'primary' } ],
+      mockMeta: v2 ? 'Mock v2 · generated from intent v2 by Anthropic · Claude · 18/11/2026 10:12' : 'Mock v1 · generated from intent v1 · 18/11/2026 10:10',
+      mockChat: st.mockChat,
+      mockChatView: ((list) => list.map((x) => ({ mine: x.mine, theirs: !x.mine, parts: String(x.body).split('**').map((t, i) => ({ t: t, style: i % 2 ? 'font-weight: 500; color: #000;' : '' })) })))(st.mockChat),
+      mdraft: st.mdraft,
+      setMdraft: (v) => this.setState({ mdraft: v }),
+      msend: (v) => { const t = (v || '').trim(); if (!t) return; this.setState({ mdraft: '', mockChat: st.mockChat.concat([
+        { author: 'Roberto Basile', mine: true, actor: 'client', date: '20 Nov 2026', at: '16:15', body: t },
+        { author: 'Assistant', mine: false, actor: 'system', date: '20 Nov 2026', at: '16:15', body: 'I would create **mock v3** with that change. In the real app it appears here as a new version.' } ]) }); }
+    };
+    const source = [
+      '---',
+      'id: INT-0001',
+      'project: PRJ-0001',
+      'title: Keel',
+      'author: Roberto Basile',
+      'created: 2026-11-20',
+      'updated: 2026-11-20',
+      'status: approved',
+      'version: 2',
+      'template: standard-intent@3',
+      'mocks:',
+      '  - link: Keel clickable mockup',
+      '  - docs/mocks/stage-bar.png',
+      'brainstorm_style: challenger@1',
+      '---',
+      '',
+      '# Intent: Keel',
+      '',
+      '## Problem',
+      'Coding agents build software in hours, but the steps before the build',
+      'still run at human speed: ideas wait to be written up, and requirements',
+      'and design pass through meetings and handoffs.',
+      '',
+      '## Desired outcome',
+      'A web app where anyone with an idea brainstorms with an LLM, produces a',
+      'versioned intent, spec and plan, and hands a scaffolded repository to any',
+      'coding agent. Changes made in the repository are read back.',
+      '',
+      '## Requirements',
+      '- REQ-001 Brainstorm with an LLM, driven by an intent template chosen at the start',
+      '- REQ-002 Generate intent.md with metadata (ID, author, dates, status, version)',
+      '- REQ-003 Versioned, editable templates for every document',
+      '- REQ-004 Stable requirement IDs traced from intent to spec, plan and tests',
+      '- REQ-005 Each stage unlocks only when the previous one is approved',
+      '- REQ-006 Hand off a repository scaffold any coding agent can build from',
+      '',
+      '## Constraints',
+      'Web UI, not VS Code. Any model, any coding agent. Single user first.',
+      'Stops at plan and scaffold: no code generation.',
+      '',
+      '## Open questions',
+      '- Public name: "Keel" is already used by other developer tools',
+      '- How should a change upstream affect later documents?'
+    ].join('\n');
+    return Object.assign(mockVals, {
+      tabs: [ { value: 'preview', label: 'Preview' }, { value: 'source', label: 'Markdown' }, { value: 'mock', label: 'Mock references', icon: 'attach_file' } ],
+      tab: this.state.tab,
+      setTab: (v) => this.setState({ tab: v }),
+      showPreview: this.state.tab === 'preview',
+      showSource: this.state.tab === 'source',
+      showMock: this.state.tab === 'mock',
+      source: source,
+      front: [
+        { k: 'ID', v: 'INT-0001' }, { k: 'Project', v: 'PRJ-0001' }, { k: 'Status', v: 'Approved' },
+        { k: 'Author', v: 'Roberto Basile' }, { k: 'Created', v: '20/11/2026' }, { k: 'Updated', v: '20/11/2026' },
+        { k: 'Version', v: '2' }, { k: 'Template', v: 'Standard intent · v3' }, { k: 'Mock references', v: '2' }, { k: 'Brainstorm style', v: 'Challenger · v1' }
+      ],
+      mockScreens: [
+        { screen: 'Reminder email', reqs: ['REQ-001', 'REQ-002'], color: 'primary' },
+        { screen: 'Adjust seats', reqs: ['Spec'], color: 'gray' },
+        { screen: 'Snooze button', reqs: ['Open question'], color: 'warning' }
+      ],
+      reqs: [
+        { id: 'REQ-001', text: 'Brainstorm with an LLM, driven by an intent template chosen at the start.' },
+        { id: 'REQ-002', text: 'Generate intent.md with metadata: ID, author, dates, status, version.' },
+        { id: 'REQ-003', text: 'Versioned, editable templates for every document.' },
+        { id: 'REQ-004', text: 'Stable requirement IDs traced from intent to spec, plan and tests.' },
+        { id: 'REQ-005', text: 'Each stage unlocks only when the previous one is approved.' },
+        { id: 'REQ-006', text: 'Hand off a repository scaffold any coding agent can build from.' }
+      ],
+      history: [
+        { v: 'Version 3 · draft, waiting for approval', when: '20/11/2026 16:58', what: 'Adds REQ-014: change requests with approval and impact (CR-0003).' },
+        { v: 'Version 2 · current', when: '20/11/2026 09:40', what: 'Web UI instead of a VS Code extension; read-back instead of one-way handoff.' },
+        { v: 'Version 1', when: '20/11/2026 09:25', what: 'Drafted from the brainstorm.' }
+      ],
+      groups: [
+        { label: 'Project · Keel', icon: 'lightbulb', items: [
+          { id: 'setup', label: 'Project setup', href: 'SetupKeel.dc.html' },
+          { id: 'explore', label: 'Explore', href: 'Explore.dc.html' },
+          { id: 'intent', label: 'Intent', href: 'Intent.dc.html' },
+          { id: 'spec', label: 'Spec', href: 'Spec.dc.html' },
+          { id: 'plan', label: 'Plan', href: 'Plan.dc.html' },
+          { id: 'handoff', label: 'Handoff', href: 'Handoff.dc.html' },
+          { id: 'roadmap', label: 'Roadmap', href: 'Roadmap.dc.html' },
+          { id: 'changes', label: 'Changes', href: 'ChangesList.dc.html' } ] },
+        { label: 'Library (.keel)', icon: 'folder', items: [
+          { id: 'templates', label: 'Templates', href: 'Templates.dc.html' },
+          { id: 'styles', label: 'Brainstorm styles', href: 'Styles.dc.html' },
+          { id: 'standards', label: 'Standards', href: 'Standards.dc.html' } ] },
+        { label: 'Settings', icon: 'settings', items: [
+          { id: 'settings', label: 'Settings', href: 'Settings.dc.html' } ] }
+      ],
+      brand: R.createElement('span', { style: { fontSize: 18, lineHeight: '26px', fontWeight: 700, color: '#000' } }, 'Keel'),
+      headerBar: R.createElement(DS.NavigationHeaderBar, { title: 'Intent', subtitle: 'Keel · ~/keel' })
+    });
+  }
+}
+</script>
+</body>
+</html>

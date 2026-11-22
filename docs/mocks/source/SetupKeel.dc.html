@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keel · Project setup</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/softwareone/tokens.css">
+<link rel="stylesheet" href="ds/softwareone/components/bundle.css">
+<script src="ds/softwareone/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#3366ff}a:hover{color:#2447b3}
+</style>
+</helmet>
+<x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Navigation" groups="{{groups}}" active-id="setup" brand="{{brand}}" header-bar="{{headerBar}}">
+<div style="box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 24px; font-family: var(--font-body, Arial); color: var(--text-body, #25282d); max-width: 960px;">
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <h1 style="margin: 0; font-size: 24px; line-height: 28.13px; font-weight: 700; color: var(--text-primary, #000);">Project setup</h1>
+    <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--text-muted, #6b7180);">Keel · PRJ-0001 · /Users/roberto/keel. Change the title, description, templates, brainstorm style or standards. Saved to .keel/config.yml and committed as a Keel commit.</p>
+  </div>
+
+  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="info" title="The project is past Explore" standalone="{{yes}}">Title and description can change at any time. A new template or style only affects a reopened brainstorm; approved documents keep the ones they were made with.</x-import>
+
+  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" label="Working title" optional="{{yes}}" placeholder="You can name it later" value="{{title}}" on-change="{{setTitle}}"></x-import>
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" label="The idea in a sentence or two" multiline="{{yes}}" rows="{{three}}" placeholder="What is the problem, and who has it?" value="{{pitch}}" on-change="{{setPitch}}"></x-import>
+    </div>
+  </x-import>
+
+  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;">
+        <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Intent template</h2>
+        <a href="Templates.dc.html" style="font-size: 14px; line-height: 20px;">Manage templates</a>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+        <sc-for list="{{options}}" as="o" hint-placeholder-count="2">
+          <button type="button" onClick="{{o.pick}}" style="{{o.style}}">
+            <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="font-size: 16px; line-height: 19.2px; font-weight: 500;">{{o.name}}</span>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{o.tag}}</span>
+            </span>
+            <span style="font-size: 14px; line-height: 20px; color: #434952; text-align: left;">{{o.desc}}</span>
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180; text-align: left;">{{o.sections}}</span>
+          </button>
+        </sc-for>
+      </div>
+      <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Changing the template maps your existing answers to the new sections. The assistant then asks only about what is missing.</span>
+    </div>
+  </x-import>
+
+  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;">
+        <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Brainstorm style</h2>
+        <a href="Styles.dc.html" style="font-size: 14px; line-height: 20px;">Manage styles</a>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+        <sc-for list="{{styleCards}}" as="o" hint-placeholder-count="5">
+          <button type="button" onClick="{{o.pick}}" style="{{o.style}}">
+            <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="font-size: 16px; line-height: 19.2px; font-weight: 500;">{{o.name}}</span>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{o.tag}}</span>
+            </span>
+            <span style="font-size: 14px; line-height: 20px; color: #434952; text-align: left;">{{o.desc}}</span>
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180; text-align: left;">{{o.tools}}</span>
+          </button>
+        </sc-for>
+      </div>
+      <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">A new style applies to the questions that follow; earlier messages stay as they are.</span>
+    </div>
+  </x-import>
+
+  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Document templates</h2>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Used when Keel writes the later documents and tests for this project. Defaults come from Settings.</span>
+        </div>
+        <a href="Templates.dc.html" style="font-size: 14px; line-height: 20px;">Manage templates</a>
+      </div>
+      <sc-for list="{{docGroups}}" as="dg" hint-placeholder-count="4">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{dg.label}}</span>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+            <sc-for list="{{dg.cards}}" as="o" hint-placeholder-count="2">
+              <button type="button" onClick="{{o.pick}}" style="{{o.style}}">
+                <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                  <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; text-align: left;">{{o.name}}</span>
+                  <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{o.tag}}</span>
+                </span>
+                <span style="font-size: 14px; line-height: 20px; color: #434952; text-align: left;">{{o.desc}}</span>
+                <span style="font-size: 12px; line-height: 14.4px; color: #6b7180; text-align: left;">{{o.sections}}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </x-import>
+
+  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Agent kit</h2>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Extra files for the coding agent. Choose any. {{kitCount}}</span>
+        </div>
+        <a href="Templates.dc.html" style="font-size: 14px; line-height: 20px;">Manage templates</a>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+        <sc-for list="{{kitCards}}" as="o" hint-placeholder-count="4">
+          <button type="button" onClick="{{o.toggle}}" style="{{o.style}}">
+            <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="display: inline-flex; align-items: center; gap: 8px;">
+                <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{o.icon}}" size="5" color="{{o.iconColor}}"></x-import>
+                <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; text-align: left;">{{o.name}}</span>
+              </span>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{o.tag}}</span>
+            </span>
+            <span style="font-size: 14px; line-height: 20px; color: #434952; text-align: left;">{{o.desc}}</span>
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180; text-align: left;">{{o.file}}</span>
+          </button>
+        </sc-for>
+      </div>
+      <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">For Claude Code these become native subagent files. For other agents the same instructions go into AGENTS.md under Agent roles.</span>
+    </div>
+  </x-import>
+
+  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Standards</h2>
+          <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Conventions and guidelines the spec, plan and code are checked against. Company standards are on by default. {{stdCount}}</span>
+        </div>
+        <a href="Standards.dc.html" style="font-size: 14px; line-height: 20px;">Manage standards</a>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+        <sc-for list="{{stdCards}}" as="o" hint-placeholder-count="4">
+          <button type="button" onClick="{{o.toggle}}" style="{{o.style}}">
+            <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="display: inline-flex; align-items: center; gap: 8px;">
+                <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{o.icon}}" size="5" color="{{o.iconColor}}"></x-import>
+                <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; text-align: left;">{{o.name}}</span>
+              </span>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{o.tag}}</span>
+            </span>
+            <span style="font-size: 14px; line-height: 20px; color: #434952; text-align: left;">{{o.desc}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </x-import>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+    <a href="Explore.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="check" size="5"></x-import>
+      Save and return to brainstorm
+    </a>
+    <a href="Explore.dc.html" style="display: inline-flex; align-items: center; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border-radius: 8px; color: #25282d; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">Cancel</a>
+  </div>
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sel: 'std', bstyle: 'challenger', title: 'Keel', pitch: 'A simple environment where anyone with an idea brainstorms with an LLM, checks feasibility from an engineering point of view, and decides whether to build it. Based on the AI-native SDLC playbook.' };
+  }
+  renderVals() {
+    const R = window.React;
+    const DS = window.SoftwareOneDesignSystem_52b182;
+    const st = this.state;
+    const defs = [
+      { id: 'std', name: 'Standard intent · v3', tag: 'Default', desc: 'For most ideas. The assistant covers users, scope and constraints as well as the problem.', sections: 'Problem*, Who it is for*, Desired outcome*, Scope, Constraints, Open questions' },
+      { id: 'light', name: 'Lightweight intent · v1', tag: '3 sections', desc: 'For small changes. A short brainstorm that goes straight to requirements.', sections: 'Problem*, Outcome*, Requirements*' }
+    ];
+    const base = 'display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box; padding: 16px; border-radius: 8px; cursor: pointer; font-family: inherit; color: #25282d; ';
+    return {
+      yes: true,
+      three: 3,
+      styleOptions: [ { value: 'challenger', label: 'Challenger · v1' }, { value: 'coach', label: 'Coach · v1' }, { value: 'cost', label: 'Cost and value · v2' }, { value: 'market', label: 'Market · v1 (web search)' }, { value: 'eng', label: 'Engineering-first · v1' } ],
+      bstyle: st.bstyle,
+      setStyle: (v) => this.setState({ bstyle: v }),
+      stdCards: [
+        { id: 'security', name: 'Security baseline', tag: 'Company · v2', desc: 'Secrets, access, input validation and logging.' },
+        { id: 'ts', name: 'TypeScript conventions', tag: 'Company · v3', desc: 'How TypeScript code is written and organised.' },
+        { id: 'api', name: 'API design guidelines', tag: 'Company · v1', desc: 'Naming, versioning and error formats for HTTP APIs.' },
+        { id: 'bdd', name: 'BDD style guide', tag: 'Company · v1', desc: 'How acceptance scenarios are written: behaviour, not clicks.' },
+        { id: 'mine', name: 'Small steps, tests first', tag: 'Personal · v1', desc: 'Small tasks, failing test first, short pull requests.' },
+        { id: 'plain', name: 'Plain markdown, readable without Keel', tag: 'Project · v1', desc: 'Every generated document stays useful without Keel.' },
+      ].map((d) => { const std = st.std || { security: true, ts: true, api: false, bdd: true, mine: true, plain: true }; const on = !!std[d.id]; return Object.assign({}, d, {
+        icon: on ? 'check_box' : 'check_box_outline_blank', iconColor: on ? '#3366ff' : '#6b7180',
+        toggle: () => this.setState({ std: Object.assign({}, std, { [d.id]: !on }) }),
+        style: 'display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box; padding: 16px; border-radius: 8px; cursor: pointer; font-family: inherit; color: #25282d; ' + (on ? 'background: #ebf0ff; border: 1px solid #3366ff;' : 'background: #ffffff; border: 1px solid #e0e5e8;')
+      }); }),
+      stdCount: (() => { const std = st.std || { security: true, ts: true, api: false, bdd: true, mine: true, plain: true }; return Object.keys(std).filter((k) => std[k]).length + ' of 6 selected.'; })(),
+      kitCards: [
+        { id: 'verifier', name: 'Verifier', tag: 'v1', desc: 'Runs the app and checks the change against plan.md and the acceptance tests. Reports only.', file: '.claude/agents/verifier.md' },
+        { id: 'simplifier', name: 'Code simplifier', tag: 'v1', desc: 'Removes needless complexity after a task, without changing behaviour.', file: '.claude/agents/code-simplifier.md' },
+        { id: 'researcher', name: 'Researcher', tag: 'v1', desc: 'Explores the codebase and reports back, keeping the main session focused.', file: '.claude/agents/researcher.md' },
+        { id: 'review', name: 'REVIEW.md', tag: 'v1', desc: 'Review policy: bugs, security and compliance with the spec and plan.', file: 'REVIEW.md' }
+      ].map((d) => { const kit = st.kit || { verifier: true, simplifier: true, researcher: true, review: true }; const on = !!kit[d.id]; return Object.assign({}, d, {
+        icon: on ? 'check_box' : 'check_box_outline_blank', iconColor: on ? '#3366ff' : '#6b7180',
+        toggle: () => this.setState({ kit: Object.assign({}, kit, { [d.id]: !on }) }),
+        style: 'display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box; padding: 16px; border-radius: 8px; cursor: pointer; font-family: inherit; color: #25282d; ' + (on ? 'background: #ebf0ff; border: 1px solid #3366ff;' : 'background: #ffffff; border: 1px solid #e0e5e8;')
+      }); }),
+      kitCount: (() => { const kit = st.kit || { verifier: true, simplifier: true, researcher: true, review: true }; const n = Object.keys(kit).filter((k) => kit[k]).length; return n + ' of 4 selected.'; })(),
+      docGroups: [
+        { key: 'spec', label: 'Spec', cards: [
+          { id: 'std', name: 'Requirements and design spec', tag: 'Default · v2', desc: 'Requirements, approach, feasibility review and flagged concerns.', sections: 'Requirements*, Approach*, Feasibility*, Flagged concerns*, Out of scope' },
+          { id: 'light', name: 'Short spec', tag: 'v1', desc: 'For small changes: requirements and approach only.', sections: 'Requirements*, Approach*' } ] },
+        { key: 'plan', label: 'Plan', cards: [
+          { id: 'std', name: 'Implementation plan', tag: 'Default · v2', desc: 'Ordered tasks linked to requirements, with risks and a test strategy.', sections: 'Tasks*, Files that change, Risks*, Test strategy*' } ] },
+        { key: 'agents', label: 'Agent instructions', cards: [
+          { id: 'std', name: 'AGENTS.md', tag: 'Default · v1', desc: 'Read-first pointers, commands, rules and what done means. Works with any coding agent.', sections: 'Read first*, Commands*, Rules*, Visual reference, Done means*' } ] },
+        { key: 'roadmap', label: 'Roadmap', cards: [
+          { id: 'std', name: 'Roadmap', tag: 'Default · v1', desc: 'Now, Next, Later and Not doing. Now is the only scope the agent builds.', sections: 'Now*, Next*, Later, Not doing*' } ] },
+        { key: 'acceptance', label: 'Acceptance tests', cards: [
+          { id: 'std', name: 'BDD scenarios', tag: 'Default · Gherkin', desc: 'Given/When/Then scenarios per requirement. Readable by you, runnable by the agent.', sections: 'features/*.feature, tagged @REQ-xxx, with failing step stubs' },
+          { id: 'plain', name: 'Plain test stubs', tag: 'Code', desc: 'One failing test file per requirement, in the project language.', sections: 'tests/acceptance/, one stub per requirement' } ] },
+        { key: 'decision', label: 'Decision record', cards: [
+          { id: 'std', name: 'Decision record', tag: 'Default · v1', desc: 'Go, Park or No-go with the reason and any conditions.', sections: 'Decision*, Reason*, Conditions' } ] }
+      ].map((g) => Object.assign({}, g, { cards: g.cards.map((d) => Object.assign({}, d, {
+        pick: () => this.setState({ docSel: Object.assign({}, st.docSel || {}, { [g.key]: d.id }) }),
+        style: 'display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box; padding: 16px; border-radius: 8px; cursor: pointer; font-family: inherit; color: #25282d; ' + (d.id === ((st.docSel || {})[g.key] || 'std') ? 'background: #ebf0ff; border: 1px solid #3366ff;' : 'background: #ffffff; border: 1px solid #e0e5e8;')
+      })) })),
+      styleCards: [
+        { id: 'challenger', name: 'Challenger', tag: 'Default · v1', desc: 'Assertive. Tests your assumptions and looks for reasons the idea could fail.', tools: 'Tools: none' },
+        { id: 'coach', name: 'Coach', tag: 'v1', desc: 'Supportive. Helps you put the idea into words, with examples when you are stuck.', tools: 'Tools: none' },
+        { id: 'cost', name: 'Cost and value', tag: 'v2', desc: 'Effort, running cost, return and build vs buy. Shows the assumptions behind every estimate.', tools: 'Tools: cost estimator' },
+        { id: 'market', name: 'Market', tag: 'v1', desc: 'Searches for similar products and asks how yours differs. Cites sources.', tools: 'Tools: web search, web fetch' },
+        { id: 'eng', name: 'Engineering-first', tag: 'v1', desc: 'Raises systems, data and security questions early.', tools: 'Tools: none' }
+      ].map((d) => Object.assign({}, d, {
+        pick: () => this.setState({ bstyle: d.id }),
+        style: 'display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box; padding: 16px; border-radius: 8px; cursor: pointer; font-family: inherit; color: #25282d; ' + (d.id === st.bstyle ? 'background: #ebf0ff; border: 1px solid #3366ff;' : 'background: #ffffff; border: 1px solid #e0e5e8;')
+      })),
+      styleDesc: ({ challenger: 'Assertive. Tests your assumptions and looks for reasons the idea could fail. Default.', coach: 'Supportive. Helps you put the idea into words, with examples when you are stuck.', cost: 'Cost-focused. Effort, running cost, return and build vs buy. Shows the assumptions behind every estimate.', market: 'Market-focused. Searches the web for similar products and asks how yours differs. Cites sources.', eng: 'Engineering-first. Raises systems, data and security questions early.' })[st.bstyle],
+      title: st.title,
+      setTitle: (e) => this.setState({ title: e && e.target ? e.target.value : e }),
+      pitch: st.pitch,
+      setPitch: (e) => this.setState({ pitch: e && e.target ? e.target.value : e }),
+      options: defs.map((d) => Object.assign({}, d, {
+        sections: 'Sections: ' + d.sections + '  (* required)',
+        pick: () => this.setState({ sel: d.id }),
+        style: base + (d.id === st.sel ? 'background: #ebf0ff; border: 1px solid #3366ff;' : 'background: #ffffff; border: 1px solid #e0e5e8;')
+      })),
+      groups: [
+        { label: 'Project · Keel', icon: 'lightbulb', items: [
+          { id: 'setup', label: 'Project setup', href: 'SetupKeel.dc.html' },
+          { id: 'explore', label: 'Explore', href: 'Explore.dc.html' } ] },
+        { label: 'Library (.keel)', icon: 'folder', items: [
+          { id: 'templates', label: 'Templates', href: 'Templates.dc.html' },
+          { id: 'styles', label: 'Brainstorm styles', href: 'Styles.dc.html' },
+          { id: 'standards', label: 'Standards', href: 'Standards.dc.html' } ] },
+        { label: 'Settings', icon: 'settings', items: [
+          { id: 'settings', label: 'Settings', href: 'Settings.dc.html' } ] }
+      ],
+      brand: R.createElement('span', { style: { fontSize: 18, lineHeight: '26px', fontWeight: 700, color: '#000' } }, 'Keel'),
+      headerBar: R.createElement(DS.NavigationHeaderBar, { title: 'Project setup', subtitle: 'Keel · ~/keel' })
+    };
+  }
+}
+</script>
+</body>
+</html>

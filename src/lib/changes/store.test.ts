@@ -9,7 +9,9 @@ import { computeStatus, createChange, dependencyOrder, listChanges, nextNumber, 
 /** A copy of this repository's own changes/ and tasks/ folders: CR-0003 to CR-0012, as written by hand. */
 function realChanges(): string {
   const root = mkdtempSync(join(tmpdir(), 'keel-changes-'));
-  cpSync(join(process.cwd(), 'changes'), join(root, 'changes'), { recursive: true });
+  // Only CR-0003 to CR-0012: requests the owner adds later do not change what this test checks.
+  const later = /changes\/CR-(\d{4})/;
+  cpSync(join(process.cwd(), 'changes'), join(root, 'changes'), { recursive: true, filter: (src) => Number(later.exec(src)?.[1] ?? 0) <= 12 });
   cpSync(join(process.cwd(), 'tasks'), join(root, 'tasks'), { recursive: true });
   return root;
 }

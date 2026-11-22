@@ -21,4 +21,9 @@ describe('Markdown', () => {
     expect(out).not.toContain('javascript:');
     expect(out).toContain('<a href="mock-001-a.png" rel="noopener noreferrer">rel</a>');
   });
+
+  it('renders _emphasis_ but not underscores inside words, and marks lists of requirements', () => {
+    expect(html('_Not written yet._ snake_case_name')).toBe('<div class="markdown"><p><em>Not written yet.</em> snake_case_name</p></div>');
+    expect(html('- REQ-001 One\n- REQ-002 Two\n')).toContain('<ul class="req-list">');
+  });
 });
