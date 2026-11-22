@@ -16,13 +16,13 @@ export const GROUPS: { group: TemplateGroup; label: string }[] = [
   { group: 'roadmap', label: 'Roadmap' },
   { group: 'decision', label: 'Decision records' },
   { group: 'change', label: 'Change requests · request, prompt, tasks and index' },
-  { group: 'report', label: 'Reports' },
+  { group: 'report', label: 'Reports and discussions' },
   { group: 'agent-instructions', label: 'Agent instructions' },
   { group: 'agent-kit', label: 'Agent kit' },
 ];
 
 // Seed kinds that share a group: the change request, its prompt, tasks and the changes index are one group (CR-0013).
-const GROUP_OF: Record<string, TemplateGroup> = { task: 'change', change: 'change', 'change-prompt': 'change', 'changes-index': 'change' };
+const GROUP_OF: Record<string, TemplateGroup> = { task: 'change', change: 'change', 'change-prompt': 'change', 'changes-index': 'change', report: 'report', discussion: 'report' };
 
 export interface TemplateSummary {
   id: string;          // e.g. standard-intent

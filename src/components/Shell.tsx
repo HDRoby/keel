@@ -16,7 +16,7 @@ export interface ShellProject {
 
 const PROJECT_LINKS: [string, string][] = [
   ['/setup', 'Project setup'], ['/explore', 'Explore'], ['/intent', 'Intent'], ['/spec', 'Spec'], ['/plan', 'Plan'],
-  ['/handoff', 'Handoff'], ['/roadmap', 'Roadmap'], ['/changes', 'Changes'], ['/readiness', 'AI readiness'], ['/trace', 'Traceability'],
+  ['/handoff', 'Handoff'], ['/roadmap', 'Roadmap'], ['/changes', 'Changes'], ['/discuss', 'Discuss a change'], ['/readiness', 'AI readiness'], ['/trace', 'Traceability'],
 ];
 const LIBRARY_LINKS: [string, string][] = [['/templates', 'Templates'], ['/styles', 'Brainstorm styles'], ['/standards', 'Standards']];
 

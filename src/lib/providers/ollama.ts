@@ -74,7 +74,7 @@ export async function ollamaStatus(base: string, fetchImpl: FetchLike = fetch): 
 }
 
 /**
- * The default model per task from the local models: the largest for spec, plan and feasibility; for section comments
+ * The default model per task from the local models: the largest for spec, plan, feasibility and discussion; for section comments
  * the largest from 3B to 14B, else the smallest.
  */
 export function defaultModels(all: LocalModel[]): Partial<Record<ModelTask, string>> {
@@ -84,7 +84,7 @@ export function defaultModels(all: LocalModel[]): Partial<Record<ModelTask, stri
   const bySize = [...models].sort((a, b) => b.billions - a.billions || b.sizeBytes - a.sizeBytes);
   const largest = bySize[0]?.name ?? '';
   const mid = bySize.find((m) => m.billions >= 3 && m.billions <= 14) ?? bySize.at(-1);
-  return { documents: largest, feasibility: largest, brainstorm: mid?.name ?? largest };
+  return { documents: largest, feasibility: largest, discussion: largest, brainstorm: mid?.name ?? largest };
 }
 
 /** What a model is good for in Keel, from its size. */

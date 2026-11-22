@@ -6,9 +6,9 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 19
+version: 20
 template: implementation-plan@2
-from_spec: SPC-0001@18
+from_spec: SPC-0001@19
 ---
 
 # Plan: Keel v0.1
@@ -120,8 +120,15 @@ Runs after CR-0005 (R10); CR-0006 builds on it.
 | --- | --- | --- | --- |
 | R21 | AI readiness report | REQ-016, REQ-012, REQ-014 | ai-readiness |
 
+## Rework for CR-0016
+
+| Task | Title | Requirements | Scenarios |
+| --- | --- | --- | --- |
+| R22 | Discuss a change | REQ-017, REQ-014, REQ-009 | discuss-a-change |
+
 ## Version history
 
+- v20: task R22 for CR-0016.
 - v19: task R21 for CR-0015.
 - v18: task R20 for CR-0014.
 - v17: task R19 for CR-0013.

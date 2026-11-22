@@ -152,6 +152,8 @@ An approved document is never reopened: it changes through a **change request**.
 
 **Plan the change**: the assistant breaks the request into new tasks with the files likely to change (from a code map of file names), suggests scenarios, and links decision records and mock screens. The package then follows your templates, and `changes/README.md` lists every open request in order.
 
+**Discuss a change.** Instead of filling in the form, press **Discuss a change** on the Changes page (or Discuss on a roadmap item, a readiness advice item or an edit to an approved document) and talk it through. The assistant sees your intent, requirements, decisions, plan, open change requests and file names (you can untick any of them, and attach files yourself). It checks the idea against what exists, asks what it needs, offers options with one recommended, and then shows a **Proposed change request** card. Edit it, keep talking, or press **Agree and create the change request**: only that button creates anything. Keel gives the IDs, writes the package as a Draft, and keeps the conversation as `discussion.md` in the change request folder. A discussion you stop can be parked; it stays in `.keel/discussions`.
+
 **A change request folder**:
 
 ```
@@ -186,7 +188,7 @@ Two parts:
 **You, on this computer** (`~/.config/keel`, never committed):
 
 - **Model provider**: Ollama (default, with the models installed on this computer listed), Anthropic, OpenAI, Azure OpenAI, or another OpenAI-compatible server. Keys are stored encrypted. **Test connection** / **Check again**.
-- **Model per task**: section comments, spec and plan, feasibility review.
+- **Model per task**: section comments, spec and plan, feasibility review, discussion.
 - **Author name** (from `git config user.name`).
 - **Explore reviews**: pause before a review and the minimum interval.
 
@@ -210,6 +212,7 @@ In the project folder (committed, except the cache):
   brainstorm/       Explore sections, comments and threads
   mocks/            mock files you attach
   reports/          AI readiness reports
+  discussions/      discussions not (yet) in a change request
   cache/            run lock for this folder (not committed)
 docs/
   intent.md  spec.md  plan.md  roadmap.md

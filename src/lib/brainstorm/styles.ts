@@ -13,12 +13,17 @@ export interface Style {
   name: string;         // from the first heading, e.g. Challenger
   description: string;
   instructions: string; // the skill body, used as the system prompt
+  kind: StyleKind;      // brainstorm (Explore) or discussion (Discuss a change, CR-0016)
 }
+
+export type StyleKind = 'brainstorm' | 'discussion';
+export const DEFAULT_DISCUSSION_STYLE = 'requirements-partner@1';
 
 const header = z.looseObject({
   name: z.string().regex(NAME),
   description: z.string().default(''),
   version: z.number().int().min(1),
+  kind: z.enum(['brainstorm', 'discussion']).default('brainstorm'),
 });
 
 /** Parses a style skill file. */
@@ -31,9 +36,9 @@ export function parseStyle(content: string): Result<Style, 'invalid-style'> {
   }
   const data = header.safeParse(parsed.data);
   if (!data.success) return fail('invalid-style', z.prettifyError(data.error));
-  const { name, description, version } = data.data;
+  const { name, description, version, kind } = data.data;
   const title = /^# (.+)$/m.exec(parsed.content)?.[1]?.trim() ?? name;
-  return ok({ id: name, version, ref: `${name}@${version}`, name: title, description, instructions: parsed.content.trim() });
+  return ok({ id: name, version, ref: `${name}@${version}`, name: title, description, instructions: parsed.content.trim(), kind });
 }
 
 /** Copies seed/styles/<name>/SKILL.md into the project's .keel/ at Initialise. */
@@ -41,9 +46,9 @@ export function ensureStyles(root: string, seedDir: string): Result<number, 'inv
   return seedSkills(root, seedDir, 'styles', parseStyle);
 }
 
-/** The latest version of every style, sorted by name. */
-export function listStyles(root: string): Style[] {
-  return latestSkills(root, 'styles', parseStyle);
+/** The latest version of every style of one kind (brainstorm by default), sorted by name. */
+export function listStyles(root: string, kind: StyleKind | 'all' = 'brainstorm'): Style[] {
+  return latestSkills(root, 'styles', parseStyle).filter((s) => kind === 'all' || s.kind === kind);
 }
 
 /** One version of a style, by ref such as "challenger@1". */

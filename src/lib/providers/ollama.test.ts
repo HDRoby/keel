@@ -42,10 +42,10 @@ describe('Ollama', () => {
   });
 
   it('picks the largest model for spec, plan and feasibility, and a mid-size one for section comments', () => {
-    expect(defaultModels([model('a:70b', 70), model('b:8b', 8), model('c:1b', 1)])).toEqual({ documents: 'a:70b', feasibility: 'a:70b', brainstorm: 'b:8b' });
-    expect(defaultModels([model('c:1b', 1), model('d:2b', 2)])).toEqual({ documents: 'd:2b', feasibility: 'd:2b', brainstorm: 'c:1b' });
+    expect(defaultModels([model('a:70b', 70), model('b:8b', 8), model('c:1b', 1)])).toEqual({ documents: 'a:70b', feasibility: 'a:70b', discussion: 'a:70b', brainstorm: 'b:8b' });
+    expect(defaultModels([model('c:1b', 1), model('d:2b', 2)])).toEqual({ documents: 'd:2b', feasibility: 'd:2b', discussion: 'd:2b', brainstorm: 'c:1b' });
     expect(defaultModels([])).toEqual({});
-    expect(defaultModels([model('nomic-embed-text:latest', 40), model('b:8b', 8)])).toEqual({ documents: 'b:8b', feasibility: 'b:8b', brainstorm: 'b:8b' });
+    expect(defaultModels([model('nomic-embed-text:latest', 40), model('b:8b', 8)])).toEqual({ documents: 'b:8b', feasibility: 'b:8b', discussion: 'b:8b', brainstorm: 'b:8b' });
     expect(billionsOf(undefined, 'qwen3:32b')).toBe(32);
     expect(billionsOf('270M', 'x')).toBeCloseTo(0.27);
     expect([goodFor(model('a', 32)), goodFor(model('b', 12)), goodFor(model('c', 4)), goodFor(model('d', 1))]).toEqual([

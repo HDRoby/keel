@@ -9,8 +9,9 @@ const SEED = join(process.cwd(), 'seed');
 describe('styles', () => {
   it('parses a style skill file', () => {
     expect(parseStyle('---\nname: coach\ndescription: Kind.\nversion: 2\n---\n\n# Coach\n\nBe kind.\n')).toEqual({
-      ok: true, value: { id: 'coach', version: 2, ref: 'coach@2', name: 'Coach', description: 'Kind.', instructions: '# Coach\n\nBe kind.' },
+      ok: true, value: { id: 'coach', version: 2, ref: 'coach@2', name: 'Coach', description: 'Kind.', instructions: '# Coach\n\nBe kind.', kind: 'brainstorm' },
     });
+    expect(parseStyle('---\nname: requirements-partner\nversion: 1\nkind: discussion\n---\n# Requirements partner\n')).toMatchObject({ ok: true, value: { kind: 'discussion' } });
     expect(parseStyle('---\nname: Bad Name\nversion: 1\n---\n')).toMatchObject({ error: 'invalid-style' });
   });
 

@@ -48,6 +48,7 @@ export interface ChangeRequest {
   author?: string;
   origin: 'keel' | 'hand';
   source?: string;          // the document a Keel request changes, e.g. docs/intent.md
+  discussion?: string;      // the discussion it came from, e.g. DSC-0001 (CR-0016)
   impact: ImpactRecord[];   // Keel requests: the decision for each affected document
   tasks: ChangeTask[];
   hasPrompt: boolean;
@@ -68,6 +69,7 @@ const headerSchema = z.looseObject({
   author: z.string().optional(),
   origin: z.enum(['keel', 'hand']).optional(),
   source: z.string().optional(),
+  discussion: z.string().regex(/^DSC-\d{4,}$/).optional(),
   impact: z.array(z.object({ document: z.string(), decision: z.enum(['pending', 'updated', 'valid', 'later']) })).default([]),
 });
 
@@ -119,7 +121,7 @@ export function readChange(root: string, folderName: string): ChangeRequest | un
     requirements: [...new Set(h.requirements.join(' ').match(/REQ-\d{3,}/g) ?? [])],
     dependsOn: h.depends_on.flatMap((d) => d.match(/CR-\d{4,}/g) ?? []),
     ...(h.created ? { created: h.created } : {}), ...(h.author ? { author: h.author } : {}),
-    origin: h.origin ?? 'hand', ...(h.source ? { source: h.source } : {}), impact: h.impact, body: parsed.content,
+    origin: h.origin ?? 'hand', ...(h.source ? { source: h.source } : {}), ...(h.discussion ? { discussion: h.discussion } : {}), impact: h.impact, body: parsed.content,
   };
 }
 
@@ -242,7 +244,10 @@ export interface NewChange {
   impact?: ImpactRecord[];
   body?: string;                    // the request's markdown; otherwise written from the change request template
   draft?: ChangeDraft;              // the assistant's Why, What changes and Done when (CR-0013)
+  requirementChanges?: { id: string; change: string; text: string }[];   // rows of "Requirement changes" (CR-0016)
+  impactRows?: { area: string; requirements: string[]; what: string }[]; // rows of "Impact by requirement" (CR-0016)
   extra?: Record<string, unknown>;
+  commit?: boolean;                 // false: write only, the caller commits (Discuss a change, CR-0016)
 }
 
 function header(store: Store, id: string, input: NewChange, author: string): Record<string, unknown> {
@@ -271,11 +276,16 @@ export async function createChange(store: Store, input: NewChange): Promise<Resu
   const folder = `${CHANGES_DIR}/${id}`;
   mkdirSync(join(store.root, folder), { recursive: true });
   // The body: the caller's, or the chosen change request template (CR-0013), or the plain one for older projects.
-  const fromTemplate = input.body === undefined ? changeBody(store, { id, title: input.title, reason: input.reason, requirements: input.requirements ?? [], impact: input.impact ?? [], ...(input.draft ? { draft: input.draft } : {}) }) : undefined;
+  const fromTemplate = input.body === undefined ? changeBody(store, {
+    id, title: input.title, reason: input.reason, requirements: input.requirements ?? [], impact: input.impact ?? [], ...(input.draft ? { draft: input.draft } : {}),
+    ...(input.requirementChanges ? { requirementChanges: input.requirementChanges } : {}), ...(input.impactRows ? { impactRows: input.impactRows } : {}),
+  }) : undefined;
   const fields = header(store, id, { ...input, extra: { ...(fromTemplate ? { template: fromTemplate.template } : {}), ...input.extra } }, project.ok ? project.value.author : 'Keel');
   writeFileAtomic(join(store.root, folder, `${id}.md`), matter.stringify(`\n${input.body ?? fromTemplate?.body ?? defaultBody(input)}`, fields));
-  await commitFiles(store.root, [folder], `Raise ${id}: ${input.title.trim()}`);
-  await writeChangesIndex(store);   // changes/README.md (CR-0013)
+  if (input.commit !== false) {
+    await commitFiles(store.root, [folder], `Raise ${id}: ${input.title.trim()}`);
+    await writeChangesIndex(store);   // changes/README.md (CR-0013)
+  }
   const made = readChange(store.root, id);
   return made ? ok(made) : fail('invalid-input', `${id} could not be read back`);
 }

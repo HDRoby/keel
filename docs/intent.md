@@ -6,7 +6,7 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 5
+version: 6
 template: standard-intent@3
 brainstorm_style: challenger@1
 mocks:
@@ -34,6 +34,7 @@ A web app where anyone with an idea brainstorms with an LLM, then produces a ver
 - REQ-012 One project per folder, with its config and libraries in a .keel folder
 - REQ-014 Change requests across stages, listed and tracked on a Changes page
 - REQ-016 On demand, for any folder, an AI readiness report: a local scan against the Keel standard, then a model review of the gaps and of the AI files the user chooses to share
+- REQ-017 Discuss a change with the assistant in a chat grounded in Keel's documents; only the user's explicit agreement creates the change request, and the discussion is kept with it
 
 ## Affected users and systems
 
@@ -53,6 +54,7 @@ Proposers (engineers, product managers, anyone with an idea), coding agents, git
 
 ## Version history
 
+- v6: Discuss a change, REQ-017 (CR-0016).
 - v5: AI readiness report, REQ-016 (CR-0015).
 - v4: change requests across stages (CR-0003).
 - v3: one project per folder, in the code repository (CR-0004).

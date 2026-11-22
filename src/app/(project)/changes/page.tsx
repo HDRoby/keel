@@ -10,7 +10,7 @@ import { CopyButton } from '@/components/CopyButton';
 import { ChangeStatus } from '@/components/ChangeStatus';
 import { Icon } from '@/components/Icons';
 import { ErrorAlert, Topbar } from '@/components/Shell';
-import { Button } from '@/components/ui/Button';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DataTable } from '@/components/ui/DataTable';
 import { Field } from '@/components/ui/Field';
@@ -50,7 +50,8 @@ export default async function ChangesPage({ searchParams }: { searchParams: Prom
       <Topbar title="Changes" />
       <main className="content">
         <PageHeader title="Changes" meta="changes/"
-          description={<>Every change request for this project, read from the <code>changes/</code> folder. Keel raises them when an approved document changes; you can also add your own. Status comes from each request&apos;s header and the status of its tasks.</>} />
+          description={<>Every change request for this project, read from the <code>changes/</code> folder. Keel raises them when an approved document changes; you can also add your own. Status comes from each request&apos;s header and the status of its tasks.</>}
+          actions={<ButtonLink href="/discuss" variant="primary">Discuss a change</ButtonLink>} />
         <ErrorAlert error={error} />
         {notice && <Notice kind="success" role="status">{notice}</Notice>}
 

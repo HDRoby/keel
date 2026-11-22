@@ -45,12 +45,13 @@ export interface ProviderConfig {
 }
 
 /** The tasks that can each use a different model (Settings › Model per task). */
-export type ModelTask = 'brainstorm' | 'documents' | 'feasibility';
+export type ModelTask = 'brainstorm' | 'documents' | 'feasibility' | 'discussion';
 
 export const MODEL_TASKS: { task: ModelTask; label: string }[] = [
   { task: 'brainstorm', label: 'Section comments' },
   { task: 'documents', label: 'Spec and plan' },
   { task: 'feasibility', label: 'Feasibility review' },
+  { task: 'discussion', label: 'Discussion' },
 ];
 
 /** The tasks of MODEL_TASKS, as a tuple for z.enum. */

@@ -31,6 +31,7 @@ export interface Project {
   codeMap: 'off' | 'names' | 'files';   // what planning a change may read (CR-0013)
   changesIndex: 'auto' | 'off';         // keep changes/README.md up to date (CR-0013)
   style?: string;      // brainstorm style, e.g. challenger@1
+  discussionStyle: string;              // Discuss a change (CR-0016), e.g. requirements-partner@1
   standards: string[]; // e.g. ['security-baseline@2']
   paths: ProjectPaths;
   commit: 'auto' | 'off';
@@ -62,6 +63,7 @@ const configSchema = z.looseObject({
     task: z.string().regex(REF).optional(), change: z.string().regex(REF).optional(), 'change-prompt': z.string().regex(REF).optional(), 'changes-index': z.string().regex(REF).optional(), 'readiness-report': z.string().regex(REF).optional(),
   }).default({}),
   style: z.string().regex(REF).optional(),
+  discussion_style: z.string().regex(REF).default('requirements-partner@1'),
   standards: z.array(z.string().regex(REF)).default([]),
   paths: z.object({
     docs: z.string().regex(FOLDER).default('docs'),
@@ -139,9 +141,9 @@ export function readProject(root: string): Result<Project, ProjectError> {
   if (!data) return fail('invalid-config', `${CONFIG_FILE} is not valid YAML`);
   const parsed = configSchema.safeParse(data);
   if (!parsed.success) return fail('invalid-config', z.prettifyError(parsed.error));
-  const { id, title, description, author, created, templates, style, standards, paths, commit, mock_gate: mockGate, code_map: codeMap, changes_index: changesIndex } = parsed.data;
+  const { id, title, description, author, created, templates, style, discussion_style: discussionStyle, standards, paths, commit, mock_gate: mockGate, code_map: codeMap, changes_index: changesIndex } = parsed.data;
   const chosen = Object.fromEntries(Object.entries(templates).filter(([k, v]) => typeof v === 'string' && ['intent', 'spec', 'plan', 'task', 'change', 'change-prompt', 'changes-index', 'readiness-report'].includes(k))) as Project['templates'];
-  return ok({ id, title, description, author, created, templates: chosen, style, standards, paths, commit, mockGate, codeMap, changesIndex });
+  return ok({ id, title, description, author, created, templates: chosen, style, discussionStyle, standards, paths, commit, mockGate, codeMap, changesIndex });
 }
 
 export interface InitialiseInput {

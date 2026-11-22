@@ -76,13 +76,14 @@ export default async function RoadmapPage({ searchParams }: { searchParams: Prom
                     <form action={raiseFromRoadmapAction} className={css.actions}>
                       <input type="hidden" name="item" value={i.raw} />
                       <Button type="submit" variant="secondary" small>Raise change request</Button>
+                      <ButtonLink href={`/discuss?start=${encodeURIComponent(`From the roadmap: ${i.raw}`)}`} variant="text" small>Discuss</ButtonLink>
                     </form>
                   )))}
                 </ul>
                 {columns.next.items.length === 0 && <p className={css.sub}>Nothing in Next yet.</p>}
               </Card>
               <Card label="Later" title="Later" meta="Possible future work. No commitment." actions={<Tag>{String(columns.later.items.length)}</Tag>}>
-                <ul className={css.items}>{columns.later.items.map((i) => item(i))}</ul>
+                <ul className={css.items}>{columns.later.items.map((i) => item(i, <ButtonLink href={`/discuss?start=${encodeURIComponent(`From the roadmap: ${i.raw}`)}`} variant="text" small>Discuss</ButtonLink>))}</ul>
                 {columns.later.items.length === 0 && <p className={css.sub}>Nothing in Later yet.</p>}
               </Card>
             </div>

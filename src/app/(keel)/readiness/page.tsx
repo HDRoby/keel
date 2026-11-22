@@ -147,6 +147,7 @@ function ReportView({ report, reports, compare, created, handed, inProject, root
                   <Tag tone={IMPACT[a.impact]}>Impact: {a.impact}</Tag><Tag>Effort: {a.effort}</Tag>
                   <Tag tone={a.source === 'Model review' ? 'handoff' : 'neutral'}><Icon name={a.source === 'Model review' ? 'smart_toy' : 'rule'} size={16} /> {a.source}</Tag>
                   <span className={css.muted}>Based on: {where(a.evidence)}</span>
+                  {keel && <Link href={`/discuss?start=${encodeURIComponent(`From the AI readiness report: ${a.title}. ${a.why}`)}`}>Discuss</Link>}
                 </div>
               </li>
             ))}
