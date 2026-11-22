@@ -18,7 +18,7 @@ import { CodeBlock } from './ui/CodeBlock';
 import { Field } from './ui/Field';
 import { LinkButton } from './ui/LinkButton';
 import { MetaGrid } from './ui/MetaGrid';
-import { Tabs } from './ui/Tabs';
+import { Tabs, type TabItem } from './ui/Tabs';
 import { Tag, type TagTone } from './ui/Tag';
 import styles from './DocumentReview.module.css';
 
@@ -43,9 +43,11 @@ interface Props {
   after?: ReactNode;     // under the document, e.g. regenerate
   aside?: ReactNode;     // cards at the top of the side column, e.g. the decision and mock references
   collapsed?: boolean;   // show the text behind "Show <file>" (the plan, whose tasks have their own table)
+  tabs?: TabItem[];      // tabs instead of Preview and Markdown (the spec: Requirements, Design, Acceptance scenarios)
+  panel?: ReactNode;     // the content of a custom tab, instead of the document
 }
 
-export async function DocumentReview({ home, document, doc, reviewer, view, note, noteAction, before, after, aside, collapsed = false }: Props) {
+export async function DocumentReview({ home, document, doc, reviewer, view, note, noteAction, before, after, aside, collapsed = false, tabs, panel }: Props) {
   const approvals = approvalsOf(doc);
   const { header } = doc;
   const versions = (await documentVersions(home, doc.path)).reverse();
@@ -76,18 +78,18 @@ export async function DocumentReview({ home, document, doc, reviewer, view, note
                 {noteAction}
               </div>
             )}
-            <Tabs label={`${doc.path} view`} items={[
+            <Tabs label={`${doc.path} view`} items={tabs ?? [
               { href: base, label: 'Preview', current: !markdown },
               { href: `${base}?view=markdown`, label: 'Markdown', current: markdown },
             ]} />
-            {markdown ? (
+            {panel ?? (markdown ? (
               <CodeBlock label={`Markdown of ${doc.path}`}>{readFileSync(join(home, doc.path), 'utf8')}</CodeBlock>
             ) : (
               <>
                 <MetaGrid label="Document header" items={facts} />
                 {collapsed ? <details><summary className={styles.summary}>Show {doc.path.split('/').pop()}</summary>{text}</details> : text}
               </>
-            )}
+            ))}
           </div>
         </Card>
         {after}
