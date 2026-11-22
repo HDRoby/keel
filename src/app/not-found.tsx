@@ -1,12 +1,20 @@
 // Not found: a document, template or style that does not exist (or an unsafe address).
-import Link from 'next/link';
+import { Topbar } from '@/components/Shell';
+import { ButtonLink } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function NotFound() {
   return (
-    <main className="content">
-      <h1>Not found</h1>
-      <p>There is nothing at this address. It may have been removed, or the link is wrong.</p>
-      <p><Link href="/">Back to Keel</Link></p>
-    </main>
+    <>
+      <Topbar title="Not found" />
+      <main className="content narrow">
+        <PageHeader title="Not found" />
+        <Card label="Not found">
+          <p>There is nothing at this address. It may have been removed, or the link is wrong.</p>
+          <ButtonLink href="/" variant="primary">Back to Keel</ButtonLink>
+        </Card>
+      </main>
+    </>
   );
 }
