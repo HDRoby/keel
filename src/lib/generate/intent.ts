@@ -1,8 +1,14 @@
 // intent.md assembled from Explore (REQ-002, task R10): the sections go into the intent template exactly as the
 // user wrote or accepted them, with no model call. Requirement rows get their IDs when the intent is drafted;
 // an ID never changes and is never reused. Once the intent is approved, edits in Explore are saved as a change
-// request in docs/changes/ and intent.md stays as approved (owner decision 3).
-import { EXPLORE_FILE, loadContext, requiredFilled, sectionOf, sectionText, writeExplore, type BrainstormError, type Context, type Explore } from '../brainstorm/session';
+// request in changes/CR-NNNN/ (CR-0003) and intent.md stays as approved until the request is approved.
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import matter from 'gray-matter';
+import { EXPLORE_FILE, exploreFromIntent, loadContext, readExplore, requiredFilled, sectionOf, sectionText, writeExplore, type BrainstormError, type Context, type Explore } from '../brainstorm/session';
+import { changeImpact, sizeOf } from '../changes/impact';
+import { createChange, formatChangeId, nextNumber, readChange, updateKeelChange, type ChangeRequest } from '../changes/store';
+import { writeFileAtomic } from '../store/atomic';
 import { fail, ok, type Result } from '../result';
 import type { Store } from '../store/db';
 import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
@@ -127,13 +133,14 @@ export function affectedRequirements(changes: SectionChange[]): string[] {
 const quote = (text: string) => (text.trim() ? text.trim().split('\n').map((l) => `> ${l}`).join('\n') : `> ${NOT_WRITTEN}`);
 
 /**
- * After approval: saves the edits in Explore as a draft change request in docs/changes/, with the before and after
- * of each changed section and the affected REQ IDs (owner decision 3). intent.md is not touched. Saving again
- * updates the same change request.
+ * After approval: saves the edits in Explore as a change request in changes/CR-NNNN/ (REQ-014, CR-0003), waiting
+ * for approval, with the before and after of each changed section, the affected REQ IDs, the size and the impact
+ * on later documents. intent.md is not touched. Saving again updates the same request while it waits.
  */
-export async function saveChangeRequest(store: Store): Promise<Result<StoredDocument, BrainstormError>> {
+export async function saveChangeRequest(store: Store): Promise<Result<ChangeRequest, BrainstormError>> {
   const blocker = await commitBlocker(store.root);
   if (blocker) return fail('repo-busy', blocker);
+  await migrateDocsChanges(store);
   const context = loadContext(store);
   if (!context.ok) return context;
   const intent = readDocument(store, INTENT_PATH);
@@ -141,27 +148,120 @@ export async function saveChangeRequest(store: Store): Promise<Result<StoredDocu
   const changes = changedSections(context.value);
   if (changes.length === 0) return fail('no-change', 'Nothing changed since the approved intent');
   const affected = affectedRequirements(changes);
-  const newRows = changes.find((c) => c.section === 'Requirements')?.after.split('\n').filter((l) => /^- (?!REQ-)/.test(l)).length ?? 0;
+  const added = changes.find((c) => c.section === 'Requirements')?.after.split('\n').filter((l) => /^- (?!REQ-)/.test(l)).length ?? 0;
   const ref = `${intent.value.header.id}@${intent.value.header.version}`;
+  const size = sizeOf(affected, added);
+  const impact = changeImpact(store.root, INTENT_PATH, affected, added);
   const title = `Change to the intent: ${changes.map((c) => c.section).join(', ')}`;
   const body = [
     `# ${title}`, '',
     '## What changed', '',
     `Upstream document: ${ref} (approved). Saved from Explore; intent.md stays as approved until this change request is approved.`, '',
     ...changes.flatMap((c) => [`### ${c.section}`, '', 'Before:', '', quote(c.before), '', 'After:', '', quote(c.after), '']),
-    '## Reason', '', NOT_WRITTEN, '',
+    '## Reason', '', 'Edited in Explore after the intent was approved.', '',
     '## Impact', '',
     affected.length ? `Requirements affected: ${affected.join(', ')}.` : 'No existing requirement ID is affected.',
-    ...(newRows ? [`New requirements: ${newRows} (IDs are given when the change is applied).`] : []), '',
-    '## Decision', '', 'Open.', '',
+    ...(added ? [`New requirements: ${added} (IDs are given when the change is approved).`] : []),
+    ...(impact.documents.length ? ['', ...impact.documents.map((d) => `- ${d.label}: ${[...d.requirements, ...d.items].join('; ') || 'affected'}`)] : []), '',
   ].join('\n');
-  const extra = { document: ref, affects: [ref], requirements: affected, size: changes.length > 1 || newRows > 0 ? 'significant' : 'minor' };
-  const existing = context.value.state.changeRequest ? readDocument(store, context.value.state.changeRequest) : undefined;
-  const saved = existing?.ok && existing.value.header.status === 'draft'
-    ? await saveDocument(store, existing.value.path, { reason: 'Edits saved from Explore', title, body, extra })
-    : await createDocument(store, { kind: 'change', title, body, template: 'change-request@1', fileSlug: 'intent-change', extra });
+  const records = size === 'significant' ? impact.documents.map((d) => ({ document: d.document, decision: 'pending' as const })) : [];
+  const fields = { title, size, affects: [ref], requirements: affected, source: INTENT_PATH, impact: records };
+  const existing = context.value.state.changeRequest ? readChange(store.root, context.value.state.changeRequest) : undefined;
+  const saved = existing && existing.origin === 'keel' && (existing.status === 'draft' || existing.status === 'waiting')
+    ? await updateKeelChange(store, existing, fields, body, `Update ${existing.id} from Explore`)
+    : await createChange(store, { ...fields, reason: 'Edited in Explore after the intent was approved.', status: 'waiting', body });
   if (!saved.ok) return fail(saved.error === 'repo-busy' ? 'repo-busy' : 'invalid-input', saved.message);
-  writeExplore(store, { ...context.value.state, changeRequest: saved.value.path });
-  await commitFiles(store.root, [EXPLORE_FILE], `Brainstorm: edits saved as ${saved.value.header.id}`);
+  writeExplore(store, { ...context.value.state, changeRequest: saved.value.id });
+  await commitFiles(store.root, [EXPLORE_FILE], `Brainstorm: edits saved as ${saved.value.id}`);
   return ok(saved.value);
+}
+
+/**
+ * Approving a change request to the intent (owner decision 1): the next intent version is written from Explore,
+ * approved, recording `change: CR-NNNN`. New requirement rows get their IDs now.
+ */
+export async function applyIntentChange(store: Store, changeId: string): Promise<Result<StoredDocument, BrainstormError>> {
+  const context = loadContext(store);
+  if (!context.ok) return context;
+  const intent = readDocument(store, INTENT_PATH);
+  if (!intent.ok || intent.value.header.status !== 'approved') return fail('not-approved', 'The intent is not approved');
+  const assigned = await assignIds(store, context.value.state, context.value);
+  if (!assigned.ok) return assigned;
+  const ctx = { ...context.value, state: assigned.value };
+  const saved = await saveDocument(store, INTENT_PATH, { reason: `Change request ${changeId}`, body: intentMarkdown(ctx, ctx.state.title), extra: { change: changeId } });
+  if (!saved.ok) return fail(saved.error === 'repo-busy' ? 'repo-busy' : 'invalid-input', saved.message);
+  const next: Explore = { ...ctx.state, drafted: Object.fromEntries(ctx.state.sections.map((s) => [s.key, sectionText(s)])) };
+  delete next.changeRequest;
+  writeExplore(store, next);
+  await commitFiles(store.root, [EXPLORE_FILE], `Brainstorm: ${changeId} applied to intent v${saved.value.header.version}`);
+  return ok(saved.value);
+}
+
+/** Rejecting a change request to the intent (owner decision 1): Explore goes back to the approved text. */
+export async function revertIntentChange(store: Store): Promise<Result<Explore, BrainstormError>> {
+  const context = loadContext(store);
+  if (!context.ok) return context;
+  const intent = readDocument(store, INTENT_PATH);
+  if (!intent.ok) return fail('not-found', intent.message);
+  const approved = exploreFromIntent({ ...context.value.state, intentBody: intent.value.body, templateContent: context.value.templateContent });
+  const next: Explore = {
+    ...context.value.state,
+    sections: context.value.state.sections.map((s) => {
+      const back = approved.sections.find((a) => a.key === s.key);
+      return back ? { ...s, value: back.value, ...(back.rows ? { rows: back.rows } : {}), origin: 'user' as const } : s;
+    }),
+    drafted: approved.drafted,
+  };
+  delete next.changeRequest;
+  writeExplore(store, next);
+  await commitFiles(store.root, [EXPLORE_FILE], 'Brainstorm: back to the approved intent');
+  return ok(next);
+}
+
+/**
+ * One-off move of R10's docs/changes/NNNN-*.md into changes/CR-NNNN/CR-NNNN.md (CR-0003): the next free number,
+ * the content kept, the header mapped, as one Keel commit. Explore's link follows.
+ */
+export async function migrateDocsChanges(store: Store): Promise<string[]> {
+  const dir = join(store.root, 'docs', 'changes');
+  if (!existsSync(dir)) return [];
+  const files = readdirSync(dir).filter((f) => f.endsWith('.md')).sort();
+  if (files.length === 0) return [];
+  const moved: string[] = [];
+  const paths: string[] = [];
+  const renames = new Map<string, string>();
+  for (const name of files) {
+    const old = `docs/changes/${name}`;
+    let parsed: matter.GrayMatterFile<string>;
+    try {
+      parsed = matter(readFileSync(join(store.root, old), 'utf8'), {});
+    } catch {
+      continue;
+    }
+    const id = formatChangeId(nextNumber(store.root));
+    const data = parsed.data as Record<string, unknown>;
+    const status = data.status === 'approved' ? 'approved' : data.status === 'closed' ? 'rejected' : 'waiting';
+    const document = typeof data.document === 'string' ? data.document : undefined;
+    const header = {
+      ...data, id, status, origin: 'keel', ...(document?.startsWith('INT-') ? { source: INTENT_PATH } : {}),
+      affects: Array.isArray(data.affects) ? data.affects : document ? [document] : [], moved_from: old,
+    };
+    delete (header as Record<string, unknown>).version;
+    delete (header as Record<string, unknown>).template;
+    delete (header as Record<string, unknown>).updated;
+    mkdirSync(join(store.root, 'changes', id), { recursive: true });
+    writeFileAtomic(join(store.root, 'changes', id, `${id}.md`), matter.stringify(parsed.content, header));
+    rmSync(join(store.root, old));
+    renames.set(typeof data.id === 'string' ? data.id : old, id);
+    renames.set(old, id);
+    paths.push(`changes/${id}`, old);
+    moved.push(id);
+  }
+  const state = readExplore(store);
+  if (state.ok && state.value.changeRequest && renames.has(state.value.changeRequest)) {
+    writeExplore(store, { ...state.value, changeRequest: renames.get(state.value.changeRequest) });
+    paths.push(EXPLORE_FILE);
+  }
+  if (paths.length) await commitFiles(store.root, paths, `Move ${moved.join(', ')} from docs/changes to changes/`);
+  return moved;
 }

@@ -3,11 +3,11 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { fillSections } from '../brainstorm/fill';
-import { EXPLORE_FILE, loadContext, sectionOf, startIdea, writeExplore } from '../brainstorm/session';
+import { loadContext, sectionOf, startIdea, writeExplore } from '../brainstorm/session';
 import { review } from '../gates/approvals';
 import { readDocument } from '../store/documents';
 import { tempStore } from '../store/test-store';
-import { affectedRequirements, changedSections, draftIntent, intentMarkdown, saveChangeRequest } from './intent';
+import { affectedRequirements, changedSections, draftIntent, intentMarkdown, migrateDocsChanges, saveChangeRequest } from './intent';
 
 const filled = {
   Problem: 'Receipts get lost and expenses are recorded late.',
@@ -82,7 +82,7 @@ describe('draftIntent', () => {
 });
 
 describe('saveChangeRequest', () => {
-  it('saves edits after approval as a draft change request, and leaves the approved intent unchanged', async () => {
+  it('saves edits after approval as a change request in changes/, and leaves the approved intent unchanged', async () => {
     const store = await project();
     fillSections(store, filled);
     await draftIntent(store);
@@ -92,23 +92,46 @@ describe('saveChangeRequest', () => {
     expect(await saveChangeRequest(store)).toMatchObject({ error: 'no-change' });
     fillSections(store, { 'Desired outcome': 'Every expense recorded the same day.' });
     const saved = await saveChangeRequest(store);
-    expect(saved).toMatchObject({ ok: true, value: { kind: 'change', path: 'docs/changes/0001-intent-change.md', header: { id: 'CR-0001', status: 'draft', document: 'INT-0001@1' } } });
+    expect(saved).toMatchObject({ ok: true, value: { id: 'CR-0001', folder: 'changes/CR-0001', status: 'waiting', size: 'minor', origin: 'keel', source: 'docs/intent.md', affects: ['INT-0001@1'] } });
     expect(saved.ok && saved.value.body).toContain('### Desired outcome\n\nBefore:\n\n> Every expense recorded within a day.\n\nAfter:\n\n> Every expense recorded the same day.');
     expect(readFileSync(join(store.root, 'docs/intent.md'), 'utf8')).toBe(before);
     expect(readDocument(store, 'docs/intent.md')).toMatchObject({ ok: true, value: { header: { status: 'approved', version: 1 } } });
-    // Saving again updates the same change request.
+    // Saving again updates the same change request, now significant (a requirement changed).
     fillSections(store, { Requirements: ['Record an expense quickly', 'See expenses by month', 'Export to CSV'] });
-    const ctx = loadContext(store);
-    if (!ctx.ok) throw new Error(ctx.message);
     const again = await saveChangeRequest(store);
-    expect(again).toMatchObject({ ok: true, value: { path: 'docs/changes/0001-intent-change.md', header: { version: 2, requirements: ['REQ-001'] } } });
-    expect(existsSync(join(store.root, 'docs/changes/0002-intent-change.md'))).toBe(false);
-    expect(git(store.root, 'status', '--porcelain', '--', EXPLORE_FILE)).toBe('');
+    expect(again).toMatchObject({ ok: true, value: { id: 'CR-0001', size: 'significant', requirements: ['REQ-001'] } });
+    expect(existsSync(join(store.root, 'changes/CR-0002'))).toBe(false);
+    expect(git(store.root, 'status', '--porcelain')).toBe('');
+    expect(git(store.root, 'log', '-3', '--format=%s')).toContain('Keel: Update CR-0001 from Explore');
   });
 
   it('names the requirements a change touches', () => {
     expect(affectedRequirements([{ section: 'Requirements', before: '- REQ-001 A\n- REQ-002 B', after: '- REQ-001 A2\n- New row' }])).toEqual(['REQ-001', 'REQ-002']);
     expect(affectedRequirements([{ section: 'Scope', before: 'Covers REQ-004.', after: 'Covers REQ-004 and REQ-006.' }])).toEqual(['REQ-004', 'REQ-006']);
     expect(changedSections({ state: { title: 't', idea: '', template: 't@1', style: 's@1', sections: [], drafted: {} }, sections: [] })).toEqual([]);
+  });
+});
+
+describe('migrateDocsChanges', () => {
+  it('moves R10\'s docs/changes files into changes/CR-NNNN once, keeping their content', async () => {
+    const store = await project();
+    const { mkdirSync } = await import('node:fs');
+    mkdirSync(join(store.root, 'docs', 'changes'), { recursive: true });
+    writeFileSync(join(store.root, 'docs/changes/0001-intent-change.md'), '---\nid: CR-0001\nproject: PRJ-0001\ntitle: Change to the intent\nstatus: draft\nversion: 1\ndocument: INT-0001@1\nrequirements: []\n---\n\n# Change to the intent\n\nBody text.\n');
+    git(store.root, 'add', '.');
+    execFileSync('git', ['-c', 'user.name=Keel', '-c', 'user.email=keel@localhost', 'commit', '-qm', 'Keel: old change'], { cwd: store.root });
+    const loaded = loadContext(store);
+    if (!loaded.ok) throw new Error(loaded.message);
+    writeExplore(store, { ...loaded.value.state, changeRequest: 'docs/changes/0001-intent-change.md' });
+    expect(await migrateDocsChanges(store)).toEqual(['CR-0001']);
+    expect(existsSync(join(store.root, 'docs/changes/0001-intent-change.md'))).toBe(false);
+    const moved = readFileSync(join(store.root, 'changes/CR-0001/CR-0001.md'), 'utf8');
+    expect(moved).toContain('Body text.');
+    expect(moved).toContain('status: waiting');
+    expect(moved).toContain('source: docs/intent.md');
+    const after = loadContext(store);
+    expect(after.ok && after.value.state.changeRequest).toBe('CR-0001');
+    expect(git(store.root, 'status', '--porcelain')).toBe('');
+    expect(await migrateDocsChanges(store)).toEqual([]);
   });
 });

@@ -245,3 +245,18 @@ textarea.suggested, input.suggested { font-style: italic; color: var(--muted); }
 .req-row { display: grid; grid-template-columns: 90px 1fr auto auto; gap: 8px; align-items: center; margin-top: 6px; }
 .req-id { font-weight: 600; font-size: 13px; }
 .notice-card { border-left: 4px solid var(--accent); }
+
+/* Change requests (CR-0003) */
+.stagebar .stale { display: block; font-size: 12px; color: var(--warn); font-weight: 600; }
+.stale-note { border-left: 4px solid var(--warn); }
+.pill { display: inline-block; font-size: 12px; line-height: 16px; padding: 2px 10px; border-radius: 999px; background: var(--surface-muted); color: var(--muted); white-space: nowrap; }
+.pill.waiting { background: var(--warn-soft); color: var(--warn); }
+.pill.progress { background: var(--accent-soft); color: var(--accent); }
+.pill.ready, .pill.applied { background: var(--ok-soft); color: var(--ok); }
+.pill.rejected, .pill.unreadable { background: var(--danger-soft); color: var(--danger); }
+.diff-line { padding: 2px 12px; white-space: pre-wrap; font-family: var(--mono); font-size: 13px; }
+.diff-line.added { background: var(--ok-soft); }
+.diff-line.removed { background: var(--danger-soft); text-decoration: line-through; }
+.filters { display: flex; gap: 8px; margin: 12px 0; }
+.filters a[aria-current='page'] { font-weight: 600; text-decoration: underline; }
+.impact-item { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-top: 10px; }

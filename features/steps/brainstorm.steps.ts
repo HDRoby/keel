@@ -229,10 +229,11 @@ When('I change Desired outcome in Explore and save', async ({ page }) => {
 });
 
 Then('a change request is created with the change to Desired outcome', async () => {
-  const file = join(BDD_PROJECT, 'docs', 'changes', '0001-intent-change.md');
+  // A change request is a folder in changes/ since CR-0003, waiting for approval.
+  const file = join(BDD_PROJECT, 'changes', 'CR-0001', 'CR-0001.md');
   expect(existsSync(file)).toBe(true);
   const text = readFileSync(file, 'utf8');
-  expect(text).toContain('status: draft');
+  expect(text).toContain('status: waiting');
   expect(text).toContain(`### Desired outcome\n\nBefore:\n\n> ${OUTCOME}\n\nAfter:\n\n> Every expense is recorded the same day.`);
 });
 

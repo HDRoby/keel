@@ -10,6 +10,7 @@ import { loadContext, templateLabel } from '@/lib/brainstorm/session';
 import { exploreView } from '@/lib/brainstorm/view';
 import { PROVIDERS } from '@/lib/providers/types';
 import { exploreTiming, modelChoice } from '@/lib/settings/settings';
+import { readChange } from '@/lib/changes/store';
 import { readDocument } from '@/lib/store/documents';
 import { loadStage, type StageProps } from '../stage';
 
@@ -33,7 +34,7 @@ export default async function ExplorePage({ searchParams }: StageProps) {
   const approved = intent.ok && intent.value.header.status === 'approved';
   const model = modelChoice(store, 'brainstorm');
   const timing = exploreTiming(store);
-  const pending = state.changeRequest ? readDocument(store, state.changeRequest) : undefined;
+  const pending = state.changeRequest ? readChange(store.root, state.changeRequest) : undefined;
 
   return (
     <>
@@ -52,7 +53,7 @@ export default async function ExplorePage({ searchParams }: StageProps) {
           <section className="card notice-card" aria-label="Intent approved">
             <h2 className="tight">Intent v{intent.value.header.version} is approved</h2>
             <p>You can still edit the sections. Your changes are saved as a change request, so the spec and plan see what changed by requirement ID.</p>
-            <p className="tight"><Link href="/intent">Open intent.md</Link>{pending?.ok && <> · Pending: <Link href="/changes">{pending.value.header.id}</Link></>}</p>
+            <p className="tight"><Link href="/intent">Open intent.md</Link>{pending && <> · Waiting for approval: <Link href={`/changes/${pending.id}`}>{pending.id}</Link></>}</p>
           </section>
         )}
         <p className="muted">Template: {templateLabel(state.template)} · Style: {style.name} v{style.version}</p>

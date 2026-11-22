@@ -26,6 +26,7 @@ export function StageBar({ gates, current, summaries }: StageBarProps) {
             <span>
               <span className="name">{i + 1} · {g.label}</span>
               <span className="detail">{g.available ? summary.detail : g.reason}</span>
+              {summary.outOfDate?.length ? <span className="stale">Out of date · {summary.outOfDate.join(', ')}</span> : null}
             </span>
           </>
         );
@@ -59,6 +60,11 @@ export function StageLayout({ page, error, meta, description, actions, locked, c
       <main className="content">
         <PageHead title={project.title} meta={meta ?? project.id} description={description} actions={gate.available ? actions : undefined} />
         <StageBar gates={gates} current={gate.stage} summaries={summaries} />
+        {summaries[gate.stage]?.outOfDate?.length ? (
+          <p role="note" className="notice stale-note">
+            Out of date · {summaries[gate.stage]?.outOfDate?.map((id, i) => <span key={id}>{i ? ', ' : ''}<Link href={`/changes/${id}`}>{id}</Link></span>)}: an approved change request affects this stage and is not applied yet.
+          </p>
+        ) : null}
         {!gate.available ? (
           <>
             <section aria-label={`${gate.label} stage`} className="card">

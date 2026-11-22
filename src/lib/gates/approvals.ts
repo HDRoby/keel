@@ -5,6 +5,7 @@ import matter from 'gray-matter';
 import { z } from 'zod';
 import { loadContext, requiredFilled } from '../brainstorm/session';
 import { progress } from '../brainstorm/review';
+import { outOfDate } from '../changes/stale';
 import type { DocumentStatus, Stage } from '../documents/types';
 import { fail, type Result } from '../result';
 import type { Store } from '../store/db';
@@ -134,6 +135,7 @@ export function projectState(store: Store): ProjectState {
 export interface StageSummary {
   detail: string;   // the second line in the stage bar, e.g. "intent.md v2 · Approved"
   done: boolean;
+  outOfDate?: string[];   // approved, significant change requests not applied yet (REQ-005, CR-0003)
 }
 
 const STATUS_WORD: Record<string, string> = { draft: 'Draft', pending: 'Pending', approved: 'Approved', closed: 'Rejected' };
@@ -153,7 +155,7 @@ export function stageSummaries(store: Store): Record<Stage, StageSummary> {
   const plan = doc(APPROVABLE.plan);
   const decision = decisionsOf(store.root).at(-1);
   const docLine = (name: string, header?: { version: number; status: string }) => (header ? `${name} v${header.version} · ${STATUS_WORD[header.status] ?? header.status}` : `No ${name} yet`);
-  return {
+  const summaries: Record<Stage, StageSummary> = {
     explore: {
       detail: !context.ok ? 'No brainstorm' : captured === required.length ? 'Brainstorm · all required sections' : `Brainstorm · ${captured} of ${required.length} required sections`,
       done: context.ok && captured === required.length,
@@ -169,4 +171,10 @@ export function stageSummaries(store: Store): Record<Stage, StageSummary> {
       return { detail: `Written to this folder · ${waiting === 0 ? 'no changes to review' : `${waiting} change${waiting === 1 ? '' : 's'} to review`}`, done: true };
     })(),
   };
+  const stale = outOfDate(store);
+  for (const stage of ['intent', 'spec', 'plan', 'handoff'] as const) {
+    const ids = stale[stage];
+    if (ids?.length) summaries[stage] = { ...summaries[stage], outOfDate: ids };
+  }
+  return summaries;
 }
