@@ -1,0 +1,104 @@
+{
+  "title": "Keel",
+  "idea": "",
+  "template": "standard-intent@3",
+  "style": "challenger@1",
+  "sections": [
+    {
+      "key": "Problem",
+      "value": "Coding agents now build software in hours, but the steps before the build still run at human speed. Ideas wait for someone to write them up, and requirements and design pass through meetings and handoffs before an engineer can plan. (Source: the AI-native SDLC playbook, stages Plan, Design and Build.)",
+      "origin": "user",
+      "thread": []
+    },
+    {
+      "key": "Desired outcome",
+      "value": "",
+      "origin": "user",
+      "thread": []
+    },
+    {
+      "key": "Requirements",
+      "value": "",
+      "origin": "user",
+      "thread": [],
+      "rows": [
+        {
+          "id": "REQ-001",
+          "text": "Brainstorm with an LLM, driven by an intent template chosen at the start",
+          "origin": "user"
+        },
+        {
+          "id": "REQ-002",
+          "text": "Generate intent.md with metadata (ID, author, dates, status, version)",
+          "origin": "user"
+        },
+        {
+          "id": "REQ-003",
+          "text": "Versioned, editable templates for every document",
+          "origin": "user"
+        },
+        {
+          "id": "REQ-004",
+          "text": "Stable requirement IDs traced from intent to spec, plan and tests",
+          "origin": "user"
+        },
+        {
+          "id": "REQ-005",
+          "text": "Each stage unlocks only when the previous one is approved",
+          "origin": "user"
+        },
+        {
+          "id": "REQ-006",
+          "text": "Hand off a repository scaffold any coding agent can build from",
+          "origin": "user"
+        },
+        {
+          "id": "REQ-012",
+          "text": "One project per folder, with its config and libraries in a .keel folder",
+          "origin": "user"
+        },
+        {
+          "id": "REQ-014",
+          "text": "Change requests across stages, listed and tracked on a Changes page",
+          "origin": "user"
+        },
+        {
+          "id": "REQ-016",
+          "text": "On demand, for any folder, an AI readiness report: a local scan against the Keel standard, then a model review of the gaps and of the AI files the user chooses to share",
+          "origin": "user"
+        },
+        {
+          "id": "REQ-017",
+          "text": "Discuss a change with the assistant in a chat grounded in Keel's documents; only the user's explicit agreement creates the change request, and the discussion is kept with it",
+          "origin": "user"
+        }
+      ]
+    },
+    {
+      "key": "Affected users and systems",
+      "value": "Proposers (engineers, product managers, anyone with an idea), coding agents, git hosting (GitHub first), LLM providers.",
+      "origin": "user",
+      "thread": []
+    },
+    {
+      "key": "Constraints",
+      "value": "- Web UI, not a VS Code extension.\n- Not tied to one model or one coding agent.\n- Single user first.\n- Stops at plan and scaffold: no code generation inside Keel.",
+      "origin": "user",
+      "thread": []
+    },
+    {
+      "key": "Open questions",
+      "value": "- Public name: \"Keel\" is already used by other developer tools. Fine as a codename.\n- How should a change upstream affect later documents? (Answered by CR-0003: change requests across stages.)",
+      "origin": "user",
+      "thread": []
+    }
+  ],
+  "drafted": {
+    "Problem": "Coding agents now build software in hours, but the steps before the build still run at human speed. Ideas wait for someone to write them up, and requirements and design pass through meetings and handoffs before an engineer can plan. (Source: the AI-native SDLC playbook, stages Plan, Design and Build.)",
+    "Desired outcome": "",
+    "Requirements": "- REQ-001 Brainstorm with an LLM, driven by an intent template chosen at the start\n- REQ-002 Generate intent.md with metadata (ID, author, dates, status, version)\n- REQ-003 Versioned, editable templates for every document\n- REQ-004 Stable requirement IDs traced from intent to spec, plan and tests\n- REQ-005 Each stage unlocks only when the previous one is approved\n- REQ-006 Hand off a repository scaffold any coding agent can build from\n- REQ-012 One project per folder, with its config and libraries in a .keel folder\n- REQ-014 Change requests across stages, listed and tracked on a Changes page\n- REQ-016 On demand, for any folder, an AI readiness report: a local scan against the Keel standard, then a model review of the gaps and of the AI files the user chooses to share\n- REQ-017 Discuss a change with the assistant in a chat grounded in Keel's documents; only the user's explicit agreement creates the change request, and the discussion is kept with it",
+    "Affected users and systems": "Proposers (engineers, product managers, anyone with an idea), coding agents, git hosting (GitHub first), LLM providers.",
+    "Constraints": "- Web UI, not a VS Code extension.\n- Not tied to one model or one coding agent.\n- Single user first.\n- Stops at plan and scaffold: no code generation inside Keel.",
+    "Open questions": "- Public name: \"Keel\" is already used by other developer tools. Fine as a codename.\n- How should a change upstream affect later documents? (Answered by CR-0003: change requests across stages.)"
+  }
+}
