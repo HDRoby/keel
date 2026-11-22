@@ -21,7 +21,7 @@ import { MODEL_TASKS, PROVIDERS } from '@/lib/providers/types';
 import { exploreTiming, providerView } from '@/lib/settings/settings';
 import { effectiveChoice, localModels } from '@/lib/providers/local';
 import { DEFAULT_OLLAMA_URL, goodFor, SUGGESTED_OLLAMA_MODEL } from '@/lib/providers/ollama';
-import { userSetting } from '@/lib/settings/user-dir';
+import { userDirProblem, userSetting } from '@/lib/settings/user-dir';
 import { serverStore } from '@/lib/store/server-store';
 import { readProject } from '@/lib/store/workspace';
 import { readbackInterval } from '@/lib/readback/schedule';
@@ -46,6 +46,11 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       <main className="content">
         <PageHeader title="Settings" description="Two places. Your keys and models stay on this computer, outside the project. Project settings live in .keel/config.yml and are committed with the project." />
         <ErrorAlert error={error} />
+        {(() => {
+          // When Keel cannot write the user config folder, saving would fail: say which folder and how to fix it.
+          const blocked = userDirProblem(store.user);
+          return blocked && !error ? <Notice kind="danger" title="Keel cannot save settings on this computer">{blocked.message} {blocked.fix}</Notice> : null;
+        })()}
         {!existsSync(join(store.user, SETTINGS_FILE)) && (
           <Notice kind="info" title="Set up Keel first" actions={<form action={useTheseSettingsAction}><Button type="submit" variant="primary" small>Use these settings and check</Button></form>}>
             Keel needs a model provider before it can comment, draft or review. Ollama on this computer is preselected; check the models below, then save.

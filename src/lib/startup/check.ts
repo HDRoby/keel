@@ -14,7 +14,7 @@ import { effectiveChoice, localModels } from '../providers/local';
 import { createProvider } from '../providers/registry';
 import { MODEL_TASKS, PROVIDERS, type ModelChoice, type ProviderConfig, type RealProviderId } from '../providers/types';
 import { providerConfig } from '../settings/settings';
-import { SETTINGS_FILE } from '../settings/user-dir';
+import { SETTINGS_FILE, userDirProblem } from '../settings/user-dir';
 import { readStandard } from '../standards/library';
 import type { Store } from '../store/store';
 import { CONFIG_FILE, isInitialised, readConfig, readProject } from '../store/workspace';
@@ -62,6 +62,8 @@ function lineOf(root: string, needle: string): { number: number; text: string } 
 }
 
 function checkSettings(where: Where): CheckItem {
+  const blocked = userDirProblem(where.user);
+  if (blocked) return { id: 'settings', title: TITLES.settings, state: 'bad', ...blocked };
   const file = join(where.user, SETTINGS_FILE);
   const text = read(file);
   if (text === undefined) {

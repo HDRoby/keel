@@ -12,6 +12,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Tag } from '@/components/ui/Tag';
 import { cx } from '@/components/ui/cx';
 import { runStartupCheck, type CheckItem } from '@/lib/startup/check';
+import { userDirProblem } from '@/lib/settings/user-dir';
 import { serverStore } from '@/lib/store/server-store';
 
 export const dynamic = 'force-dynamic';
@@ -26,7 +27,9 @@ export default async function CheckPage() {
   const store = serverStore();
   const result = await runStartupCheck(store);
   const bad = result.checks.find((c) => c.state === 'bad');
+  const blocked = userDirProblem(store.user);
   const [title, intro] = result.ok ? ['All set', 'Your settings, model access and project config are fine.']
+    : blocked ? ['Keel cannot save your settings', 'Your settings and keys live in a folder on this computer that Keel cannot write to. Fix it as the check says, then check again.']
     : result.firstRun ? ['Set up Keel first', 'Keel needs a model provider before it can comment, draft or review. It takes a minute.']
     : bad?.id === 'project' ? ['This project\'s config has a problem', 'Keel will not open the project until .keel/config.yml is valid, so nothing is written with a wrong setting.']
     : bad?.id === 'models' ? ['A model is missing', 'One task points to a model that is not available. Fix it before going on.']
@@ -59,7 +62,7 @@ export default async function CheckPage() {
         <div className={css.actions}>
           {!result.ok && (bad?.id === 'project'
             ? <ButtonLink href="/setup" variant="primary"><Icon name="edit" size={18} /> Open Project setup</ButtonLink>
-            : <ButtonLink href="/settings" variant="primary"><Icon name="settings" size={18} /> {result.firstRun ? 'Choose a model provider' : 'Open Settings'}</ButtonLink>)}
+            : <ButtonLink href="/settings" variant="primary"><Icon name="settings" size={18} /> {result.firstRun && !blocked ? 'Choose a model provider' : 'Open Settings'}</ButtonLink>)}
           {result.ok && <ButtonLink href="/" variant="primary">Continue</ButtonLink>}
           <form action={checkAgainAction}><SubmitButton label="Check again" busyLabel="Checking…" /></form>
           <span className={css.note}>{result.ok ? 'When every check passes, Keel skips this page and opens the project directly.' : 'Keel also checks again on its own when you come back from Settings.'}</span>

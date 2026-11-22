@@ -1,9 +1,10 @@
 // Encrypts credentials at rest with AES-256-GCM (Security baseline v2, rule 2).
 // The key lives in the user config folder's secret.key (owner read/write only), never in a project, git or logs.
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
-import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fail, ok, type Result } from '../result';
+import { ensureUserDir } from './user-dir';
 
 const KEY_FILE = 'secret.key';
 
@@ -11,7 +12,7 @@ const KEY_FILE = 'secret.key';
 export function workspaceKey(dir: string): Buffer {
   const file = join(dir, KEY_FILE);
   if (!existsSync(file)) {
-    mkdirSync(dir, { recursive: true, mode: 0o700 });
+    ensureUserDir(dir);
     writeFileSync(file, randomBytes(32).toString('base64'), { mode: 0o600, flag: 'wx' });
   }
   chmodSync(file, 0o600);
