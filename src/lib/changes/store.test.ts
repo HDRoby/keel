@@ -29,7 +29,12 @@ describe('listChanges on this repository\'s own change requests', () => {
     expect(status('CR-0005')).toBe('Applied');
     expect(progressLabel(all.find((c) => c.id === 'CR-0004') as ChangeRequest)).toBe('9 of 9 tasks done');
     expect(status('CR-0003')).toMatch(/^(Approved · ready|In progress|Applied)$/);
-    expect(status('CR-0007')).toBe('Approved · waiting for CR-0006');
+    // The chain CR-0006 → CR-0012: each is applied, ready or in progress, or waits for the one before it.
+    for (let n = 7; n <= 12; n += 1) {
+      const id = `CR-00${String(n).padStart(2, '0')}`;
+      const before = `CR-00${String(n - 1).padStart(2, '0')}`;
+      expect(status(id), id).toMatch(new RegExp(`^(Applied|Approved · ready|In progress|Approved · waiting for ${before})$`));
+    }
     expect(all.find((c) => c.id === 'CR-0004')).toMatchObject({ origin: 'hand', requirements: ['REQ-006', 'REQ-007', 'REQ-009', 'REQ-012'], hasPrompt: true });
     expect(all.find((c) => c.id === 'CR-0006')?.dependsOn).toEqual(['CR-0003']);
     // CR-0005's header has an unquoted colon in its title: read line by line instead of failing.

@@ -13,6 +13,7 @@ export interface ProjectState {
   plan?: DocumentStatus;
   decisions: Decision[];   // oldest first; the latest one counts
   uncovered?: string[];    // spec requirements with no accepted scenario (REQ-005, CR-0006)
+  undecided?: string[];    // design topics not decided yet (REQ-005, CR-0007)
 }
 
 export interface StageGate {
@@ -43,14 +44,19 @@ export function stageGates(state: ProjectState): StageGate[] {
     explore: true,
     intent: state.requiredCaptured || state.intent !== undefined,
     spec: state.intent === 'approved',
-    plan: state.decisions.at(-1) === 'go' && (state.uncovered ?? []).length === 0,
+    plan: state.decisions.at(-1) === 'go' && (state.uncovered ?? []).length === 0 && (state.undecided ?? []).length === 0,
     handoff: state.plan === 'approved' && state.decisions.at(-1) === 'go',
   };
   // Handoff also needs the latest decision to be Go (owner decision): a later Park or No-go locks it.
   const uncovered = state.uncovered ?? [];
+  const undecided = state.undecided ?? [];
+  const planWaits = [
+    ...(uncovered.length ? [`at least one accepted scenario for ${uncovered.join(', ')}`] : []),
+    ...(undecided.length ? [`every design topic decided (${undecided.join(', ')})`] : []),
+  ];
   const reason = (stage: Exclude<Stage, 'explore'>) =>
-    stage === 'plan' && state.decisions.at(-1) === 'go' && uncovered.length
-      ? `Needs at least one accepted scenario for ${uncovered.join(', ')}`
+    stage === 'plan' && state.decisions.at(-1) === 'go' && planWaits.length
+      ? `Needs ${planWaits.join(', and ')}`
       : stage === 'handoff' && state.plan === 'approved' ? REASONS.plan : REASONS[stage];
   return STAGES.map(({ stage, label }) => ({
     stage, label, available: open[stage], ...(open[stage] || stage === 'explore' ? {} : { reason: reason(stage) }),
