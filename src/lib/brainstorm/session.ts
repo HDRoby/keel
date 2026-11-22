@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { fail, ok, type Result } from '../result';
 import { previewRoot } from '../seed';
 import { writeFileAtomic } from '../store/atomic';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { commitFiles } from '../store/git';
 import { initialiseProject, isInitialised, readProject, updateConfig } from '../store/workspace';
 import { parseTemplateRef, readTemplate, templateName } from '../templates/library';

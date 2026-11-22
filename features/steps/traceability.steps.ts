@@ -25,7 +25,6 @@ Given('REQ-003 is linked to task T2 and to a scenario', async () => {
   mkdirSync(join(dir, 'features'), { recursive: true });
   writeFileSync(join(dir, 'features/templates.feature'), `Feature: Templates\n\n  @REQ-003\n  Scenario: ${scenario}\n    Given a template\n`);
   await commitFiles(dir, ['features/templates.feature'], 'Add acceptance scenarios');
-  s.index.close();
 });
 
 When('REQ-003 changes in a new intent version', async () => {
@@ -34,7 +33,6 @@ When('REQ-003 changes in a new intent version', async () => {
     reason: 'Templates in use cannot be removed', body: intentBody('Versioned, editable templates. A template used by any project cannot be removed.'),
   });
   expect(saved.ok).toBe(true);
-  s.index.close();
 });
 
 Then('task T2 and that scenario are listed as affected', async ({ page }) => {

@@ -12,7 +12,7 @@ import type { Writer } from '../../src/lib/generate/writer';
 import { fakeReply } from '../../src/lib/providers/fake';
 import { acceptAllSuggestions } from '../../src/lib/scenarios/store';
 import { createDocument } from '../../src/lib/store/documents';
-import type { Store } from '../../src/lib/store/db';
+import type { Store } from '../../src/lib/store/store';
 import { BDD_PROJECT, bddStore, initialisedFolder, stagePath } from './support';
 
 const { Given, When, Then } = createBdd();
@@ -36,7 +36,6 @@ async function draftSpec(then?: (store: Store) => Promise<void>): Promise<void> 
   const store = await approvedIntent();
   expect((await generateSpec(store, 'requirements-and-design-spec@3', designOnly)).ok).toBe(true);
   await then?.(store);
-  store.index.close();
 }
 
 const design = (page: Page) => page.getByRole('region', { name: 'Design', exact: true });
@@ -60,19 +59,17 @@ function recordFile(topic: string): string | undefined {
 }
 
 Given('an approved intent and the TypeScript conventions standard', async () => {
-  (await approvedIntent()).index.close();
+  await approvedIntent();
 });
 
 Given('the folder has a package.json with Next.js', async () => {
   writeFileSync(join(BDD_PROJECT, 'package.json'), JSON.stringify({ dependencies: { next: '16.0.0', react: '19.0.0' }, devDependencies: { typescript: '5.9.0' } }));
-  const store = await approvedIntent();
-  store.index.close();
+  await approvedIntent();
 });
 
 When('the spec is generated', async ({ page }) => {
   const store = bddStore();
   expect((await generateSpec(store, 'requirements-and-design-spec@3', designOnly)).ok).toBe(true);
-  store.index.close();
   await openDesign(page);
 });
 
@@ -137,8 +134,8 @@ When('I change it to {string}', async ({ page }, option: string) => {
 
 Then('ADR-0007 records the new choice and the previous one', async () => {
   const text = readFileSync(join(BDD_PROJECT, 'docs', 'decisions', '0007-storage.md'), 'utf8');
-  expect(text).toContain('# Storage: SQLite only');
-  expect(text).toMatch(/- Changed from Markdown in git with a SQLite index on \d{4}-\d{2}-\d{2}\./);
+  expect(text).toContain('# Storage: A single database file');
+  expect(text).toMatch(/- Changed from Markdown files in git on \d{4}-\d{2}-\d{2}\./);
 });
 
 Given('the decision is Go and every requirement has a scenario', async () => {
@@ -151,7 +148,6 @@ Given('the decision is Go and every requirement has a scenario', async () => {
 Given('{string} is not decided', async ({}, topic: string) => {
   const store = bddStore();
   for (const other of TOPICS.filter((t) => t !== topic)) expect((await decide(store, ID[other] ?? '', { chosen: `${ID[other]}-1`, reason: '' })).ok).toBe(true);
-  store.index.close();
 });
 
 Then('the message names {string}', async ({ page }, topic: string) => {

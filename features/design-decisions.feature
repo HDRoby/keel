@@ -24,7 +24,7 @@ Feature: Design decisions in the Spec
   @REQ-013
   Scenario: Changing a decision in a draft spec rewrites its record
     Given the spec is a draft and "Storage" is decided as ADR-0007
-    When I change it to "SQLite only"
+    When I change it to "A single database file"
     Then ADR-0007 records the new choice and the previous one
 
   @REQ-013 @REQ-005

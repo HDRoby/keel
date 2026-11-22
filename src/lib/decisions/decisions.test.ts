@@ -65,7 +65,7 @@ describe('proposeDecisions', () => {
   });
 
   it('keeps a topic the assistant adds only when it names the requirement that needs it', async () => {
-    const answer = (reason?: string): Writer => async () => JSON.stringify({ topics: [{ title: 'Search', ...(reason ? { reason_added: reason } : {}), options: [{ name: 'SQLite FTS', summary: 's', pro: 'p', con: 'c', serves: ['REQ-001'], recommended: true }] }] });
+    const answer = (reason?: string): Writer => async () => JSON.stringify({ topics: [{ title: 'Search', ...(reason ? { reason_added: reason } : {}), options: [{ name: 'Full-text index', summary: 's', pro: 'p', con: 'c', serves: ['REQ-001'], recommended: true }] }] });
     expect((await proposeDecisions(input, answer())).some((t) => t.title === 'Search')).toBe(false);
     expect((await proposeDecisions(input, answer('Added for REQ-001'))).find((t) => t.title === 'Search')).toMatchObject({ origin: 'assistant', reasonAdded: 'Added for REQ-001' });
   });
@@ -97,7 +97,7 @@ describe('decide', () => {
     expect(again).toMatchObject({ ok: true, value: { record: first.value.record } });
     const record = readFileSync(join(store.root, first.value.record), 'utf8');
     expect(record).toContain('# Storage: Postgres');
-    expect(record).toMatch(/## Changes\n\n- Changed from Markdown in git with a SQLite index on \d{4}-\d{2}-\d{2}\./);
+    expect(record).toMatch(/## Changes\n\n- Changed from Markdown files in git on \d{4}-\d{2}-\d{2}\./);
     const spec = readDocument(store, 'docs/spec.md');
     expect(spec.ok && spec.value.body).toContain('Needs a database server and its credentials');
   });

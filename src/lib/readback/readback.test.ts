@@ -8,6 +8,7 @@ import { recordDecision, review } from '../gates/approvals';
 import { generatePlan } from '../generate/plan';
 import { generateSpec } from '../generate/spec';
 import { createDocument, readDocument, saveDocument } from '../store/documents';
+import { fileHistory } from '../store/git';
 import { tempStore } from '../store/test-store';
 import { initialiseProject, readConfig } from '../store/workspace';
 import { acceptChange, dismissChange, readbackState, WORKING_TREE } from './changes';
@@ -73,7 +74,7 @@ describe('checkFolder, acceptChange and dismissChange', () => {
     const plan = readDocument(store, 'docs/plan.md');
     expect(plan.ok && plan.value.body).toContain('differs per operating system');
     expect(git('log', '-2', '--format=%an|%s')).toMatch(/^Keel\|Keel: read-back of docs\/plan.md|^Keel\|Keel: accept read-back/);
-    expect(store.index.versions('PLN-0001').at(-1)?.reason).toMatch(/^Read back from [0-9a-f]{7}: Split T1 \(back to draft for approval\)$/);
+    expect((await fileHistory(store.root, 'docs/plan.md')).map((c) => c.message)).toContainEqual(expect.stringMatching(/Read back from [0-9a-f]{7}: Split T1 \(back to draft for approval\)$/));
     expect(readbackState(store).pending).toEqual([]);
     expect(readConfig(store.root)?.readback).toMatchObject({ base: git('rev-parse', 'HEAD~1'), handled: [] });
     expect(await checkFolder(store)).toMatchObject({ ok: true, value: { pending: [] } });
@@ -87,7 +88,6 @@ describe('checkFolder, acceptChange and dismissChange', () => {
     expect(await acceptChange(store, 'tasks/T1.md')).toMatchObject({ ok: true, value: { header: { version: 2 } } });
     expect(git('status', '--porcelain', '--', 'tasks')).toBe('');
     expect(git('log', '-1', '--format=%an|%s')).toBe('Keel|Keel: accept read-back of tasks/T1.md');
-    expect(store.index.versions('T1').at(-1)?.reason).toBe('Read back uncommitted edit');
   });
 
   it('dismissing puts Keel\'s version back; a new task the agent wrote can be accepted as it is', async () => {

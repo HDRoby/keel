@@ -16,7 +16,7 @@ import { mockCheck } from '@/lib/gates/rules';
 import { listMocks } from '@/lib/mocks/references';
 import { mockPrompt } from '@/lib/mocks/prompt';
 import { formHasUi, mockStatus, readSets } from '@/lib/mocks/sets';
-import type { Store } from '@/lib/store/db';
+import type { Store } from '@/lib/store/store';
 import { readProject } from '@/lib/store/workspace';
 import { requirementIds } from '@/lib/trace/index';
 

@@ -3,7 +3,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fail, ok, type Result } from '../result';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { readDocument } from '../store/documents';
 import { createChange, readChange, updateKeelChange } from './store';
 

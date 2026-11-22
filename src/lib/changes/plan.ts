@@ -10,7 +10,7 @@ import type { Writer } from '../generate/writer';
 import { currentSet } from '../mocks/sets';
 import { codeMap } from '../repo/scan';
 import { fail, ok, type Result } from '../result';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { readDocument } from '../store/documents';
 import { commitFiles } from '../store/git';
 import { readProject } from '../store/workspace';

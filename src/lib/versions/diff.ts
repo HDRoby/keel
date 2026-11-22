@@ -2,7 +2,7 @@
 import { diffLines } from 'diff';
 import { parseDocument } from '../store/documents';
 import { fileAt, fileHistory } from '../store/git';
-import { versionFromCommit } from '../store/reindex';
+import { versionFromCommit } from './commits';
 
 export interface DocumentVersion {
   version: number;

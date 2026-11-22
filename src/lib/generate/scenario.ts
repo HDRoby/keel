@@ -2,7 +2,7 @@
 // answer is validated (a name, steps with allowed keywords) and added as a suggestion; it counts once accepted.
 import { z } from 'zod';
 import { fail, ok, type Result } from '../result';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { KEYWORDS } from '../scenarios/gherkin';
 import { addSuggestions, coverage, type Suggestion } from '../scenarios/store';
 import type { Writer } from './writer';

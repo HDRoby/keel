@@ -12,7 +12,7 @@ import { formHasUi, mockStatus } from '../mocks/sets';
 import { readProject } from '../store/workspace';
 import type { DocumentStatus, Stage } from '../documents/types';
 import { fail, type Result } from '../result';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
 import { fromYamlDate, readConfig, today } from '../store/workspace';
 import { readTemplate } from '../templates/library';

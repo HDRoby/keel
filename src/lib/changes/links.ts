@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import matter from 'gray-matter';
 import { join } from 'node:path';
 import { readDocument } from '../store/documents';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { requirementStatements } from '../trace/parse';
 import { fail, ok, type Result } from '../result';
 import { lenientHeader, readChange, updateKeelChange, type ChangeRequest } from './store';

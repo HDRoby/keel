@@ -5,7 +5,7 @@ import { readStyleFile } from '../brainstorm/styles';
 import { pendingUpgrade, type PendingUpgrade } from '../config/migrate';
 import { readbackState } from '../readback/changes';
 import { readStandard } from '../standards/library';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { readProject } from '../store/workspace';
 import { parseTemplateRef, readTemplate } from '../templates/library';
 

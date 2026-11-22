@@ -7,7 +7,7 @@ import type { DocumentHeader, DocumentKind, DocumentStatus, KeelDocument } from 
 import { fail, ok, type Result } from '../result';
 import { writeFileAtomic } from './atomic';
 import { commitBlocker, commitFiles, fileAt, keelVersionOf } from './git';
-import type { Store } from './db';
+import type { Store } from './store';
 import { fromYamlDate, readProject, today } from './workspace';
 
 export type StoredDocument = KeelDocument & { path: string };
@@ -144,7 +144,7 @@ export async function editedOutside(root: string, path: string): Promise<boolean
 
 /**
  * Saves a change as the next version, and commits it with the reason. With sameVersion the version
- * number stays and no new version is recorded; the commit still carries the reason.
+ * number stays; the commit still carries the reason.
  */
 export async function saveDocument(store: Store, path: string, change: DocumentChange): Promise<Result<StoredDocument, DocumentError>> {
   const current = readDocument(store, path);
@@ -172,7 +172,7 @@ export async function saveDocument(store: Store, path: string, change: DocumentC
       updated: today(store),
     },
   };
-  await write(store, doc, change.reason, !change.sameVersion);
+  await write(store, doc, change.reason);
   return ok(doc);
 }
 
@@ -181,14 +181,12 @@ export function commitMessage(header: DocumentHeader, reason: string): string {
   return `${header.id} v${header.version}: ${oneLine(reason)}`;
 }
 
-async function write(store: Store, doc: StoredDocument, reason: string, newVersion = true): Promise<void> {
+async function write(store: Store, doc: StoredDocument, reason: string): Promise<void> {
   const dir = store.root;
   const file = join(dir, doc.path);
   mkdirSync(dirname(file), { recursive: true });
   writeFileAtomic(file, serializeDocument(doc.header, doc.body));
-  const commit = await commitFiles(dir, [doc.path], commitMessage(doc.header, reason));
-  store.index.upsertDocument(doc);
-  if (newVersion) store.index.addVersion({ id: doc.header.id, version: doc.header.version, commit, date: doc.header.updated, reason: oneLine(reason) });
+  await commitFiles(dir, [doc.path], commitMessage(doc.header, reason));
 }
 
 function nextNumber(dir: string, kind: DocumentKind): number {

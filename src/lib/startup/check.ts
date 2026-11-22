@@ -16,7 +16,7 @@ import { MODEL_TASKS, PROVIDERS, type ModelChoice, type ProviderConfig, type Rea
 import { providerConfig } from '../settings/settings';
 import { SETTINGS_FILE } from '../settings/user-dir';
 import { readStandard } from '../standards/library';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { CONFIG_FILE, isInitialised, readConfig, readProject } from '../store/workspace';
 import { parseTemplateRef, readTemplate } from '../templates/library';
 

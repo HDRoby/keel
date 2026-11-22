@@ -16,7 +16,7 @@ import { PROVIDER_IDS } from '../providers/types';
 import { fail, ok, type Result } from '../result';
 import { providerConfig } from '../settings/settings';
 import { writeFileAtomic } from '../store/atomic';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { readDocument } from '../store/documents';
 import { commitBlocker, commitFiles } from '../store/git';
 import { CONFIG_FILE, readConfig, writeConfig } from '../store/workspace';

@@ -8,7 +8,7 @@ import { projectState } from '../gates/approvals';
 import { currentSet } from '../mocks/sets';
 import { fail, ok, type Result } from '../result';
 import { standardsFor } from '../standards/library';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
 import { commitFiles, removeFiles } from '../store/git';
 import { readProject } from '../store/workspace';

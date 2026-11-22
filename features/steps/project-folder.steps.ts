@@ -19,7 +19,7 @@ Given('an empty folder that is not a git repository', async () => {
 });
 
 Given('an initialised folder', async () => {
-  (await initialisedFolder('Expense tracker')).index.close();
+  await initialisedFolder('Expense tracker');
 });
 
 When('I initialise it with the title {string}, the standard intent template and the Coach style', async ({ page }, title: string) => {
@@ -40,7 +40,7 @@ Then('.keel contains the templates, styles and standards folders', async () => {
 
 Then('.keel\\/.gitignore ignores the cache folder', async () => {
   expect(readFileSync(join(BDD_PROJECT, '.keel', '.gitignore'), 'utf8')).toBe('cache/\n');
-  expect(git('check-ignore', '.keel/cache/index.db')).toBe('.keel/cache/index.db');
+  expect(git('check-ignore', '.keel/cache/run.json')).toBe('.keel/cache/run.json');
 });
 
 Then('the last commit is {string}', async ({}, subject: string) => {
@@ -77,7 +77,6 @@ Given('a folder initialised by Keel with an approved intent', async () => {
     body: '# Intent: Expense tracker\n\n## Requirements\n\n- REQ-001 Record an expense\n',
   });
   expect((await review(store, 'intent', { action: 'approve', by: 'Ada Lovelace', comment: '' })).ok).toBe(true);
-  store.index.close();
 });
 
 Then('I see the Spec stage', async ({ page }) => {
@@ -132,7 +131,6 @@ When('I save the intent', async () => {
     kind: 'intent', title: 'Expense tracker', template: 'standard-intent@3',
     body: '# Intent: Expense tracker\n\n## Requirements\n\n- REQ-001 Record an expense\n',
   });
-  store.index.close();
   expect(saved.ok).toBe(true);
 });
 

@@ -216,7 +216,6 @@ Given('the intent is approved', async () => {
   const store = await exploreWith(FILLED);
   expect((await draftIntent(store)).ok).toBe(true);
   expect((await review(store, 'intent', { action: 'approve', by: 'Ada Lovelace', comment: 'Clear.' })).ok).toBe(true);
-  store.index.close();
   approvedIntent = intentText();
 });
 

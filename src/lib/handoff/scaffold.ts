@@ -16,7 +16,7 @@ import { PROVIDER_IDS } from '../providers/types';
 import { fail, ok, type Result } from '../result';
 import { providerConfig } from '../settings/settings';
 import { standardsFor } from '../standards/library';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { readDocument } from '../store/documents';
 import { readConfig, readProject, updateConfig } from '../store/workspace';
 import { listTemplates, readTemplate } from '../templates/library';

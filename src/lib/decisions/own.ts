@@ -1,7 +1,7 @@
 // The user's own design option, reviewed against the requirements and standards when they decide (REQ-013, R12):
 // the model returns a fit line. Without a model the option is kept without one.
 import { z } from 'zod';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { readDocument } from '../store/documents';
 import { readProject } from '../store/workspace';
 import { standardsFor } from '../standards/library';

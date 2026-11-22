@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.12.0",
-    "better-sqlite3": "^13.2.0",
     "diff": "^9.0.0",
     "gray-matter": "^4.0.3",
     "js-yaml": "^4.3.2",
@@ -38,7 +37,6 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
-    "@types/better-sqlite3": "^7.6.11",
     "@types/diff": "^6.0.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",

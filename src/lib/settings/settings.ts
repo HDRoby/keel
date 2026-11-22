@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { MODEL_TASKS, PROVIDER_IDS, type ModelChoice, type ModelTask, type ProviderConfig, type RealProviderId } from '../providers/types';
 import { fail, ok, type Result } from '../result';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { decryptSecret, encryptSecret, workspaceKey } from './secrets';
 import { setUserSetting, userSetting } from './user-dir';
 import { gitUserName } from '../store/git';

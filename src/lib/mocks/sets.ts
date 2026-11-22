@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { z } from 'zod';
 import { chosenOption, readDesign } from '../decisions/design';
 import { fail, ok, type Result } from '../result';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { readDocument } from '../store/documents';
 import { commitBlocker, commitFiles } from '../store/git';
 import { readProject } from '../store/workspace';

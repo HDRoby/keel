@@ -60,8 +60,7 @@ Then('the main button is {string}', async ({ page }, label: string) => {
 });
 
 Given('a folder whose .keel\\/config.yml has format 1', async () => {
-  const store = await initialisedFolder('Old project');
-  store.index.close();
+  await initialisedFolder('Old project');
   const old = { ...readConfig(BDD_PROJECT) };
   delete old.format;
   delete old.mock_gate;
@@ -144,7 +143,6 @@ Given('a repository with my own AGENTS.md', async ({ page }) => {
   expect((await recordDecision(store, { decision: 'go', by: 'Ada Lovelace', reason: 'Yes.', consequences: '' })).ok).toBe(true);
   expect((await generatePlan(store, async () => undefined)).ok).toBe(true);
   expect((await review(store, 'plan', { action: 'approve', by: 'Ada Lovelace', comment: '' })).ok).toBe(true);
-  store.index.close();
 });
 
 When('I write the handoff', async ({ page }) => {

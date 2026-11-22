@@ -29,7 +29,6 @@ When('the coding agent edits tasks\\/T2.md without committing', async () => {
 When('Keel commits a new spec version', async () => {
   const store = bddStore();
   const saved = await saveDocument(store, 'docs/spec.md', { reason: 'Clarify the approach', body: '# Spec: Handoff demo\n\nClearer approach.\n' });
-  store.index.close();
   expect(saved.ok).toBe(true);
 });
 

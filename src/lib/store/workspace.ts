@@ -5,7 +5,7 @@ import yaml from 'js-yaml';
 import { z } from 'zod';
 import { fail, ok, type Result } from '../result';
 import { writeFileAtomic } from './atomic';
-import type { Store } from './db';
+import type { Store } from './store';
 import { commitBlocker, commitFiles, initRepo } from './git';
 import { ensureSeed } from '../seed';
 import { formatReqId } from '../trace/assign';

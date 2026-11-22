@@ -12,7 +12,6 @@ Given('the template "Standard intent v3" is used by 1 project', async () => {
     kind: 'intent', title: 'Readme helper', body: '# Intent: Readme helper\n', template: 'standard-intent@3',
   });
   expect(intent.ok).toBe(true);
-  store.index.close();
 });
 
 When('I open it in the template library', async ({ page }) => {

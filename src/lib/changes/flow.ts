@@ -12,7 +12,7 @@ import { regenerateSpec } from '../generate/spec';
 import type { Writer } from '../generate/writer';
 import { fail, ok, type Result } from '../result';
 import { writeFileAtomic } from '../store/atomic';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { readDocument, saveDocument } from '../store/documents';
 import { commitFiles } from '../store/git';
 import { today } from '../store/workspace';

@@ -1,6 +1,6 @@
 // Runs read-back on a schedule while Keel runs (ADR-0012): every KEEL_READBACK_SECONDS (default 60); 0 turns it off.
 // A check reads the local repository only, so it is cheap and never commits.
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { checkAll } from './check';
 
 export const DEFAULT_INTERVAL_SECONDS = 60;

@@ -1,7 +1,7 @@
 // Writes a piece of a document with the model chosen for the task (REQ-009). Undefined when no model answers.
 import { providerForTask } from '../providers/registry';
 import type { ChatMessage, ModelTask } from '../providers/types';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 
 export type Writer = (task: ModelTask, messages: ChatMessage[]) => Promise<string | undefined>;
 

@@ -4,7 +4,7 @@ import type { StageFrame } from '@/components/ui/StageBar';
 import type { Stage } from '@/lib/documents/types';
 import { projectState, stageSummaries } from '@/lib/gates/approvals';
 import { stageGates, type StageGate } from '@/lib/gates/rules';
-import type { Store } from '@/lib/store/db';
+import type { Store } from '@/lib/store/store';
 import { defaultAuthor } from '@/lib/settings/settings';
 import { serverStore } from '@/lib/store/server-store';
 import { readProject } from '@/lib/store/workspace';

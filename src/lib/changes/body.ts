@@ -2,7 +2,7 @@
 // for the project. Why comes from the reason; What changes and Done when from the assistant's draft when there is one
 // (suggestions the user edits before approval); Requirement changes and Impact are filled from the request.
 import { fillSections } from '../brainstorm/sections';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { readProject } from '../store/workspace';
 import { renderTemplate } from '../templates/render';
 import { chosenTemplate } from '../templates/library';

@@ -3,7 +3,7 @@
 // with a "Changed from" line; after approval the change goes through a change request (CR-0003), and approving it
 // writes a new record that supersedes the old one. The spec's Design, Approach and design concerns follow.
 import { fail, ok, type Result } from '../result';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
 import { commitBlocker, commitFiles } from '../store/git';
 import { today } from '../store/workspace';

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { chosenOption, readDesign } from '../decisions/design';
 import { requirementStatements } from '../trace/parse';
 import { acceptedScenarios } from '../scenarios/store';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { readDocument } from '../store/documents';
 import type { Screen } from './match';
 

@@ -7,10 +7,9 @@ import { compareCr0011 } from '../src/lib/changes/compare-cr-0011';
 import { providerWriter, type Writer } from '../src/lib/generate/writer';
 import { fakeReply } from '../src/lib/providers/fake';
 import { userDir } from '../src/lib/settings/user-dir';
-import { openIndex } from '../src/lib/store/db';
 
 const root = mkdtempSync(join(tmpdir(), 'keel-cr-0011-'));
-const store = { root, user: userDir(), index: openIndex(root, ':memory:') };
+const store = { root, user: userDir() };
 const write: Writer = process.argv.includes('--model') ? providerWriter(store) : async (_t, m) => fakeReply('anthropic', m);
 const result = await compareCr0011(store, process.cwd(), write);
 console.log(`Generated in ${root}`);

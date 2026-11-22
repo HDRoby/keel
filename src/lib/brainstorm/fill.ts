@@ -1,7 +1,7 @@
 // Fills Explore's sections as the user would type them: text for a section, rows for a list section.
 // Used by tests and by the scenarios to set up a project through the same functions the page uses.
 import { fail, ok, type Result } from '../result';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { applyEdits, loadContext, writeExplore, type BrainstormError, type Explore } from './session';
 
 export function fillSections(store: Pick<Store, 'root'>, values: Record<string, string | string[]>): Result<Explore, BrainstormError> {

@@ -8,7 +8,7 @@ import { dirname, join } from 'node:path';
 import { z } from 'zod';
 import { fail, ok, type Result } from '../result';
 import { writeFileAtomic } from '../store/atomic';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { readDocument } from '../store/documents';
 import { commitBlocker, commitFiles } from '../store/git';
 import { fileNameFor } from '../store/workspace';

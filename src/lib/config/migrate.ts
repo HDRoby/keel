@@ -2,7 +2,7 @@
 // format 1. Each upgrade is one function that lists what it changes; they are applied in one Keel commit, and only
 // after the user agrees.
 import { fail, ok, type Result } from '../result';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { CONFIG_FORMAT, readConfig, updateConfig, type Project, type ProjectError } from '../store/workspace';
 
 interface Upgrade { from: number; changes: (config: Record<string, unknown>) => string[]; apply: (config: Record<string, unknown>) => Record<string, unknown> }

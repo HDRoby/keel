@@ -14,7 +14,7 @@ import { generatePlan } from '../../src/lib/generate/plan';
 import { generateSpec } from '../../src/lib/generate/spec';
 import { raiseScenarioChange } from '../../src/lib/changes/scenarios';
 import { acceptAllSuggestions } from '../../src/lib/scenarios/store';
-import { openIndex, type Store } from '../../src/lib/store/db';
+import { type Store } from '../../src/lib/store/store';
 import { createDocument, parseDocument } from '../../src/lib/store/documents';
 import { initialiseProject } from '../../src/lib/store/workspace';
 
@@ -49,7 +49,7 @@ export function git(...args: string[]): string {
 
 /** A store on the project folder, for steps that set up state through the same functions the pages use. */
 export function bddStore(): Store {
-  return { root: BDD_PROJECT, user: BDD_USER, index: openIndex(BDD_PROJECT) };
+  return { root: BDD_PROJECT, user: BDD_USER };
 }
 
 /** The address of a stage page: one project per folder, so no project in the URL. */
@@ -152,5 +152,4 @@ export async function projectWithApprovedPlan(extra?: (store: Store) => void | P
   expect((await generatePlan(store, silent)).ok).toBe(true);
   expect((await review(store, 'plan', { action: 'approve', by: 'Ada Lovelace', comment: '' })).ok).toBe(true);
   await extra?.(store);
-  store.index.close();
 }
