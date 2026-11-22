@@ -2,7 +2,7 @@
 
 These change requests come from the owner's review of the Keel mockup on 2026-11-22. Apply them **in the order below** (CR-0003 runs third, after CR-0005, which was built first); each one builds on the one before. Once CR-0003 is in, Keel's Changes page shows this list with each request's status.
 
-**Status on 2026-11-22:** CR-0004 done and merged. CR-0005 done on branch `cr-0005` (R10), not merged yet. Next: CR-0003.
+**Status on 2026-11-22:** CR-0004, CR-0005, CR-0003, CR-0006 and CR-0007 done. CR-0008 in progress on branch `cr-0008` (R13: tokens, components and the UI gallery so far). Next: finish CR-0008, then CR-0009.
 
 | Order | Change request | What it does | Tasks |
 | --- | --- | --- | --- |
@@ -16,10 +16,13 @@ These change requests come from the owner's review of the Keel mockup on 2026-11
 | 8 | [CR-0010](CR-0010/CR-0010.md) | Opening a folder: new, already Keel, existing project (baseline), existing project with its own AI setup (merge, rules as standards) | R15 |
 | 9 | [CR-0011](CR-0011/CR-0011.md) | Ollama is the default provider; Settings lists the models on this computer and offers them per task | R16 |
 | 10 | [CR-0012](CR-0012/CR-0012.md) | Startup check: valid settings, working model access and a valid project config, or setup mode until fixed | R17 |
+| 11 | [CR-0013](CR-0013/CR-0013.md) | Change packages as complete as hand-written ones: templates (request, prompt, task, index) in Settings, Plan the change with a code map, linked decisions and mocks, changes/README.md kept up to date | R19 |
 
 Each folder has the change request, task files, scenarios and a `PROMPT.md` to paste into the coding agent.
 
-## Requirement IDs after all ten
+**After applying a change request:** remove its "(coming: CR-NNNN)" marks from `docs/user-guide.md` and update the Status section of the root `README.md`.
+
+## Requirement IDs after all eleven
 
 | ID | Requirement | Changed by |
 | --- | --- | --- |
@@ -34,6 +37,7 @@ Each folder has the change request, task files, scenarios and a `PROMPT.md` to p
 | REQ-012 | One project per folder with `.keel/`; four opening cases and baseline for existing projects | CR-0004 (new), CR-0010 |
 | REQ-013 | Design as decisions with options | CR-0007 (new) |
 | REQ-014 | Change requests across stages; the Changes page lists every request in `changes/` | CR-0003 (new) |
+| REQ-015 | Change packages from templates, Plan the change, changes index | CR-0013 (new) |
 
 ## Run them
 
