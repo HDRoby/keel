@@ -6,9 +6,9 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 12
+version: 13
 template: implementation-plan@2
-from_spec: SPC-0001@11
+from_spec: SPC-0001@12
 ---
 
 # Plan: Keel v0.1
@@ -78,8 +78,15 @@ Runs after CR-0005 (R10); CR-0006 builds on it.
 | --- | --- | --- | --- |
 | R13 | Every screen looks like the mockup | none (look and feel) | existing scenarios; ui.guard.test.ts |
 
+## Rework for CR-0009
+
+| Task | Title | Requirements | Scenarios |
+| --- | --- | --- | --- |
+| R14 | Clickable mock prompt and mock sets | REQ-010, REQ-005 | mock-references |
+
 ## Version history
 
+- v13: task R14 for CR-0009.
 - v12: task R13, UI consistency (CR-0008).
 - v11: task R12 for CR-0007.
 - v10: task R11 for CR-0006.
