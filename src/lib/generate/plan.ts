@@ -12,7 +12,7 @@ import type { Store } from '../store/db';
 import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
 import { commitFiles, removeFiles } from '../store/git';
 import { readProject } from '../store/workspace';
-import { readTemplate } from '../templates/library';
+import { parseTemplateRef, readTemplate } from '../templates/library';
 import { renderTemplate } from '../templates/render';
 import { parseFeature, requirementStatements, scenarioLabel, type ScenarioTrace } from '../trace/parse';
 import { conflictNote, mergePiece, mergeSections, readBaseline, writeBaseline, type Conflict } from './merge';
@@ -83,7 +83,10 @@ async function composePlan(store: Store, write: Writer): Promise<Result<Composed
   if (!intent.ok) return fail('not-found', intent.message);
   const spec = readDocument(store, 'docs/spec.md');
   const planTemplate = readTemplate(store.root, 'implementation-plan');
-  const taskTemplate = readTemplate(store.root, 'task');
+  // The task template chosen for this project (CR-0013), else the newest.
+  const configured = readProject(store.root);
+  const chosenTask = configured.ok && configured.value.templates.task ? parseTemplateRef(configured.value.templates.task) : undefined;
+  const taskTemplate = readTemplate(store.root, 'task', chosenTask?.id === 'task' ? chosenTask.version : undefined);
   if (!planTemplate.ok || !taskTemplate.ok) return fail('unknown-template', 'The plan or task template is missing');
   const project = readProject(store.root);
   const chosen = project.ok ? project.value.standards : [];

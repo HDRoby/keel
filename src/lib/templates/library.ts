@@ -7,7 +7,7 @@ import { fail, ok, type Result } from '../result';
 import { listDocumentPaths, parseDocument } from '../store/documents';
 import { VERSIONED_REF } from '../refs';
 
-export type TemplateGroup = 'intent' | 'spec' | 'plan' | 'roadmap' | 'decision' | 'agent-instructions' | 'agent-kit';
+export type TemplateGroup = 'intent' | 'spec' | 'plan' | 'roadmap' | 'decision' | 'change' | 'agent-instructions' | 'agent-kit';
 
 export const GROUPS: { group: TemplateGroup; label: string }[] = [
   { group: 'intent', label: 'Intent' },
@@ -15,12 +15,13 @@ export const GROUPS: { group: TemplateGroup; label: string }[] = [
   { group: 'plan', label: 'Plan' },
   { group: 'roadmap', label: 'Roadmap' },
   { group: 'decision', label: 'Decision records' },
+  { group: 'change', label: 'Change requests · request, prompt, tasks and index' },
   { group: 'agent-instructions', label: 'Agent instructions' },
   { group: 'agent-kit', label: 'Agent kit' },
 ];
 
-// Seed kinds that share a group: tasks belong to the plan, change requests to decisions.
-const GROUP_OF: Record<string, TemplateGroup> = { task: 'plan', change: 'decision' };
+// Seed kinds that share a group: the change request, its prompt, tasks and the changes index are one group (CR-0013).
+const GROUP_OF: Record<string, TemplateGroup> = { task: 'change', change: 'change', 'change-prompt': 'change', 'changes-index': 'change' };
 
 export interface TemplateSummary {
   id: string;          // e.g. standard-intent
@@ -228,4 +229,29 @@ function groupOf(kind: string): TemplateGroup {
 /** Folder holding the seed library: KEEL_SEED, or seed/ in the folder Keel runs from. */
 export function seedDir(env: Record<string, string | undefined> = process.env): string {
   return env.KEEL_SEED?.trim() || join(process.cwd(), 'seed');
+}
+
+/** The kinds of the change package templates, as the config keys that choose them (CR-0013). */
+export const CHANGE_TEMPLATE_KINDS = [
+  { key: 'task', kind: 'task', label: 'Task' },
+  { key: 'change', kind: 'change', label: 'Change request' },
+  { key: 'change-prompt', kind: 'change-prompt', label: 'Prompt for the coding agent' },
+  { key: 'changes-index', kind: 'changes-index', label: 'Changes index' },
+] as const;
+export type ChangeTemplateKey = (typeof CHANGE_TEMPLATE_KINDS)[number]['key'];
+
+/** Every version of the templates of one kind, newest first, as choices. */
+export function kindOptions(root: string, kind: string): { ref: string; name: string }[] {
+  return listTemplates(root).filter((t) => t.kind === kind)
+    .flatMap((t) => [...t.versions].reverse().map((v) => ({ ref: `${t.id}@${v}`, name: templateName(t.id, v) })));
+}
+
+/** The template chosen for a change package kind, or the newest of that kind (CR-0013). */
+export function chosenTemplate(root: string, key: ChangeTemplateKey, chosen: Partial<Record<string, string>>): { ref: string; content: string } | undefined {
+  const kind = CHANGE_TEMPLATE_KINDS.find((k) => k.key === key)?.kind ?? key;
+  const options = kindOptions(root, kind);
+  const ref = options.some((o) => o.ref === chosen[key]) ? chosen[key] : options[0]?.ref;
+  const parsed = ref ? parseTemplateRef(ref) : undefined;
+  const template = parsed ? readTemplate(root, parsed.id, parsed.version) : undefined;
+  return ref && template?.ok ? { ref, content: template.value.content } : undefined;
 }

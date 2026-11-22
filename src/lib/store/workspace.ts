@@ -27,7 +27,9 @@ export interface Project {
   description: string;
   author: string;
   created: string;     // ISO date
-  templates: Partial<Record<'intent' | 'spec' | 'plan', string>>;   // chosen per kind, e.g. standard-intent@3
+  templates: Partial<Record<'intent' | 'spec' | 'plan' | 'task' | 'change' | 'change-prompt' | 'changes-index', string>>;   // chosen per kind, e.g. standard-intent@3
+  codeMap: 'off' | 'names' | 'files';   // what planning a change may read (CR-0013)
+  changesIndex: 'auto' | 'off';         // keep changes/README.md up to date (CR-0013)
   style?: string;      // brainstorm style, e.g. challenger@1
   standards: string[]; // e.g. ['security-baseline@2']
   paths: ProjectPaths;
@@ -55,7 +57,10 @@ const configSchema = z.looseObject({
   description: z.string().default(''),
   author: z.string().min(1),
   created: z.preprocess(fromYamlDate, z.string()),
-  templates: z.looseObject({ intent: z.string().regex(REF).optional(), spec: z.string().regex(REF).optional(), plan: z.string().regex(REF).optional() }).default({}),
+  templates: z.looseObject({
+    intent: z.string().regex(REF).optional(), spec: z.string().regex(REF).optional(), plan: z.string().regex(REF).optional(),
+    task: z.string().regex(REF).optional(), change: z.string().regex(REF).optional(), 'change-prompt': z.string().regex(REF).optional(), 'changes-index': z.string().regex(REF).optional(),
+  }).default({}),
   style: z.string().regex(REF).optional(),
   standards: z.array(z.string().regex(REF)).default([]),
   paths: z.object({
@@ -65,6 +70,8 @@ const configSchema = z.looseObject({
   }).default(DEFAULT_PATHS),
   commit: z.enum(['auto', 'off']).default('auto'),
   mock_gate: z.enum(['recommended', 'required', 'off']).default('recommended'),
+  code_map: z.enum(['off', 'names', 'files']).default('names'),
+  changes_index: z.enum(['auto', 'off']).default('auto'),
 });
 
 /** gray-matter and js-yaml read unquoted YAML dates as Date; this turns them back into ISO dates. */
@@ -132,8 +139,9 @@ export function readProject(root: string): Result<Project, ProjectError> {
   if (!data) return fail('invalid-config', `${CONFIG_FILE} is not valid YAML`);
   const parsed = configSchema.safeParse(data);
   if (!parsed.success) return fail('invalid-config', z.prettifyError(parsed.error));
-  const { id, title, description, author, created, templates, style, standards, paths, commit, mock_gate: mockGate } = parsed.data;
-  return ok({ id, title, description, author, created, templates, style, standards, paths, commit, mockGate });
+  const { id, title, description, author, created, templates, style, standards, paths, commit, mock_gate: mockGate, code_map: codeMap, changes_index: changesIndex } = parsed.data;
+  const chosen = Object.fromEntries(Object.entries(templates).filter(([k, v]) => typeof v === 'string' && ['intent', 'spec', 'plan', 'task', 'change', 'change-prompt', 'changes-index'].includes(k))) as Project['templates'];
+  return ok({ id, title, description, author, created, templates: chosen, style, standards, paths, commit, mockGate, codeMap, changesIndex });
 }
 
 export interface InitialiseInput {
