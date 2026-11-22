@@ -44,8 +44,8 @@ Run `keel` in a folder, or `keel path/to/folder`. One folder is one project, and
 | does not exist | asks to create it (`--create` skips the question) |
 | is empty, or has no code | opens **Initialise** for a new project |
 | already has `.keel/` | opens at the current stage; if its config is older, offers to upgrade it in one commit |
-| has code but no Keel **(coming: CR-0010)** | offers to **record what exists as a baseline** (recommended) or to treat the next feature as the project |
-| has code and its own AI setup (AGENTS.md, CLAUDE.md, Cursor rules, Spec Kit specs) **(coming: CR-0010)** | as above, and keeps your agent files, proposes their rules as a project standard, and merges with them at handoff |
+| has code but no Keel | offers to **record what exists as a baseline** (recommended) or to treat the next feature as the project |
+| has code and its own AI setup (AGENTS.md, CLAUDE.md, Cursor rules, Spec Kit specs) | as above, and keeps your agent files, proposes their rules as a project standard, and merges with them at handoff |
 
 Nothing outside `.keel/` is written until you act. You can run Keel on several folders at once; each gets its own port.
 

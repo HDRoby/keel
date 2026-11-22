@@ -1,0 +1,12 @@
+id: PRJ-0001
+title: Old project
+description: ""
+author: Ada Lovelace
+created: 2026-11-01
+templates: {}
+standards: []
+paths:
+  docs: docs
+  tasks: tasks
+  features: features
+commit: auto

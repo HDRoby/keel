@@ -18,6 +18,12 @@ import { StyleCards, TemplateCards, withSections } from '@/components/SetupCards
 import css from '@/components/SetupCards.module.css';
 import { StandardsPicker } from '@/components/StandardsPicker';
 import { WhatKeelCreates, type CreatesLibrary } from '@/components/WhatKeelCreates';
+import { ExistingProject, FoundCard } from '@/components/FolderFound';
+import { InitialiseButton } from '@/components/InitialiseButton';
+import { KeelChecksPage } from '@/components/KeelChecks';
+import { checkKeelFolder, needsAttention } from '@/lib/keel/checks';
+import { scanFolder } from '@/lib/repo/scan';
+import { rulesFromAgentFiles } from '@/lib/standards/from-agent-files';
 import { listStyles } from '@/lib/brainstorm/styles';
 import { projectState } from '@/lib/gates/approvals';
 import { stageGates } from '@/lib/gates/rules';
@@ -37,14 +43,20 @@ function mdFiles(dir: string): string[] {
   return existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.md')).sort() : [];
 }
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ error?: string; title?: string; description?: string }> }) {
-  const { error, title, description } = await searchParams;
+export default async function Home({ searchParams }: { searchParams: Promise<{ error?: string; title?: string; description?: string; open?: string; upgraded?: string }> }) {
+  const { error, title, description, open, upgraded } = await searchParams;
   const store = serverStore();
   const project = readProject(store.root);
   if (project.ok) {
-    // The furthest stage that is open: where the work is now.
-    redirect(`/${stageGates(projectState(store)).filter((g) => g.available).at(-1)?.stage ?? 'explore'}`);
+    // The furthest stage that is open: where the work is now. Before it opens, what needs attention (CR-0010).
+    const stage = stageGates(projectState(store)).filter((g) => g.available).at(-1);
+    const checks = checkKeelFolder(store);
+    if ((!needsAttention(checks) && !upgraded) || open) redirect(`/${stage?.stage ?? 'explore'}`);
+    return <KeelChecksPage title={project.value.title} checks={checks} stage={stage?.label ?? 'Explore'} error={error} upgraded={Boolean(upgraded)} />;
   }
+  const scan = scanFolder(store.root);
+  const rules = scan.kase === 'existing-ai' ? rulesFromAgentFiles(store.root) : [];
+  const existing = scan.kase === 'existing' || scan.kase === 'existing-ai';
 
   const library = previewRoot();
   const intents = templateOptions(library, 'intent', 'latest').map((t) => withSections(library, t));
@@ -71,6 +83,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
         <PageHeader title="Initialise this folder"
           description={<>This folder has no <code>.keel/</code> yet. Describe the idea and pick the templates, brainstorm style and standards. Keel copies them into <code>.keel/</code> in this folder, so they are versioned with the project.</>} />
         <ErrorAlert error={error} />
+        <FoundCard scan={scan} />
         <Card title="Project folder" label="Folder" actions={<Tag><Icon name="folder" size={16} /> One project per folder</Tag>}>
           <div className={css.stack}>
             <code className={css.path}>{store.root}</code>
@@ -107,6 +120,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
             </div>
           </Card>
 
+          {existing && <ExistingProject scan={scan} rules={rules} />}
+
           <Card title={<span id="template-heading">Intent template</span>} actions={<LinkButton href="/templates">Manage templates</LinkButton>}>
             <div className={css.stack}>
               <TemplateCards name="template" options={intents} chosen={DEFAULTS.intent} defaultRef={DEFAULTS.intent} labelledBy="template-heading" columns="two" />
@@ -135,7 +150,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
           </Card>
 
           <div className={css.inline}>
-            <Button type="submit" variant="primary" icon={<Icon name="forum" size={18} />}>Initialise and start brainstorm</Button>
+            <InitialiseButton formId={FORM_ID} baseline={existing} />
           </div>
         </form>
       </main>

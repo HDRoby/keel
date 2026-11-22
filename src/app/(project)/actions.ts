@@ -26,6 +26,10 @@ import { push } from '@/lib/store/remote';
 import { commitBlocker } from '@/lib/store/git';
 import { setProjectStandards } from '@/lib/store/workspace';
 import { adoptProject } from '@/lib/store/adopt';
+import { draftBaseline } from '@/lib/baseline/draft';
+import { upgradeConfig } from '@/lib/config/migrate';
+import { scanFolder } from '@/lib/repo/scan';
+import { conventionsStandard, CONVENTIONS_FILE, CONVENTIONS_REF, rulesFromAgentFiles } from '@/lib/standards/from-agent-files';
 import { VERSIONED_REF } from '@/lib/templates/library';
 
 const ref = z.string().regex(VERSIONED_REF);
@@ -40,6 +44,11 @@ const startForm = z.strictObject({
   plan: ref.optional(),
   style: ref,
   standards,
+  // Existing projects (CR-0010): the path, the files the user agreed to share, the rules they accepted.
+  path: z.enum(['baseline', 'feature']).optional(),
+  share: z.array(z.string().max(300)).max(50).default([]),
+  rules: z.array(z.string().max(200)).max(40).default([]),
+  noShare: z.literal('on').optional(),
 });
 
 /** Initialise by adopting the Keel documents already in the folder (task R9). */
@@ -54,14 +63,35 @@ export async function adoptAction(form: FormData): Promise<void> {
 
 /** Initialise: writes .keel/ and starts the brainstorm. */
 export async function startAction(form: FormData): Promise<void> {
-  const input = startForm.safeParse(formFields(form, ['standards']));
+  const input = startForm.safeParse(formFields(form, ['standards', 'share', 'rules']));
   if (!input.success) redirect('/?error=Fill+in+the+title,+your+name,+a+template+and+a+style');
-  const { description, spec, plan, ...rest } = input.data;
-  const started = await startIdea(serverStore(), { ...rest, idea: description, templates: { spec, plan } });
+  const { description, spec, plan, path, share: chosen, rules, noShare, ...rest } = input.data;
+  const share = noShare ? [] : chosen;
+  const store = serverStore();
+  // What Keel found before anything is written (CR-0010): agent files to merge later, rules to keep, files to share.
+  const scan = scanFolder(store.root);
+  const found = rulesFromAgentFiles(store.root);
+  const accepted = rules.filter((r) => found.some((f) => f.rule === r));
+  const started = await startIdea(store, {
+    ...rest, idea: description, templates: { spec, plan },
+    ...(scan.agentFiles.length ? { extra: { agent_files_at_start: scan.agentFiles.filter((f) => f === 'AGENTS.md' || f === 'CLAUDE.md') } } : {}),
+    ...(accepted.length ? { projectStandard: { ref: CONVENTIONS_REF, path: CONVENTIONS_FILE, content: conventionsStandard(accepted, [...new Set(found.filter((f) => accepted.includes(f.rule)).map((f) => f.source))]) } } : {}),
+  });
   if (!started.ok) redirect(`/?error=${encodeURIComponent(started.message)}`);
+  if (path === 'baseline') {
+    const drafted = await draftBaseline(store, { share, offered: scan.shareable, stack: scan.stack }, providerWriter(store));
+    if (!drafted.ok) redirect(`${at('explore')}?error=${encodeURIComponent(drafted.message)}`);
+  }
   // The sidebar in the root layout shows the project now, not "Not initialised".
   revalidatePath('/', 'layout');
   redirect(at('explore'));
+}
+
+/** Opening a Keel folder with an older config (CR-0010): upgrade it in one Keel commit, after the user agrees. */
+export async function upgradeConfigAction(): Promise<void> {
+  const upgraded = await upgradeConfig(serverStore());
+  revalidatePath('/', 'layout');
+  redirect(upgraded.ok ? '/?upgraded=1' : `/?error=${encodeURIComponent(upgraded.message)}`);
 }
 
 const setupForm = z.strictObject({ template: ref, style: ref, standards });

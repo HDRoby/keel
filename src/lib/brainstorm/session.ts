@@ -126,6 +126,8 @@ export interface NewIdea {
   style: string;     // e.g. challenger@1
   standards?: string[];
   templates?: { spec?: string; plan?: string };
+  extra?: Record<string, unknown>;                   // further config fields, e.g. agent_files_at_start (CR-0010)
+  projectStandard?: { ref: string; path: string; content: string };   // a standard made from the folder's own rules
 }
 
 /**
@@ -138,14 +140,15 @@ export async function startIdea(store: Store, input: NewIdea): Promise<Result<Ex
   const library = previewRoot();
   const sections = loadSetup(library, input);
   if (!sections.ok) return sections;
-  const unknown = (input.standards ?? []).filter((ref) => !readStandard(library, ref).ok);
+  const unknown = (input.standards ?? []).filter((ref) => ref !== input.projectStandard?.ref && !readStandard(library, ref).ok);
   if (unknown.length > 0) return fail('invalid-input', `Unknown standard ${unknown.join(', ')}`);
   const state = emptyState({ title: input.title.trim(), idea: input.idea.trim(), template: input.template, style: input.style }, sections.value);
   const project = await initialiseProject(store, {
     title: state.title, description: state.idea, author: input.author,
     templates: Object.fromEntries(Object.entries({ intent: input.template, ...input.templates }).filter(([, v]) => v)),
-    style: input.style, standards: input.standards ?? [],
-    files: [{ path: EXPLORE_FILE, content: serialise(state) }],
+    style: input.style, standards: [...(input.standards ?? []), ...(input.projectStandard ? [input.projectStandard.ref] : [])],
+    ...(input.extra ? { extra: input.extra } : {}),
+    files: [{ path: EXPLORE_FILE, content: serialise(state) }, ...(input.projectStandard ? [{ path: input.projectStandard.path, content: input.projectStandard.content }] : [])],
   });
   if (!project.ok) return fail('invalid-input', project.message);
   return ok(state);
