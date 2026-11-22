@@ -23,8 +23,9 @@ change: CR-0004
     standards/        standards as skills
     agent-kit/        subagents and REVIEW.md template
     brainstorm/       brainstorm transcripts
-    mocks/            mock reference files (images, PDF, HTML)
-    cache/            index.db and run.json; ignored by git
+    mocks/            mock reference files (images, PDF, HTML) and references.md, their index
+    generated/        what Keel last generated, for three-way regeneration
+    cache/            index.db, run.json and read-back state; ignored by git
     .gitignore        contains "cache/"
   docs/               intent.md, spec.md, plan.md, roadmap.md, decisions/
   tasks/              task files
