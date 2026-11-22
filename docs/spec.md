@@ -6,7 +6,7 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 13
+version: 14
 template: requirements-and-design-spec@2
 from_intent: INT-0001@4
 standards:
@@ -32,7 +32,7 @@ decision: go (docs/decisions/0001-go.md)
 | REQ-006 | Handoff writes the agent files into the project folder (AGENTS.md, CLAUDE.md, REVIEW.md, agent kit, standards as skills, failing acceptance scenarios, CI). It never overwrites a file Keel did not write without asking. Zip download is optional. Push to the folder's existing git remote is optional. Handoff merges with agent files that were in the folder when Keel initialised it (a marked Keel block in AGENTS.md, a pointer line in CLAUDE.md) and never replaces them. | Intent |
 | REQ-007 | Read back the agent's commits and uncommitted edits to `docs/`, `tasks/` and `features/` from the local repository. Keel's own commits are ignored. Accept as a new version or dismiss. An accepted change to an approved document goes back to draft for a new approval. | Spec |
 | REQ-008 | Version history for every document with readable diffs, the reason for each version, and its impact by requirement ID. Each new version records the change request that caused it. | Spec |
-| REQ-009 | Model provider layer: Anthropic, OpenAI, Azure OpenAI and local OpenAI-compatible endpoints (Ollama). A model can be chosen per task. API keys and provider connections are stored in the user config folder, never in the project folder. | Spec |
+| REQ-009 | Model provider layer: Anthropic, OpenAI, Azure OpenAI and local OpenAI-compatible endpoints (Ollama). A model can be chosen per task. API keys and provider connections are stored in the user config folder, never in the project folder. Ollama on the same computer is the default provider. Keel lists the models installed there and offers them per task; no key is needed. | Spec |
 | REQ-010 | For projects with a UI, Keel builds a prompt from the spec for an external model to create a clickable mock, and attaches the exported screens (PNG and HTML) as a mock set linked to screens and requirements. Each set records the spec version it came from and is marked out of date when the spec changes. Other references (links, images, PDF) can still be attached. No mock generation in Keel. | Spec |
 | REQ-011 | Brainstorm styles as versioned skill files (Challenger, Coach, Cost and value, Market, Engineering-first), chosen at the start. | Spec |
 | REQ-012 | Keel works on one project per folder. `npx keel [path]` opens the folder; a folder without `.keel/` opens on the Initialise screen, where the user sets title, description, templates, brainstorm style and standards. All project config and libraries are in `.keel/`, committed with the project. Opening a folder without `.keel/` starts with a local scan and a recommended path for four cases (new, already Keel, existing project, existing project with its own AI setup). For existing projects Keel can draft a baseline (intent, "as built" requirements, current stack as decisions) from files the user chooses to share, and proposes rules from existing agent files as a project standard. Opening a Keel folder checks the config version, pending changes and missing files. | Intent |
@@ -84,6 +84,7 @@ Code generation, multi-user roles and approvals, the Maintain stage, a VS Code e
 
 ## Version history
 
+- v14: Ollama is the default provider, with local models listed (CR-0011).
 - v13: opening a folder in four cases, baseline for existing projects (CR-0010).
 - v12: clickable mock made elsewhere from the spec, attached as a versioned mock set (CR-0009).
 - v11: design as decisions with options (CR-0007).

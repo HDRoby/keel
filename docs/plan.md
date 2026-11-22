@@ -6,9 +6,9 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 14
+version: 15
 template: implementation-plan@2
-from_spec: SPC-0001@13
+from_spec: SPC-0001@14
 ---
 
 # Plan: Keel v0.1
@@ -90,8 +90,15 @@ Runs after CR-0005 (R10); CR-0006 builds on it.
 | --- | --- | --- | --- |
 | R15 | Opening a folder: four cases | REQ-012, REQ-006 | opening-a-folder |
 
+## Rework for CR-0011
+
+| Task | Title | Requirements | Scenarios |
+| --- | --- | --- | --- |
+| R16 | Ollama as the default provider | REQ-009 | providers |
+
 ## Version history
 
+- v15: task R16 for CR-0011.
 - v14: task R15 for CR-0010.
 - v13: task R14 for CR-0009.
 - v12: task R13, UI consistency (CR-0008).
