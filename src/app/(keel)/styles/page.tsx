@@ -1,8 +1,8 @@
-// Brainstorm styles (mockup screen "Brainstorm styles", REQ-011).
+// Brainstorm styles (mock source Styles.dc.html, REQ-011): the styles in .keel/styles; pick one to see and edit it.
+import { styleGroups } from './groups';
+import { LibraryLayout } from '@/components/LibraryLayout';
+import { Card } from '@/components/ui/Card';
 import { serverStore } from '@/lib/store/server-store';
-import Link from 'next/link';
-import { ErrorAlert, NotInitialised, PageHead, Topbar } from '@/components/Shell';
-import { listStyles } from '@/lib/brainstorm/styles';
 import { isInitialised } from '@/lib/store/workspace';
 
 export const dynamic = 'force-dynamic';
@@ -11,20 +11,10 @@ export default async function StylesPage({ searchParams }: { searchParams: Promi
   const { error } = await searchParams;
   const home = serverStore().root;
   return (
-    <>
-      <Topbar title="Brainstorm styles" />
-      <main className="content">
-        <PageHead title="Brainstorm styles" description={<>Stored in <code>.keel/styles</code>. Editing saves a new version; brainstorms keep the version they started with.</>} />
-        {!isInitialised(home) && <NotInitialised what="brainstorm styles" />}
-        <div className="card">
-          <ErrorAlert error={error} />
-          <ul className="plain-list">
-            {listStyles(home).map((s) => (
-              <li key={s.id}><Link href={`/styles/${s.id}`}>{s.name} v{s.version}</Link> — {s.description}</li>
-            ))}
-          </ul>
-        </div>
-      </main>
-    </>
+    <LibraryLayout screen="Brainstorm styles" title="Brainstorm styles" meta=".keel/styles" error={error} initialised={isInitialised(home)} what="brainstorm styles"
+      description={<>How the assistant reviews your sections in Explore. Stored in <code>.keel/styles</code>. Editing saves a new version; brainstorms keep the version they started with.</>}
+      groups={styleGroups(home)}>
+      <Card label="No style selected"><p>Pick a style on the left to see its instructions and versions.</p></Card>
+    </LibraryLayout>
   );
 }

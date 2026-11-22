@@ -1,11 +1,17 @@
-import { serverStore } from '@/lib/store/server-store';
-import { NAME } from '@/lib/skill-files';
-// One brainstorm style: its versions and editing (REQ-011). Saving creates a new version.
-import Link from 'next/link';
+// One brainstorm style (mock source Styles.dc.html): its versions and editing (REQ-011). Saving creates a new version.
 import { notFound } from 'next/navigation';
 import { saveStyleAction } from '../actions';
-import { ErrorAlert, Topbar } from '@/components/Shell';
+import { styleGroups } from '../groups';
+import { LibraryLayout } from '@/components/LibraryLayout';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Segmented } from '@/components/ui/Segmented';
+import { Tag } from '@/components/ui/Tag';
 import { parseStyle, readStyleFile, styleVersions } from '@/lib/brainstorm/styles';
+import { NAME } from '@/lib/skill-files';
+import { serverStore } from '@/lib/store/server-store';
+import { isInitialised } from '@/lib/store/workspace';
+import css from '../../library.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,29 +32,17 @@ export default async function StylePage({ params, searchParams }: Props) {
   if (!file?.ok || !style?.ok || latest === undefined) notFound();
 
   return (
-    <>
-      <Topbar title="Brainstorm style" />
-      <main className="content">
-        <h1>{style.value.name} v{version}</h1>
-        <div className="card">
-          <ErrorAlert error={error} />
-          <p>{style.value.description}</p>
-          <p className="row">
-            Versions:
-            {versions.map((n) => (
-              <Link key={n} href={`/styles/${id}?v=${n}`} aria-current={n === version ? 'page' : undefined}>v{n}</Link>
-            ))}
-          </p>
-          <p>New brainstorms use the latest version. A brainstorm already started keeps its version until it is changed in Project setup.</p>
-          <h2>Edit</h2>
-          <form action={saveStyleAction}>
-            <input type="hidden" name="id" value={id} />
-            <label htmlFor="content">Content of v{version}. Saving creates v{latest + 1}.</label>
-            <textarea id="content" name="content" defaultValue={file.value} rows={24} className="mono" />
-            <button type="submit">Save as new version</button>
-          </form>
-        </div>
-      </main>
-    </>
+    <LibraryLayout screen="Brainstorm style" title={`${style.value.name} v${version}`} meta="Brainstorm styles · .keel/styles" error={error}
+      initialised={isInitialised(home)} what="brainstorm styles" groups={styleGroups(home, id)} description={style.value.description}>
+      <Card title={`${style.value.name} v${version}`} meta="New brainstorms use the latest version. A brainstorm already started keeps its version until it is changed in Project setup."
+        actions={versions.length > 1 ? <Segmented label="Versions" items={versions.map((n) => ({ href: `/styles/${id}?v=${n}`, label: `v${n}`, current: n === version }))} /> : <Tag>v{version}</Tag>}>
+        <form action={saveStyleAction} className={css.stack}>
+          <input type="hidden" name="id" value={id} />
+          <label htmlFor="content" className={css.muted}>Content of v{version}. Saving creates v{latest + 1}.</label>
+          <textarea id="content" name="content" defaultValue={file.value} rows={24} className={css.source} />
+          <div><Button type="submit" variant="primary">Save as new version</Button></div>
+        </form>
+      </Card>
+    </LibraryLayout>
   );
 }
