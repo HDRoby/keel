@@ -38,33 +38,33 @@ Along the way: versioned templates, brainstorm styles and standards in `.keel/`;
 
 You need **Node.js 20 or later** and **git**. For local models, install **[Ollama](https://ollama.com)** and pull a model (for example `ollama pull qwen3:32b`).
 
-Keel is not published to npm yet; run it from this repository:
+Run it on a folder:
 
 ```
-git clone <this repository> keel
-cd keel
-npm install
-npm run build        # optional: without a build, Keel runs in development mode
-npm link             # makes the "keel" command available everywhere
+npx keel-sdlc                      # open the current folder
+npx keel-sdlc ~/projects/my-idea   # open another folder, or create it
 ```
 
-Then, in any folder:
+Or install it once and use the `keel` command:
 
 ```
-keel                 # open the current folder
-keel ~/projects/my-idea --create   # create a new folder and open it
+npm i -g keel-sdlc
+keel ~/projects/my-idea
 ```
 
 Keel checks your settings and model access, then opens your browser. A new folder starts on **Initialise**; a folder that already uses Keel opens where you left off.
 
-Without `npm link`: `node /path/to/keel/bin/keel.mjs [path]`.
+> Until the first release of `keel-sdlc`, run it from a clone: `npm install`, `npm run build`, `npm link`, then `keel`. Note that `npx keel` runs an unrelated package with that name.
 
 **→ The full [user guide](docs/user-guide.md)** covers every screen, the folder layout, working with a coding agent, change requests and troubleshooting.
 
 ## Command line
 
+With `npx`, write `npx keel-sdlc` instead of `keel`.
+
 ```
-keel [path] [--title "..."] [--description "..."] [--port N] [--no-open] [--create] [--dry-run] [--help]
+keel [path] [--title "..."] [--description "..."] [--port N] [--no-open] [--create] [--dry-run] [--version] [--help]
+keel import <v0.1 project folder> --dir <folder>
 ```
 
 | Option | What it does |
@@ -75,6 +75,8 @@ keel [path] [--title "..."] [--description "..."] [--port N] [--no-open] [--crea
 | `--port N` | Use this port (default: the first free one from 3000); each folder gets its own |
 | `--no-open` | Do not open the browser |
 | `--dry-run` | Print what would run, and exit |
+| `--version` | Print the version |
+| `import` | Import a Keel v0.1 project into a folder |
 
 ## Developing Keel
 
@@ -82,14 +84,17 @@ This repository is built with Keel's own process: `docs/` holds Keel's intent, s
 
 | Task | Command |
 | --- | --- |
-| Install | `npm install` |
+| Install from a clone | `npm install`, then `npm link` for the `keel` command |
 | Dev server on a folder | `KEEL_PROJECT_DIR=/path/to/folder npm run dev` |
-| Rebuild the index | `npm run keel -- reindex --dir /path/to/folder` |
+| Import a v0.1 project | `npm run keel -- import <old project folder> --dir /path/to/folder` |
 | Unit tests | `npm test` |
 | Acceptance scenarios | `npm run test:bdd` |
 | Lint and types | `npm run lint` and `npm run typecheck` |
 | Everything CI runs | `npm run verify` |
 | UI gallery | `/dev/ui` on the dev server |
+| Standalone build | `npm run build`; `keel` then starts it instead of the dev server |
+| Package smoke test | `npm pack`, then `npm run smoke` |
+| Release | Push a tag `vX.Y.Z` that matches `package.json`; only the release workflow publishes |
 
 ```
 docs/          intent, spec, plan, roadmap, decisions, UI guide and styles, mock references
@@ -103,6 +108,6 @@ src/           the app (Next.js, TypeScript)
 
 ## Status
 
-Keel v0.1 plus the change requests in [`changes/README.md`](changes/README.md). Applied so far: CR-0003 to CR-0013. The user guide marks features that are not built yet.
+Keel v0.1 plus the change requests in [`changes/README.md`](changes/README.md). Applied so far: CR-0003 to CR-0014. Still to come: the AI readiness report (CR-0015) and discussing a change (CR-0016). The user guide marks features that are not built yet.
 
 "Keel" is a working name.

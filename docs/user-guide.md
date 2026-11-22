@@ -31,13 +31,13 @@ Features marked **(coming: CR-NNNN)** are specified in `changes/` but not built 
   - Or a key for **Anthropic**, **OpenAI** or **Azure OpenAI**, or any **OpenAI-compatible** server.
 - **A coding agent** for the build: Claude Code, Codex, Cursor or any agent that reads `AGENTS.md`.
 
-Install Keel as described in the README (`npm install`, `npm link`).
+Run Keel with `npx keel-sdlc` in a folder, or install it once with `npm i -g keel-sdlc` and use `keel` (see the README). Until the first release, run it from a clone with `npm install`, `npm run build` and `npm link`.
 
 **Startup check.** Every time Keel starts, it checks your settings, that your model answers, that each task has a model, and that the project's config is valid. If something fails, Keel opens in setup mode: only Startup check and Settings are available until it is fixed.
 
 ## 2. Opening a folder
 
-Run `keel` in a folder, or `keel path/to/folder`. One folder is one project, and it is the same git repository your coding agent builds in.
+Run `keel` (or `npx keel-sdlc`) in a folder, or `keel path/to/folder`. One folder is one project, and it is the same git repository your coding agent builds in.
 
 | The folder… | Keel… |
 | --- | --- |
@@ -200,7 +200,7 @@ In the project folder (committed, except the cache):
   templates/  styles/  standards/  agent-kit/
   brainstorm/       Explore sections, comments and threads
   mocks/            mock files you attach
-  cache/            search index (not committed, rebuilt when needed)
+  cache/            run lock for this folder (not committed)
 docs/
   intent.md  spec.md  plan.md  roadmap.md
   decisions/        decision records
@@ -226,7 +226,6 @@ Keel commits only its own files, with messages starting "Keel:", and never durin
 | A document changed outside Keel | It appears in Read-back; accept or dismiss it. Keel never overwrites an edited file. |
 | Handoff shows a conflict | The file exists and Keel did not write it: Keep mine, Use Keel's, or Write beside. |
 | The project config is invalid | Fix it in Project setup or restore `.keel/config.yml` from git. Keel does not change it on its own. |
-| The index looks wrong | `npm run keel -- reindex --dir <folder>` rebuilds it from the files. |
 
 ## 16. Words used in Keel
 
