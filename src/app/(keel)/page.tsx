@@ -18,7 +18,8 @@ import { StyleCards, TemplateCards, withSections } from '@/components/SetupCards
 import css from '@/components/SetupCards.module.css';
 import { StandardsPicker } from '@/components/StandardsPicker';
 import { WhatKeelCreates, type CreatesLibrary } from '@/components/WhatKeelCreates';
-import { ExistingProject, FoundCard } from '@/components/FolderFound';
+import { ExistingProject, FoundCard, FromReadiness } from '@/components/FolderFound';
+import { readinessHandover } from '@/lib/readiness/accept';
 import { InitialiseButton } from '@/components/InitialiseButton';
 import { KeelChecksPage } from '@/components/KeelChecks';
 import { checkKeelFolder, needsAttention } from '@/lib/keel/checks';
@@ -57,6 +58,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
   const scan = scanFolder(store.root);
   const rules = scan.kase === 'existing-ai' ? rulesFromAgentFiles(store.root) : [];
   const existing = scan.kase === 'existing' || scan.kase === 'existing-ai';
+  const handover = readinessHandover(store);
 
   const library = previewRoot();
   const intents = templateOptions(library, 'intent', 'latest').map((t) => withSections(library, t));
@@ -120,7 +122,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
             </div>
           </Card>
 
-          {existing && <ExistingProject scan={scan} rules={rules} />}
+          {existing && <ExistingProject scan={scan} rules={rules} adoptRules={handover?.adoptRules} />}
+          {handover && <FromReadiness handover={handover} />}
 
           <Card title={<span id="template-heading">Intent template</span>} actions={<LinkButton href="/templates">Manage templates</LinkButton>}>
             <div className={css.stack}>
@@ -146,7 +149,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
           </Card>
 
           <Card title="Standards" meta="Conventions and guidelines the spec, plan and code are checked against. They go into the handoff as skills." actions={<LinkButton href="/standards">Manage standards</LinkButton>}>
-            <StandardsPicker standards={standards} chosen={[]} />
+            <StandardsPicker standards={standards} chosen={handover?.standards.filter((s) => standards.some((x) => x.ref === s)) ?? []} />
           </Card>
 
           <div className={css.inline}>

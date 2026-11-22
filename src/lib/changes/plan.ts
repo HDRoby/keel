@@ -56,7 +56,8 @@ export function readPlan(root: string, id: string): ChangePlan | undefined {
   }
 }
 
-function writePlan(root: string, plan: ChangePlan): string {
+/** Saves a plan file (.keel/plans/<id>.json) and returns its path; the caller commits it. */
+export function writePlan(root: string, plan: ChangePlan): string {
   mkdirSync(join(root, PLANS_DIR), { recursive: true });
   writeFileSync(planFile(root, plan.change), `${JSON.stringify(plan, null, 2)}\n`);
   return `${PLANS_DIR}/${plan.change}.json`;

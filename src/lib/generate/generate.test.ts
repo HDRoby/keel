@@ -11,6 +11,8 @@ import { initialiseProject } from '../store/workspace';
 import { buildTrace } from '../trace/index';
 import { recordDecision, review } from '../gates/approvals';
 import { generatePlan, orderOfWork, plannedTasks } from './plan';
+import { handOverToBaseline } from '../readiness/accept';
+import { runReadiness } from '../readiness/run';
 import { featureFile, generateSpec, requirementsTable, scenarioFor } from './spec';
 import { asSectionBody, notWritten, providerWriter, sectionPrompt, writeSection, type Writer } from './writer';
 
@@ -147,5 +149,23 @@ describe('generatePlan', () => {
     const trace = buildTrace(store.root);
     expect(trace.tasks.T1).toMatchObject({ requirements: ['REQ-001', 'REQ-002'], features: ['features/export-the-log.feature', 'features/record-an-approval.feature'] });
     expect(await generatePlan(store, writer)).toMatchObject({ error: 'already-exists' });
+  });
+
+  it('adds the readiness advice handed to the baseline as tasks after the planned ones (CR-0015)', async () => {
+    const store = await approvedIntent();
+    const run = await runReadiness(store, { ticked: [] }, silent);
+    if (!run.ok) throw new Error(run.message);
+    const keep = run.value.report.advice.find((a) => a.id === 'VE-01');
+    expect(keep).toBeDefined();
+    await handOverToBaseline(store, run.value.report.id, Object.fromEntries(run.value.report.advice.map((a) => [a.id, a.id === 'VE-01' ? 'add' : 'ignore'])));
+    await generateSpec(store, 'requirements-and-design-spec@2', silent);
+    await acceptAllSuggestions(store, raiseScenarioChange);
+    await recordDecision(store, { decision: 'go', by: 'Ada', reason: 'Worth it.', consequences: '' });
+    const writer: Writer = async (_task, messages) => (messages[0]?.content.startsWith('Split') ? 'T1 | Approval flow | REQ-001, REQ-002' : undefined);
+    const plan = await generatePlan(store, writer);
+    if (!plan.ok) throw new Error(plan.message);
+    expect(plan.value.body).toContain('## From the readiness report');
+    expect(plan.value.body).toContain(`| T2 | ${keep?.title} | Verification | High |`);
+    expect(readFileSync(join(store.root, 'tasks/T2.md'), 'utf8')).toContain(`From the AI readiness report \`${run.value.report.id}\``);
   });
 });

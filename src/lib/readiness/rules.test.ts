@@ -2,7 +2,7 @@ import { cpSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { AREAS, areaRating, namedCommands, namedManagers, readinessScan, runRules, type Rating, type RuleResult } from './rules';
+import { adviceTitle, AREAS, areaRating, ruleById, namedCommands, namedManagers, readinessScan, runRules, type Rating, type RuleResult } from './rules';
 
 const FIXTURES = join(process.cwd(), 'features', 'fixtures', 'folders');
 const ratings = (results: RuleResult[]) => Object.fromEntries(AREAS.map((a) => [a, areaRating(results, a)])) as Record<(typeof AREAS)[number], Rating>;
@@ -64,6 +64,14 @@ describe('readiness rules on the four fixture folders', () => {
     put('.gitignore', 'node_modules\n.env\n.env*.local\n*.pem\n*.key\n');
     put('.env.example', 'API_KEY=\n');
     expect(Object.values(ratings(runRules(readinessScan(root))))).toEqual(AREAS.map(() => 'Ready'));
+  });
+});
+
+describe('advice titles', () => {
+  it('fills the parameters, or uses the plain title when there are none', () => {
+    const rule = ruleById('VE-03');
+    expect(rule && adviceTitle(rule, { reqs: 'REQ-002, REQ-005' })).toBe('Add scenarios for REQ-002, REQ-005');
+    expect(rule && adviceTitle(rule)).toBe('Add acceptance scenarios');
   });
 });
 

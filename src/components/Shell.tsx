@@ -16,7 +16,7 @@ export interface ShellProject {
 
 const PROJECT_LINKS: [string, string][] = [
   ['/setup', 'Project setup'], ['/explore', 'Explore'], ['/intent', 'Intent'], ['/spec', 'Spec'], ['/plan', 'Plan'],
-  ['/handoff', 'Handoff'], ['/roadmap', 'Roadmap'], ['/changes', 'Changes'], ['/trace', 'Traceability'],
+  ['/handoff', 'Handoff'], ['/roadmap', 'Roadmap'], ['/changes', 'Changes'], ['/readiness', 'AI readiness'], ['/trace', 'Traceability'],
 ];
 const LIBRARY_LINKS: [string, string][] = [['/templates', 'Templates'], ['/styles', 'Brainstorm styles'], ['/standards', 'Standards']];
 
@@ -41,7 +41,7 @@ export function Shell({ project, setup, children }: { project?: ShellProject; se
           <>
             {project
               ? <NavGroup label={`Project · ${project.title}`} name="Project" icon="lightbulb" links={PROJECT_LINKS} />
-              : <NavGroup label="This folder" name="Project" icon="lightbulb" links={[['/', 'Initialise']]} exact />}
+              : <NavGroup label="This folder" name="Project" icon="lightbulb" links={[['/', 'Initialise'], ['/readiness', 'AI readiness']]} exact />}
             <NavGroup label="Library (.keel)" name="Library" icon="folder" links={LIBRARY_LINKS} />
             <NavGroup label="Settings" name="Settings" icon="settings" links={[['/check', 'Startup check'], ['/settings', 'Settings']]} />
           </>

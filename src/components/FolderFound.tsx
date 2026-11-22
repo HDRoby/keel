@@ -1,8 +1,10 @@
 // "What Keel found" on Initialise (REQ-012, CR-0010; mock source Start.dc.html): the local scan of the folder, the
 // case it is, and for an existing project the path, the files the assistant may read, the agent files and their
 // rules. Nothing outside .keel/ is written until the user acts; nothing is sent to a model before Initialise.
+import type { Handover } from '@/lib/readiness/accept';
 import type { FolderScan } from '@/lib/repo/scan';
 import type { FoundRule } from '@/lib/standards/from-agent-files';
+import { ButtonLink } from './ui/Button';
 import { Card } from './ui/Card';
 import { DataTable } from './ui/DataTable';
 import { Notice } from './ui/Notice';
@@ -35,13 +37,34 @@ export function FoundCard({ scan }: { scan: FolderScan }) {
         <p role="status" className={styles.line}>{CASE[scan.kase].line}</p>
         <ul className={styles.facts}>{facts.map((f) => <li key={f}>{f}</li>)}</ul>
         {scan.truncated && <p className={styles.muted}>The folder has more than 10,000 files; Keel looked at the first 10,000.</p>}
+        {/* Optional and on demand (CR-0015): the check never runs by itself. */}
+        <Notice kind="info" title="Want to know how ready this folder is for coding agents?" label="AI readiness"
+          actions={<ButtonLink href="/readiness" small>Check AI readiness</ButtonLink>}>
+          A local scan against the Keel standard, then a model review of the gaps. It runs only when you ask.
+        </Notice>
+      </div>
+    </Card>
+  );
+}
+
+/** Accepted advice from an AI readiness report (CR-0015): what Initialise preselects, and the tasks for the baseline plan. */
+export function FromReadiness({ handover }: { handover: Handover }) {
+  return (
+    <Card title="From the AI readiness report" meta={`Accepted advice from ${handover.report}. Nothing is written until you initialise.`}>
+      <div className={styles.stack}>
+        {handover.matched.length > 0 && (
+          <ul className={styles.facts} aria-label="Covered by Initialise and handoff">
+            {handover.matched.map((m) => <li key={m.title}>{m.title}: {m.how}.</li>)}
+          </ul>
+        )}
+        {handover.tasks.length > 0 && <p className={styles.line}>{handover.tasks.length} more {handover.tasks.length === 1 ? 'item becomes a task' : 'items become tasks'} in the plan, under &quot;From the readiness report&quot;: {handover.tasks.map((t) => t.title).join('; ')}.</p>}
       </div>
     </Card>
   );
 }
 
 /** The path for an existing project, the files to share, the agent files and the proposed rules: inside the form. */
-export function ExistingProject({ scan, rules }: { scan: FolderScan; rules: FoundRule[] }) {
+export function ExistingProject({ scan, rules, adoptRules = false }: { scan: FolderScan; rules: FoundRule[]; adoptRules?: boolean }) {
   const total = scan.shareable.reduce((n, f) => n + f.size, 0);
   return (
     <>
@@ -89,7 +112,7 @@ export function ExistingProject({ scan, rules }: { scan: FolderScan; rules: Foun
         <Card title={<span id="rules-heading">Rules found in your agent files</span>} meta="Tick the ones to keep as a project standard, Project conventions v1, which the spec, plan and coding agent follow.">
           <ul className={styles.rules} aria-labelledby="rules-heading">
             {rules.map((r) => (
-              <li key={r.rule}><label className={styles.check}><input type="checkbox" name="rules" value={r.rule} aria-label={r.rule} /> <span>{r.rule}</span> <span className={styles.muted}>from {r.source}</span></label></li>
+              <li key={r.rule}><label className={styles.check}><input type="checkbox" name="rules" value={r.rule} aria-label={r.rule} defaultChecked={adoptRules} /> <span>{r.rule}</span> <span className={styles.muted}>from {r.source}</span></label></li>
             ))}
           </ul>
         </Card>

@@ -41,6 +41,8 @@ export interface ReadinessReport {
   advice: Advice[];
   hidden: string[];           // advice IDs ignored in an earlier report and left out of this one
   modelError?: string;
+  handedOver?: boolean;       // "Add to the baseline plan" was pressed: Initialise and the plan use the accepted advice
+  change?: string;            // the change request made from it
 }
 
 const IMPACT_ORDER: Record<Impact, number> = { High: 0, Medium: 1, Low: 2 };
@@ -58,6 +60,8 @@ const reportSchema = z.object({
   })).default([]),
   hidden: z.array(z.string()).default([]),
   model_error: z.string().optional(),
+  handed_over: z.boolean().optional(),
+  change: z.string().optional(),
 });
 
 /** A stable ID for model advice: the same area, title and files give the same ID in the next report. */
@@ -143,6 +147,7 @@ export function renderReport(root: string, report: ReadinessReport): { text: str
   const header = {
     template: template.ref, id: report.id, title: report.title, date: report.date, folder_case: report.folderCase, model: report.model, duration_ms: report.durationMs,
     read: report.read, areas: report.areas, mapping: report.mapping, advice: report.advice, hidden: report.hidden, ...(report.modelError ? { model_error: report.modelError } : {}),
+    ...(report.handedOver ? { handed_over: true } : {}), ...(report.change ? { change: report.change } : {}),
   };
   return { text: matter.stringify(body, JSON.parse(JSON.stringify(header)) as Record<string, unknown>), template: template.ref };
 }
@@ -155,6 +160,7 @@ export function parseReport(text: string): ReadinessReport | undefined {
     return {
       id: d.id, title: d.title, date: d.date, folderCase: d.folder_case, model: d.model, durationMs: d.duration_ms, read: d.read, areas: d.areas,
       mapping: d.mapping, advice: d.advice, hidden: d.hidden, ...(d.model_error ? { modelError: d.model_error } : {}),
+      ...(d.handed_over ? { handedOver: true } : {}), ...(d.change ? { change: d.change } : {}),
     };
   } catch {
     return undefined;
@@ -223,10 +229,10 @@ export async function saveReport(store: Store, report: ReadinessReport, message 
 }
 
 /** The choices for each piece of advice, saved in the report (one Keel commit in a Keel folder). */
-export async function saveChoices(store: Store, id: string, choices: Record<string, Choice>): Promise<Result<ReadinessReport, 'not-found' | 'failed'>> {
+export async function saveChoices(store: Store, id: string, choices: Record<string, Choice>, patch: Partial<Pick<ReadinessReport, 'handedOver' | 'change'>> = {}): Promise<Result<ReadinessReport, 'not-found' | 'failed'>> {
   const report = readReport(store, id);
   if (!report) return fail('not-found', `No report ${id}`);
-  const updated = { ...report, advice: report.advice.map((a) => ({ ...a, choice: choices[a.id] ?? a.choice })) };
+  const updated = { ...report, ...patch, advice: report.advice.map((a) => ({ ...a, choice: choices[a.id] ?? a.choice })) };
   const saved = await saveReport(store, updated, `AI readiness report ${id}: advice choices`);
   return saved.ok ? ok(updated) : saved;
 }

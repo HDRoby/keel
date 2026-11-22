@@ -25,7 +25,7 @@ export interface ReadinessRule {
   area: Area;
   passesWhen: string;
   check: (scan: ReadinessScan, read: (path: string) => string | undefined) => Check;
-  advice: { title: string; why: string; impact: Impact; effort: Effort; action: 'add' | 'adopt' };
+  advice: { title: string; why: string; impact: Impact; effort: Effort; action: 'add' | 'adopt'; fallback?: string };
 }
 
 /** Instruction files other than AGENTS.md (AI-02). */
@@ -227,7 +227,7 @@ export const RULES: ReadinessRule[] = [
       const open = uncovered(s.root);
       return open.length ? fail([{ path: 'docs/spec.md' }], { reqs: open.join(', ') }) : pass(features.slice(0, 3).map((path) => ({ path })));
     },
-    advice: { title: 'Add scenarios for {reqs}', why: 'Acceptance scenarios say in plain words when a requirement is done, and an agent can run them.', impact: 'Medium', effort: 'Medium', action: 'add' },
+    advice: { title: 'Add scenarios for {reqs}', fallback: 'Add acceptance scenarios', why: 'Acceptance scenarios say in plain words when a requirement is done, and an agent can run them.', impact: 'Medium', effort: 'Medium', action: 'add' },
   },
   {
     id: 'CO-01', area: 'Conventions', passesWhen: 'Lint or format config exists',
@@ -289,6 +289,8 @@ export const RULES: ReadinessRule[] = [
 
 /** The rule's advice title with its parameters filled in. */
 export function adviceTitle(rule: ReadinessRule, params: Record<string, string> = {}): string {
+  const keys = [...rule.advice.title.matchAll(/\{(\w+)\}/g)].map((m) => m[1] as string);
+  if (rule.advice.fallback && keys.some((k) => !params[k])) return rule.advice.fallback;
   return rule.advice.title.replace(/\{(\w+)\}/g, (_, key: string) => params[key] ?? key);
 }
 
