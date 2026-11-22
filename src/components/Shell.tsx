@@ -74,8 +74,8 @@ export function ErrorAlert({ error }: { error?: string }) {
 /** Shown on library pages before the folder has .keel/. */
 export function NotInitialised({ what }: { what: string }) {
   return (
-    <section className="card">
-      <p>This folder is not initialised yet. Keel copies the {what} into <code>.keel/</code> when you <Link href="/">initialise it</Link>.</p>
-    </section>
+    <Notice kind="info" title="This folder is not initialised yet">
+      Keel copies the {what} into <code>.keel/</code> when you <Link href="/">initialise it</Link>.
+    </Notice>
   );
 }

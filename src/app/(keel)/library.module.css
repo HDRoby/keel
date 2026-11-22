@@ -1,0 +1,6 @@
+.stack { display: grid; gap: 12px; }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.subtitle { margin: 0; font: var(--text-medium-3); color: var(--text-strong); }
+.muted { margin: 0; font-size: 13px; line-height: 19px; color: var(--text-muted); }
+.list { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.source { width: 100%; font-family: var(--mono); font-size: 12px; line-height: 18px; }
