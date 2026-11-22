@@ -17,6 +17,7 @@ import { ChangeTemplatesForm } from '@/components/ChangeTemplatesForm';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Tag } from '@/components/ui/Tag';
 import css from './settings.module.css';
+import { ModelChoiceFields } from './ModelChoiceFields';
 import { MODEL_TASKS, PROVIDERS } from '@/lib/providers/types';
 import { exploreTiming, providerView } from '@/lib/settings/settings';
 import { effectiveChoice, localModels } from '@/lib/providers/local';
@@ -113,17 +114,14 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
 
         <Card title="Model per task" meta="Each task can use a different provider and model. With nothing saved, Keel uses Ollama and picks from the models on this computer: the largest for spec, plan and feasibility, a mid-size one for section comments.">
           <div className={css.tasks}>
-            <datalist id="local-models">{local.models.map((m) => <option key={m.name} value={m.name}>{m.parameters}</option>)}</datalist>
             {MODEL_TASKS.map(({ task, label }) => {
               const choice = choices[task] ?? { provider: 'ollama', model: '' };
               return (
                 <form key={task} action={saveModelAction} aria-label={`${label} model`} className={css.task}>
                   <input type="hidden" name="task" value={task} />
                   <strong className={css.taskName}>{label}</strong>
-                  <Field label="Provider"><select name="provider" defaultValue={choice.provider}>
-                    {PROVIDERS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
-                  </select></Field>
-                  <Field label="Model"><input name="model" defaultValue={choice.model} list="local-models" placeholder={local.models.length ? 'Choose a model' : 'Model name'} required /></Field>
+                  <ModelChoiceFields providers={PROVIDERS.map((p) => ({ id: p.id, label: p.label }))} provider={choice.provider} model={choice.model}
+                    local={[...local.models].filter((m) => !/embed/i.test(m.name)).sort((a, b) => b.billions - a.billions).map((m) => ({ name: m.name, parameters: m.parameters ?? '' }))} />
                   <Button type="submit" small>Save</Button>
                 </form>
               );

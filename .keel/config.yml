@@ -1,0 +1,24 @@
+id: PRJ-0001
+title: Keel
+description: ''
+author: Roberto Basile
+created: '2026-11-22'
+templates:
+  intent: standard-intent@3
+  spec: requirements-and-design-spec@2
+  plan: implementation-plan@2
+style: challenger@1
+standards:
+  - security-baseline@2
+  - typescript-conventions@3
+  - bdd-style@1
+  - small-steps@1
+  - plain-markdown@1
+paths:
+  docs: docs
+  tasks: tasks
+  features: features
+commit: auto
+format: 2
+mock_gate: recommended
+next_req: 18

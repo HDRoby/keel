@@ -60,17 +60,68 @@ export function reviewMessages(context: Context, reply?: { key: string; text: st
   return [{ role: 'system', content: system }, { role: 'user', content: user }];
 }
 
-/** Reads the model's answer: the first JSON object in it, validated. */
+const KINDS: Record<string, 'challenge' | 'link' | 'suggest' | 'ask' | 'ok'> = {
+  challenge: 'challenge', question: 'ask', ask: 'ask', link: 'link', conflict: 'link', depends: 'link', dependency: 'link',
+  suggest: 'suggest', suggestion: 'suggest', ok: 'ok', good: 'ok', fine: 'ok', 'looks good': 'ok',
+};
+const text = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+const clipTo = (v: string, max: number) => (v.length > max ? `${v.slice(0, max - 1)}…` : v);
+
+/**
+ * Small local models vary in how they fill the format: an "ok" comment with no text, null for optional fields,
+ * "Challenge" or "suggestion" as the kind, comments as a list. These are put right here; a comment that still says
+ * nothing is dropped, so one weak comment never discards the whole review.
+ */
+export function normaliseAnswer(raw: unknown): unknown {
+  if (!raw || typeof raw !== 'object') return raw;
+  const answer = raw as Record<string, unknown>;
+  let comments = answer.comments;
+  if (Array.isArray(comments)) comments = Object.fromEntries(comments.filter((c) => c && typeof c === 'object' && typeof (c as Record<string, unknown>).section === 'string').map((c) => [(c as Record<string, unknown>).section as string, c]));
+  const fixed: Record<string, unknown> = {};
+  for (const [section, value] of Object.entries((comments && typeof comments === 'object' ? comments : {}) as Record<string, unknown>)) {
+    if (!value || typeof value !== 'object') continue;
+    const c = value as Record<string, unknown>;
+    const kind = KINDS[text(c.kind).toLowerCase()];
+    if (!kind) continue;
+    const body = text(c.text) || (kind === 'ok' ? 'Looks good.' : '');
+    if (!body) continue;
+    fixed[section] = {
+      kind, text: clipTo(body, 2_000),
+      ...(text(c.linkTo) ? { linkTo: clipTo(text(c.linkTo), 200) } : {}),
+      ...(text(c.rewrite) ? { rewrite: clipTo(text(c.rewrite), 20_000) } : {}),
+      ...(text(c.addRow) ? { addRow: clipTo(text(c.addRow), 2_000) } : {}),
+    };
+  }
+  const suggestions: Record<string, unknown> = {};
+  for (const [section, value] of Object.entries((answer.suggestions && typeof answer.suggestions === 'object' && !Array.isArray(answer.suggestions) ? answer.suggestions : {}) as Record<string, unknown>)) {
+    if (typeof value === 'string' && value.trim()) suggestions[section] = clipTo(value.trim(), 20_000);
+    else if (Array.isArray(value)) {
+      const rows = value.map(text).filter(Boolean).map((r) => clipTo(r, 2_000)).slice(0, 30);
+      if (rows.length) suggestions[section] = rows;
+    }
+  }
+  const reply = answer.reply && typeof answer.reply === 'object' && text((answer.reply as Record<string, unknown>).text)
+    ? { text: clipTo(text((answer.reply as Record<string, unknown>).text), 4_000), ...(text((answer.reply as Record<string, unknown>).rewrite) ? { rewrite: clipTo(text((answer.reply as Record<string, unknown>).rewrite), 20_000) } : {}) }
+    : undefined;
+  return { comments: fixed, suggestions, ...(reply ? { reply } : {}) };
+}
+
+/** Reads the model's answer: the first JSON object in it, put right where the model was loose, then validated. */
 export function parseAnswer(text: string): Result<ReviewAnswer, 'invalid-answer'> {
-  const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
+  const cleaned = text.replace(/<think>[\s\S]*?<\/think>/g, '');
+  const start = cleaned.indexOf('{');
+  const end = cleaned.lastIndexOf('}');
   if (start < 0 || end <= start) return fail('invalid-answer', 'The assistant did not answer with a review');
+  let json: unknown;
   try {
-    const parsed = answerSchema.safeParse(JSON.parse(text.slice(start, end + 1)));
-    return parsed.success ? ok(parsed.data) : fail('invalid-answer', 'The assistant\'s review was not in the expected form');
+    json = JSON.parse(cleaned.slice(start, end + 1));
   } catch {
     return fail('invalid-answer', 'The assistant\'s review was not valid JSON');
   }
+  const parsed = answerSchema.safeParse(normaliseAnswer(json));
+  if (!parsed.success) return fail('invalid-answer', 'The assistant\'s review was not in the expected form');
+  if (!Object.keys(parsed.data.comments).length && !Object.keys(parsed.data.suggestions).length && !parsed.data.reply) return fail('invalid-answer', 'The assistant\'s review had no usable comment');
+  return ok(parsed.data);
 }
 
 /**
