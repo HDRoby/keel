@@ -82,12 +82,13 @@ export function saveAuthor(store: Pick<Store, 'user'>, name: string): Result<str
 }
 
 /** The saved choice for a task, or undefined when none is saved. */
+/** The saved choice for a task. Discussion (CR-0016) uses the Spec and plan model until it has its own. */
 export function savedModelChoice(store: Store, task: ModelTask): ModelChoice | undefined {
-  return readJson(store, `model.${task}`, modelChoiceSchema);
+  return readJson(store, `model.${task}`, modelChoiceSchema) ?? (task === 'discussion' ? readJson(store, 'model.documents', modelChoiceSchema) : undefined);
 }
 
 export function modelChoice(store: Store, task: ModelTask): ModelChoice {
-  return readJson(store, `model.${task}`, modelChoiceSchema) ?? DEFAULT_CHOICE;
+  return savedModelChoice(store, task) ?? DEFAULT_CHOICE;
 }
 
 export function saveModelChoice(store: Store, task: ModelTask, choice: ModelChoice): Result<ModelChoice, 'invalid-choice'> {

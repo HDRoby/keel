@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { changeSetup, startIdea } from '@/lib/brainstorm/session';
+import { readStyle } from '@/lib/brainstorm/styles';
 import { draftIntent, saveChangeRequest } from '@/lib/generate/intent';
 import { formFields } from '@/lib/form-fields';
 import { readStandard } from '@/lib/standards/library';
@@ -389,4 +390,14 @@ function changeForm(form: FormData): { path: string } {
   const input = readbackForm.safeParse(formFields(form));
   if (!input.success || !input.data.path) redirect('/?error=Invalid+request');
   return { path: input.data.path };
+}
+
+/** Project setup: the style the assistant follows in Discuss a change (CR-0016), saved in .keel/config.yml. */
+export async function saveDiscussionStyleAction(form: FormData): Promise<void> {
+  const input = z.strictObject({ discussionStyle: ref }).safeParse(formFields(form));
+  if (!input.success) redirect('/setup?error=Invalid+request');
+  const store = serverStore();
+  if (!readStyle(store.root, input.data.discussionStyle).ok) redirect(`/setup?error=${encodeURIComponent(`Unknown style ${input.data.discussionStyle}`)}`);
+  const saved = await updateConfig(store, { discussion_style: input.data.discussionStyle }, `Keel: Discussion style ${input.data.discussionStyle}`);
+  redirect(saved.ok ? '/setup?saved=1' : `/setup?error=${encodeURIComponent(saved.message)}`);
 }

@@ -25,7 +25,7 @@ async function collect(stream: AsyncIterable<string>): Promise<string> {
 describe('provider and task ids', () => {
   it('list the ids of PROVIDERS and MODEL_TASKS in order', () => {
     expect(PROVIDER_IDS).toEqual(PROVIDERS.map((p) => p.id));
-    expect(MODEL_TASK_IDS).toEqual(['brainstorm', 'documents', 'feasibility']);
+    expect(MODEL_TASK_IDS).toEqual(['brainstorm', 'documents', 'feasibility', 'discussion']);
     expect(MODEL_TASK_IDS).toHaveLength(MODEL_TASKS.length);
   });
 });

@@ -3,7 +3,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { notFound } from 'next/navigation';
-import { setupAction } from '../actions';
+import { saveDiscussionStyleAction, setupAction } from '../actions';
 import { Icon } from '@/components/Icons';
 import { StyleCards, TemplateCards, withSections } from '@/components/SetupCards';
 import css from '@/components/SetupCards.module.css';
@@ -12,6 +12,7 @@ import { StandardsPicker } from '@/components/StandardsPicker';
 import { ChangeTemplatesForm } from '@/components/ChangeTemplatesForm';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { Field } from '@/components/ui/Field';
 import { LinkButton } from '@/components/ui/LinkButton';
 import { Notice } from '@/components/ui/Notice';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -65,6 +66,18 @@ export default async function SetupPage({ searchParams }: { searchParams: Promis
             <ButtonLink href="/explore" variant="text">Cancel</ButtonLink>
           </div>
         </form>
+        {project.ok && (
+          <Card title={<span id="discussion-style">Discussion style</span>} meta="How the assistant discusses a change before proposing a change request (Discuss a change)." actions={<LinkButton href="/styles">Manage styles</LinkButton>}>
+            <form action={saveDiscussionStyleAction} aria-label="Discussion style" className={css.inline}>
+              <Field label="Style">
+                <select name="discussionStyle" defaultValue={project.value.discussionStyle}>
+                  {listStyles(store.root, 'discussion').map((s) => <option key={s.ref} value={s.ref}>{s.name} v{s.version}</option>)}
+                </select>
+              </Field>
+              <Button type="submit" small>Save</Button>
+            </form>
+          </Card>
+        )}
         {project.ok && <ChangeTemplatesForm root={store.root} project={project.value} back="/setup" />}
       </main>
     </>
