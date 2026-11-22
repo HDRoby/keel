@@ -2,7 +2,7 @@
 import { fail, ok, type Result } from '../result';
 import { providerConfig } from '../settings/settings';
 import { effectiveChoice } from './local';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { createAnthropicProvider } from './anthropic';
 import { createAzureOpenAIProvider } from './azure-openai';
 import { createFakeProvider } from './fake';

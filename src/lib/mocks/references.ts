@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import matter from 'gray-matter';
 import { z } from 'zod';
 import { fail, ok, type Result } from '../result';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { commitBlocker, commitFiles, RepoBusyError } from '../store/git';
 import { readProject } from '../store/workspace';
 

@@ -5,7 +5,7 @@
 import { simpleGit } from 'simple-git';
 import { githubToken } from '../github/auth';
 import { fail, ok, type Result } from '../result';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { kindFromPath } from '../store/documents';
 import { KEEL_PREFIX, keelVersionOf } from '../store/git';
 import { currentBranch, remoteOf } from '../store/remote';

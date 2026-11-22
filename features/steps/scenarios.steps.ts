@@ -29,7 +29,6 @@ async function specWith(requirements: string[], covered: string[], status: 'draf
   const scenarios = covered.map((id) => `  @${id}\n  Scenario: ${STATEMENTS[id]} works\n    Given an expense\n    When I ${STATEMENTS[id]?.toLowerCase()}\n    Then it is done\n`).join('\n');
   writeFileSync(join(BDD_PROJECT, 'features', 'expenses.feature'), `Feature: Expenses\n\n${scenarios}`);
   await commitFiles(BDD_PROJECT, ['features/expenses.feature'], 'Scenarios');
-  store.index.close();
 }
 
 const group = (page: Page, id: string) => page.getByRole('region', { name: id, exact: true });
@@ -52,7 +51,6 @@ Given('REQ-002 has no scenario', async () => {
   if (world.go) {
     const store = bddStore();
     await recordDecision(store, { decision: 'go', by: 'Ada Lovelace', reason: 'Worth it.', consequences: '' });
-    store.index.close();
   }
 });
 

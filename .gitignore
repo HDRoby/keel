@@ -7,3 +7,5 @@ playwright-report/
 .env
 .env.local
 *.tsbuildinfo
+dist/
+*.tgz

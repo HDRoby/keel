@@ -2,7 +2,7 @@
 // raised, approved, rejected, packaged or applied, unless the project turns it off (changes_index: off keeps your own).
 import { fillSections } from '../brainstorm/sections';
 import { writeFileAtomic } from '../store/atomic';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { commitFiles } from '../store/git';
 import { readProject, today } from '../store/workspace';
 import { chosenTemplate } from '../templates/library';

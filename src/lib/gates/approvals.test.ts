@@ -52,7 +52,6 @@ describe('review', () => {
     expect(approved).toMatchObject({ ok: true, value: { header: { status: 'approved', version: 1 } } });
     expect(approved.ok && approvalsOf(approved.value)).toEqual([{ action: 'approve', by: 'Ada', date: '2026-11-21', comment: 'Clear.', version: 1 }]);
     expect((await fileHistory(store.root, 'docs/intent.md')).at(-1)?.message).toBe('Keel: INT-0001 v1: Approved by Ada: Clear.');
-    expect(store.index.versions('INT-0001').map((v) => [v.version, v.reason])).toEqual([[1, 'Create intent']]);
     expect(projectState(store).intent).toBe('approved');
   });
 

@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { readDesign } from '../decisions/design';
 import { decide } from '../decisions/records';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { BASELINE_FILE } from './draft';
 
 export async function recordBaselineDecisions(store: Store): Promise<string[]> {

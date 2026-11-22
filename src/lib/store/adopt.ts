@@ -13,10 +13,9 @@ import { parseTemplateRef, readTemplate, templateIdentity } from '../templates/l
 import { maxReqNumber } from '../trace/parse';
 import { buildTrace } from '../trace/index';
 import { writeFileAtomic } from './atomic';
-import type { Store } from './db';
+import type { Store } from './store';
 import { parseDocument } from './documents';
 import { commitBlocker, commitFiles, initRepo } from './git';
-import { rebuildIndex } from './reindex';
 import { CONFIG_FILE, DEFAULT_PATHS, fromYamlDate, initialiseProject, isInitialised, KEEL_DIR, readProject, today, writeConfig, type Project, type ProjectError } from './workspace';
 
 const DOCUMENTS = ['docs/intent.md', 'docs/spec.md', 'docs/plan.md'];
@@ -94,7 +93,6 @@ export async function adoptProject(store: Store, author?: string): Promise<Resul
     templates: { ...found.templates, intent: intentTemplate }, style, standards: found.standards,
     extra: { next_req: found.maxReq + 1 }, files,
   });
-  if (made.ok) await rebuildIndex(store);
   return made;
 }
 
@@ -170,7 +168,6 @@ export async function importProject(source: string, store: Store, legacyHome?: s
   const project = readProject(root);
   if (!project.ok) return fail('invalid-project', project.message);
   const commit = await commitFiles(root, [...copied, KEEL_DIR], `Import ${basename(source)}`);
-  await rebuildIndex(store);
   return ok({ project: project.value, copied: [...copied, KEEL_DIR], commit });
 }
 

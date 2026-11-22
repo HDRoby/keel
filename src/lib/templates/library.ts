@@ -226,9 +226,12 @@ function groupOf(kind: string): TemplateGroup {
   return GROUP_OF[kind] ?? (GROUPS.some((g) => g.group === kind) ? (kind as TemplateGroup) : 'agent-instructions');
 }
 
-/** Folder holding the seed library: KEEL_SEED, or seed/ in the folder Keel runs from. */
+/**
+ * Folder holding the seed library: KEEL_SEED, else seed/ in the folder Keel is installed in (KEEL_HOME_DIR, set by
+ * the keel command), else seed/ in the folder Keel runs from (a clone with npm run dev).
+ */
 export function seedDir(env: Record<string, string | undefined> = process.env): string {
-  return env.KEEL_SEED?.trim() || join(process.cwd(), 'seed');
+  return env.KEEL_SEED?.trim() || join(env.KEEL_HOME_DIR?.trim() || process.cwd(), 'seed');
 }
 
 /** The kinds of the change package templates, as the config keys that choose them (CR-0013). */

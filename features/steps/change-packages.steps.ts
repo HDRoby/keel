@@ -33,7 +33,6 @@ async function projectWithRequest(impact = true): Promise<void> {
     source: 'docs/intent.md', affects: ['INT-0001@1'], requirements: ['REQ-009'], ...(impact ? {} : { impact: [] }),
   });
   expect(made.ok).toBe(true);
-  store.index.close();
 }
 
 // "I open Settings" is defined in providers.steps.ts.
@@ -73,7 +72,6 @@ Given('an approved change request {string} touching REQ-009', async ({}, title: 
   await projectWithRequest();
   const store = bddStore();
   expect((await updateConfig(store, { code_map: 'names' }, 'Code map: names')).ok).toBe(true);
-  store.index.close();
 });
 
 When('I plan the change', async ({ page }) => {
@@ -102,7 +100,6 @@ Given('a planned change request with one accepted scenario', async () => {
   const planned = await planChange(store, 'CR-0001', {}, fake);
   expect(planned.ok).toBe(true);
   expect((await settlePlannedScenario(store, 'CR-0001', 'S1', 'accepted')).ok).toBe(true);
-  store.index.close();
 });
 
 When('I write the package', async ({ page }) => {
@@ -134,7 +131,6 @@ Given('"Keep changes\\/README.md up to date" is on', async () => {
   const store = await initialisedFolder('Keel');
   await createChange(store, { title: 'Export the log as CSV', reason: 'Finance asked.', status: 'waiting', size: 'minor', requirements: ['REQ-002'] });
   await createChange(store, { title: 'Share with the accountant', reason: 'Asked too.', status: 'waiting', size: 'minor', requirements: ['REQ-003'], dependsOn: ['CR-0001'] });
-  store.index.close();
 });
 
 When('I approve a change request', async ({ page }) => {
@@ -157,7 +153,6 @@ Given('two open change requests that both name REQ-016 as new', async () => {
   const store = await initialisedFolder('Keel');
   await createChange(store, { title: 'Export to PDF', reason: 'Asked.', status: 'waiting', requirements: ['REQ-016 (new)'] });
   await createChange(store, { title: 'Export to Excel', reason: 'Asked.', status: 'waiting', requirements: ['REQ-016 (new)'] });
-  store.index.close();
 });
 
 // "I open the Changes page" is defined in change-requests.steps.ts.

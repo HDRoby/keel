@@ -63,7 +63,6 @@ describe('createDocument', () => {
     const dir = store.root;
     expect(readFileSync(join(dir, 'docs/intent.md'), 'utf8')).toMatch(/^---\nbrainstorm_style: challenger@1\n/);
     expect((await fileHistory(dir, 'docs/intent.md'))[0]?.message).toBe('Keel: INT-0001 v1: Create intent');
-    expect(store.index.documents()).toHaveLength(1);
   });
 
   it('numbers folder documents and refuses a second intent or unknown project', async () => {
@@ -101,7 +100,7 @@ describe('readDocument and saveDocument', () => {
     const saved = await saveDocument(store, 'docs/intent.md', { reason: 'Add\n outcome', body: '# New\n', status: 'pending' });
     expect(saved).toMatchObject({ ok: true, value: { body: '# New\n', header: { version: 2, status: 'pending', created: '2026-11-20', updated: '2026-11-22' } } });
     expect(readDocument(store, 'docs/intent.md')).toMatchObject({ ok: true, value: { kind: 'intent', header: { version: 2 } } });
-    expect(store.index.versions('INT-0001').map((v) => v.reason)).toEqual(['Create intent', 'Add outcome']);
+    expect((await fileHistory(store.root, 'docs/intent.md')).map((c) => c.message)).toEqual(['Keel: INT-0001 v1: Create intent', 'Keel: INT-0001 v2: Add outcome']);
   });
 
   it('reports bad paths, missing files and broken front matter', async () => {

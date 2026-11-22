@@ -4,7 +4,7 @@
 import { fail, ok, type Result } from '../result';
 import { decryptSecret, encryptSecret, workspaceKey } from '../settings/secrets';
 import { setUserSetting, userSetting } from '../settings/user-dir';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 
 const SETTING = 'github.token';
 

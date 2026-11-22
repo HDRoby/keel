@@ -3,7 +3,7 @@
 // actions that need a model say why. KEEL_PROVIDER=fake (tests) reports a running Ollama with two models, unless a
 // server address is saved, which the scenarios use to point Keel at a stub or at nothing.
 import { providerView, savedModelChoice } from '../settings/settings';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { defaultModels, ollamaBase, ollamaStatus, SUGGESTED_OLLAMA_MODEL, type LocalModel, type OllamaStatus } from './ollama';
 import type { ModelChoice, ModelTask } from './types';
 

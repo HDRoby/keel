@@ -22,7 +22,7 @@ function copyRequest(id: string, header: (text: string) => string): void {
 const dependsOn = (deps: string) => (text: string) => (/^depends_on:.*$/m.test(text) ? text.replace(/^depends_on:.*$/m, deps ? `depends_on: ${deps}` : '') : text.replace(/^status:/m, deps ? `depends_on: ${deps}\nstatus:` : 'status:'));
 
 async function folderReady(): Promise<void> {
-  if (!existsSync(join(BDD_PROJECT, '.keel', 'config.yml'))) (await initialisedFolder('Keel')).index.close();
+  if (!existsSync(join(BDD_PROJECT, '.keel', 'config.yml'))) await initialisedFolder('Keel');
 }
 
 Given('changes\\/CR-0004 is approved and 3 of its 9 tasks are done', async () => {
@@ -101,7 +101,6 @@ Given('an approved spec and plan', async () => {
   mkdirSync(join(BDD_PROJECT, 'features'), { recursive: true });
   writeFileSync(join(BDD_PROJECT, 'features', 'export.feature'), 'Feature: Export\n\n  @REQ-003\n  Scenario: Expenses export to CSV\n    Given some expenses\n');
   await commitFiles(BDD_PROJECT, ['features/export.feature'], 'Add acceptance scenarios');
-  store.index.close();
 });
 
 Given('a change request that changes REQ-003', async () => {
@@ -110,7 +109,6 @@ Given('a change request that changes REQ-003', async () => {
     title: 'Export to CSV and PDF', reason: 'Finance needs PDF.', status: 'approved', size: 'significant', source: 'docs/intent.md',
     affects: ['INT-0001@1'], requirements: ['REQ-003'], impact: [{ document: 'docs/spec.md', decision: 'pending' }, { document: 'docs/plan.md', decision: 'pending' }],
   });
-  store.index.close();
   expect(made.ok).toBe(true);
 });
 

@@ -13,7 +13,6 @@ import { checkKeelFolder, needsAttention } from '../keel/checks';
 import { fakeReply } from '../providers/fake';
 import { listStandards, readStandard } from '../standards/library';
 import { conventionsStandard, CONVENTIONS_FILE, CONVENTIONS_REF, rulesFromAgentFiles, rulesIn } from '../standards/from-agent-files';
-import { openIndex } from '../store/db';
 import { tempStore } from '../store/test-store';
 import { initialiseProject, readConfig, writeConfig } from '../store/workspace';
 import { scanFolder } from './scan';
@@ -99,7 +98,7 @@ describe('opening a Keel folder', () => {
 describe('draftBaseline', () => {
   it('sends only the chosen files, and puts its suggestions in Explore marked as built', async () => {
     const root = folder({ 'README.md': '# Readme helper\n\nNewcomers cannot run a project.\n\n- Show the run command\n- Export the log\n', 'package.json': '{"name":"x"}', 'specs/001/spec.md': '- **FR-001**: System MUST print the version\n' });
-    const store = { root, user: tempStore().user, index: openIndex(root) };
+    const store = { root, user: tempStore().user };
     await startIdea(store, { title: 'Readme helper', idea: '', author: 'Ada', template: 'standard-intent@4', style: 'challenger@1' });
     const sent: string[] = [];
     const write: Writer = async (_t, messages) => {
@@ -122,7 +121,7 @@ describe('draftBaseline', () => {
 
     const none: string[] = [];
     const other = folder({ 'README.md': '# X\n\nY\n' });
-    const store2 = { root: other, user: tempStore().user, index: openIndex(other) };
+    const store2 = { root: other, user: tempStore().user };
     await startIdea(store2, { title: 'X', idea: '', author: 'Ada', template: 'standard-intent@4', style: 'challenger@1' });
     await draftBaseline(store2, { share: [], offered: scanFolder(other).shareable }, async (_t, m) => { none.push(m[0]?.content ?? ''); return undefined; });
     expect(none).toEqual([]);

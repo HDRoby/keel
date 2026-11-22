@@ -69,7 +69,6 @@ describe('adoptProject', () => {
     expect(sh(store.root, 'log', '-1', '--format=%an|%s')).toBe('Keel|Keel: Initialise project');
     expect(sh(store.root, 'show', '--name-only', '--format=', 'HEAD').split('\n').every((p) => p.startsWith('.keel/'))).toBe(true);
     expect(readDocument(store, 'docs/intent.md')).toMatchObject({ ok: true, value: { header: { version: 3, status: 'approved' } } });
-    expect(store.index.documents().map((d) => d.path)).toEqual(['docs/intent.md']);
     // The brainstorm comes from the intent's sections, so the stages open as they should.
     const context = loadContext(store);
     expect(context.ok && context.value.state.sections.filter((x) => x.value || x.rows?.length).map((x) => x.key)).toEqual(['Problem', 'Desired outcome', 'Requirements', 'Affected users and systems']);

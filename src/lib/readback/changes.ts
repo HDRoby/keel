@@ -13,7 +13,7 @@ import { z } from 'zod';
 import { fail, ok, type Result } from '../result';
 import type { CiResults } from './ci';
 import { writeFileAtomic } from '../store/atomic';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { kindFromPath, parseDocument, readDocument, saveDocument, serializeDocument, type StoredDocument } from '../store/documents';
 import { commitBlocker, commitFiles, keelVersionOf } from '../store/git';
 import { fromYamlTime, readConfig, updateConfig } from '../store/workspace';
@@ -149,14 +149,8 @@ export async function acceptChange(store: Store, path: string): Promise<Result<S
   } else {
     if (!parsed.ok) return fail('invalid-change', `${path} has no valid Keel header, so it cannot be taken as a new document`);
     const { header } = parsed.value;
-    const commit = change.commit === WORKING_TREE
-      ? await commitFiles(store.root, [path], `${header.id} v${header.version}: ${reason}`)
-      : change.commit;
+    if (change.commit === WORKING_TREE) await commitFiles(store.root, [path], `${header.id} v${header.version}: ${reason}`);
     saved = readDocument(store, path);
-    if (saved.ok) {
-      store.index.upsertDocument(saved.value);
-      store.index.addVersion({ id: header.id, version: header.version, commit, date: saved.value.header.updated, reason });
-    }
   }
   if (!saved.ok) return fail('invalid-change', saved.message);
   await markHandled(store, state, change, 'accepted');

@@ -1,7 +1,7 @@
 // Settings › Test: one tiny call to a provider with its stored settings, to see at once whether they work.
 import { fail, ok, type Result } from '../result';
 import { modelChoice, providerConfig } from '../settings/settings';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { DEFAULT_ANTHROPIC_MODEL } from './anthropic';
 import { describeProviderError } from './errors';
 import { createProvider } from './registry';

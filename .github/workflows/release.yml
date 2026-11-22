@@ -1,0 +1,40 @@
+name: Release
+
+# CR-0014 and ADR-0016: the only way keel-sdlc is published. Runs on a version tag (v0.2.0) and nothing else;
+# never publish from a local machine. The npm token is the NPM_TOKEN repository secret and is never written anywhere.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write   # npm provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - name: The tag matches the version in package.json
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match package.json version ${version}"
+            exit 1
+          fi
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run verify
+      # npm pack runs prepack (the standalone build and the compiled command).
+      - run: npm pack
+      - run: npm run smoke
+      # Publish the tested tarball itself, so what is published is what passed the smoke test.
+      - run: npm publish keel-sdlc-*.tgz --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,5 +1,5 @@
 // Documents out of date while a significant change request is approved but not applied (REQ-005, task R18).
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { computeStatus, isApplied, listChanges } from './store';
 
 export type Stage = 'intent' | 'spec' | 'plan' | 'handoff';

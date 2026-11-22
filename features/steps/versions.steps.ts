@@ -18,7 +18,6 @@ Given('plan versions 3 and 4 exist', async () => {
     reason: REASON_4,
     body: table(['| T1a | Store files | REQ-001 |', '| T1b | Store index | REQ-001 |', '| T2 | Templates | REQ-003 |', '| T3 | Providers | REQ-009 |']),
   });
-  store.index.close();
 });
 
 When('I select version 4', async ({ page }) => {

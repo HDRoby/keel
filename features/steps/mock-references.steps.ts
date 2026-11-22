@@ -10,7 +10,7 @@ import type { Writer } from '../../src/lib/generate/writer';
 import { saveMockSet } from '../../src/lib/mocks/sets';
 import { fakeReply } from '../../src/lib/providers/fake';
 import { acceptAllSuggestions } from '../../src/lib/scenarios/store';
-import type { Store } from '../../src/lib/store/db';
+import type { Store } from '../../src/lib/store/store';
 import { createDocument, readDocument, saveDocument } from '../../src/lib/store/documents';
 import { bddStore, initialisedFolder, stagePath } from './support';
 
@@ -42,7 +42,6 @@ Given('a spec whose Form decision is "Local web app"', async () => {
   const store = await specProject(['form']);
   const design = readDocument(store, 'docs/spec.md');
   expect(design.ok && design.value.body).toContain('**Form:** Local web app');
-  store.index.close();
 });
 
 When('I open the Clickable mock tab', async ({ page }) => {
@@ -67,7 +66,7 @@ Then('it asks for files named {string}', async ({ page }, pattern: string) => {
 });
 
 Given('I drop {string} and {string}', async ({ page }, first: string, second: string) => {
-  (await specProject(['form'])).index.close();
+  await specProject(['form']);
   await openMockTab(page);
   await mockTab(page).getByLabel('Exported files').setInputFiles([
     { name: first, mimeType: 'image/png', buffer: PNG },
@@ -96,7 +95,6 @@ Given('mock set 1 was made from spec v9', async () => {
   }
   const set = await saveMockSet(store, { files: [{ name: 'spec-v9 · 01 · Run · REQ-001.png', bytes: new Uint8Array(PNG), number: '01', screen: 'Run', reqs: ['REQ-001'], matched: 'name' }] });
   expect(set).toMatchObject({ ok: true, value: { set: 1, specVersion: 9 } });
-  store.index.close();
 });
 
 When('the spec gets version 10', async () => {
@@ -104,7 +102,6 @@ When('the spec gets version 10', async () => {
   const spec = readDocument(store, 'docs/spec.md');
   expect(spec.ok && spec.value.header.version).toBe(9);
   expect((await saveDocument(store, 'docs/spec.md', { reason: 'A change', body: spec.ok ? `${spec.value.body}\nChanged.\n` : '' })).ok).toBe(true);
-  store.index.close();
 });
 
 Then('mock set 1 is marked {string}', async ({ page }, label: string) => {
@@ -114,7 +111,7 @@ Then('mock set 1 is marked {string}', async ({ page }, label: string) => {
 });
 
 Given('the project setting "Clickable mock before the plan" is "Required"', async ({ page }) => {
-  (await specProject()).index.close();
+  await specProject();
   await page.goto('/settings');
   const form = page.getByRole('form', { name: 'Clickable mock before the plan' });
   await form.getByLabel('Clickable mock before the plan').selectOption('required');
@@ -130,7 +127,6 @@ Given('the Form decision has a UI', async () => {
 Given('there is no current mock set', async () => {
   const store = bddStore();
   expect((await recordDecision(store, { decision: 'go', by: 'Ada Lovelace', reason: 'Worth it.', consequences: '' })).ok).toBe(true);
-  store.index.close();
 });
 
 Then('the message says a current clickable mock is needed', async ({ page }) => {

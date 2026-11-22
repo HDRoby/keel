@@ -7,7 +7,7 @@ import { gateFor } from '../gates/rules';
 import { projectState } from '../gates/approvals';
 import { fail, ok, type Result } from '../result';
 import { standardsFor, type Standard } from '../standards/library';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
 import { commitFiles } from '../store/git';
 import { readProject } from '../store/workspace';

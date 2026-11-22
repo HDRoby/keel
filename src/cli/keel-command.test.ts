@@ -1,6 +1,6 @@
 // `npx keel [path]` (task R3), run as a command with --dry-run so no server starts.
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -52,5 +52,25 @@ describe('keel command', () => {
     expect(keel('a', 'b').err).toContain('Only one folder can be opened: b');
     expect(keel('--port', 'x').err).toContain('Not a port: x');
     expect(keel('--help').out).toContain('Usage: keel [path] [options]');
+  });
+
+  it('starts the pre-built standalone server when there is one, and next dev in a clone without a build (ADR-0016)', async () => {
+    const { serverMode } = await import('../../bin/keel.mjs');
+    const install = mkdtempSync(join(tmpdir(), 'keel-install-'));
+    expect(serverMode(install)).toBe('dev');
+    mkdirSync(join(install, '.next', 'standalone'), { recursive: true });
+    writeFileSync(join(install, '.next', 'standalone', 'server.js'), '');
+    expect(serverMode(install)).toBe('standalone');
+  });
+
+  it('prints its version, and tells the server where Keel is installed so the seed is found from any folder', async () => {
+    const { installEnv, installFolder } = await import('../../bin/keel.mjs');
+    const { seedDir } = await import('../lib/templates/library');
+    expect(keel('--version').out.trim()).toBe(JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')).version);
+    const env = installEnv('/opt/keel', {});
+    expect(env).toEqual({ KEEL_HOME_DIR: '/opt/keel', KEEL_SEED: join('/opt/keel', 'seed') });
+    expect(installEnv('/opt/keel', { KEEL_SEED: '/my/seed' }).KEEL_SEED).toBe('/my/seed');
+    expect(seedDir({ KEEL_HOME_DIR: '/opt/keel' })).toBe(join('/opt/keel', 'seed'));
+    expect(installFolder()).toBe(process.cwd());
   });
 });

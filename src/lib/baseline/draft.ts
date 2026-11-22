@@ -9,7 +9,7 @@ import { readExplore, writeExplore } from '../brainstorm/session';
 import type { Writer } from '../generate/writer';
 import { readShared, type ShareableFile } from '../repo/scan';
 import { fail, ok, type Result } from '../result';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { commitFiles } from '../store/git';
 import { importSpecs } from './import-specs';
 

@@ -141,7 +141,7 @@ export default function Gallery() {
           <OptionCard control={<input type="checkbox" defaultChecked />} title="Security baseline v2" foot="Security team" />
         </OptionGrid>
         <OptionGrid label="Storage">
-          <OptionCard control={<input type="radio" name="s" defaultChecked />} title="Markdown in git with a SQLite index" recommended summary="Documents as files; an index for search." pro="Readable without the tool" con="Two places to keep in step" fit={{ good: true, text: 'Follows Plain markdown v1' }} serves={['REQ-002', 'REQ-008']} />
+          <OptionCard control={<input type="radio" name="s" defaultChecked />} title="Markdown files in git" recommended summary="Documents as files; history from git." pro="Readable without the tool" con="Search reads the files" fit={{ good: true, text: 'Follows Plain markdown v1' }} serves={['REQ-002', 'REQ-008']} />
           <OptionCard control={<input type="radio" name="s" />} title="Postgres" summary="A database server." pro="Scales to many users" con="A server to run" fit={{ good: false, text: 'Breaks Local-first: needs a server' }} />
         </OptionGrid>
       </Section>
@@ -176,7 +176,7 @@ export default function Gallery() {
           { path: '.keel/', name: '.keel/', what: 'Keel\'s config and libraries', when: <Tag tone="ok">Now</Tag>, open: true, children: [
             { path: '.keel/config.yml', name: 'config.yml', what: 'Project config', when: <Tag tone="ok">Now</Tag> },
             { path: '.keel/mocks/', name: 'mocks/', what: 'Mock references', when: <Tag tone="accent">As you approve</Tag>, kind: 'dependent', children: [{ path: '.keel/mocks/references.md', name: 'references.md', what: 'The list', kind: 'dependent', when: <Tag tone="accent">As you approve</Tag> }] },
-            { path: '.keel/cache/', name: 'cache/', what: 'Index, ignored by git', when: <Tag tone="ok">Now</Tag>, kind: 'ignored', children: [{ path: '.keel/cache/index.db', name: 'index.db', what: 'Search index', kind: 'ignored', when: <Tag tone="ok">Now</Tag> }] },
+            { path: '.keel/cache/', name: 'cache/', what: 'Run lock, ignored by git', when: <Tag tone="ok">Now</Tag>, kind: 'ignored', children: [{ path: '.keel/cache/run.json', name: 'run.json', what: 'Run lock', kind: 'ignored', when: <Tag tone="ok">Now</Tag> }] },
           ] },
           { path: 'AGENTS.md', name: 'AGENTS.md', what: 'Instructions for coding agents', when: <Tag tone="handoff">At handoff</Tag> },
         ]} />

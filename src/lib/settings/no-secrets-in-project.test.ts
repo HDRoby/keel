@@ -29,7 +29,6 @@ describe('no secrets in the project folder', () => {
     expect(saveGithubToken(store, GITHUB).ok).toBe(true);
     await createDocument(store, { kind: 'intent', title: 'Scan', body: '# Intent\n', template: 'standard-intent@3' });
     await saveDocument(store, 'docs/intent.md', { reason: 'Edit', body: '# Intent\n\nMore.\n' });
-    store.index.upsertDocument({ kind: 'intent', path: 'docs/intent.md', body: '', header: { id: 'INT-0001', project: 'PRJ-0001', title: 'Scan', author: 'Ada', created: '2026-11-20', updated: '2026-11-20', status: 'draft', version: 2, template: 'standard-intent@3' } });
 
     const found = filesUnder(store.root).flatMap((file) => {
       const text = readFileSync(file).toString('latin1');

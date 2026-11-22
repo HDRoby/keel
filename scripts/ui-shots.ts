@@ -22,7 +22,7 @@ import type { Writer } from '../src/lib/generate/writer';
 import { writeHandoff } from '../src/lib/handoff/write';
 import { fakeReply } from '../src/lib/providers/fake';
 import { acceptAllSuggestions } from '../src/lib/scenarios/store';
-import { openIndex, type Store } from '../src/lib/store/db';
+import { type Store } from '../src/lib/store/store';
 import { createDocument, readDocument } from '../src/lib/store/documents';
 
 const PORT = 3200;
@@ -51,7 +51,7 @@ function fresh(dir: string): void {
 
 async function sampleProject(): Promise<void> {
   fresh(SAMPLE);
-  const store: Store = { root: SAMPLE, user: USER, index: openIndex(SAMPLE) };
+  const store: Store = { root: SAMPLE, user: USER };
   must('start', await startIdea(store, { title: 'Keel', idea: 'Turn an idea into documents a coding agent can build from.', author: 'Ada Lovelace', template: 'standard-intent@4', style: 'challenger@1', standards: ['security-baseline@2', 'typescript-conventions@3'] }));
   must('fill', fillSections(store, {
     Problem: 'Ideas reach coding agents as loose chat, so the agent guesses the scope and the team cannot review it.',
@@ -80,7 +80,6 @@ async function sampleProject(): Promise<void> {
     ].join('\n') }));
   }
   must('change', await createChange(store, { title: 'Export the log as CSV', reason: 'Finance asked for it.', status: 'waiting', size: 'significant', source: 'docs/intent.md', affects: ['INT-0001@2'], requirements: ['REQ-002'], impact: [{ document: 'docs/spec.md', decision: 'pending' }, { document: 'docs/plan.md', decision: 'pending' }] }));
-  store.index.close();
 }
 
 async function serve(project: string): Promise<ChildProcess> {

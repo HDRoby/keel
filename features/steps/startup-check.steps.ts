@@ -97,8 +97,7 @@ Then('the Startup check names {string} and the missing model', async ({ page }, 
 });
 
 Given('.keel\\/config.yml names a template version that is not in .keel\\/templates', async () => {
-  const store = await initialisedFolder('Broken config');
-  store.index.close();
+  await initialisedFolder('Broken config');
   const config = readConfig(BDD_PROJECT) ?? {};
   writeConfig(BDD_PROJECT, { ...config, templates: { ...(config.templates as Record<string, string>), spec: 'requirements-and-design-spec@9' } });
   configBefore = readFileSync(join(BDD_PROJECT, '.keel', 'config.yml'), 'utf8');
@@ -127,7 +126,6 @@ Given('valid settings, a running provider and a valid project config', async () 
   // Settings: written by the Before hook; provider: the fake one (a running Ollama); project: an approved intent.
   const store = await initialisedFolder('Readme helper');
   await createDocument(store, { kind: 'intent', title: 'Readme helper', template: 'standard-intent@3', status: 'approved', body: '# Intent\n\n## Requirements\n\n- REQ-001 Show the run command\n' });
-  store.index.close();
 });
 
 Then('the terminal prints one {string} line', async ({}, start: string) => {

@@ -11,7 +11,7 @@ import { writeChangesIndex } from './index-file';
 import { z } from 'zod';
 import { fail, ok, type Result } from '../result';
 import { writeFileAtomic } from '../store/atomic';
-import type { Store } from '../store/db';
+import type { Store } from '../store/store';
 import { commitBlocker, commitFiles } from '../store/git';
 import { fromYamlDate, readProject, today } from '../store/workspace';
 

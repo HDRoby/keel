@@ -76,7 +76,7 @@ function rowsFor(library: CreatesLibrary, choices: Choices): Row[] {
       folder('.keel/brainstorm/', 'The brainstorm transcript', 'Now', [file('.keel/brainstorm/', 'explore.md', choices.description ? 'Starts with your description' : 'The questions and your answers', 'Now')]),
       folder('.keel/mocks/', 'Mock references you attach (links, images, PDF, HTML)', 'As you approve', [file('.keel/mocks/', 'references.md', 'The list of mock references', 'As you approve', { dependent: true })], { dependent: true }),
       folder('.keel/generated/', 'What Keel last generated, for merging your edits on regeneration', 'As you approve', [file('.keel/generated/', 'docs/spec.md, docs/plan.md, …', 'Baselines', 'As you approve')]),
-      folder('.keel/cache/', 'The index and the run lock; ignored by git', 'Now', [file('.keel/cache/', 'index.db', 'Search index, rebuildable', 'Now', { ignored: true })], { ignored: true }),
+      folder('.keel/cache/', 'The run lock; ignored by git', 'Now', [file('.keel/cache/', 'run.json', 'Which Keel is running on this folder', 'Now', { ignored: true })], { ignored: true }),
     ]),
     folder('docs/', 'Intent, spec, plan and decisions', 'As you approve', [
       file('docs/', 'intent.md', `From ${library.templateNames[choices.intent] ?? 'the intent template'}`, 'As you approve'),

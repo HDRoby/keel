@@ -137,7 +137,6 @@ Then('actions that need a model say why they are unavailable', async ({ page }) 
   // In setup mode (CR-0012) a page whose actions need a model opens the Startup check, which says why.
   const store = await initialisedFolder('Readme helper');
   await createDocument(store, { kind: 'intent', title: 'Readme helper', template: 'standard-intent@3', status: 'approved', body: '# Intent\n\n## Requirements\n\n- REQ-001 Show the run command\n' });
-  store.index.close();
   await page.goto(stagePath('spec'));
   await page.waitForURL(/\/check$/);
   await expect(page.getByRole('listitem', { name: 'Model provider' })).toContainText('Keel could not reach Ollama');
