@@ -29,7 +29,7 @@ const { Before } = createBdd();
 /** Each scenario starts from an empty project folder (not a git repository) and an empty user folder. */
 Before(async () => {
   mkdirSync(BDD_PROJECT, { recursive: true });
-  for (const entry of readdirSync(BDD_PROJECT)) rmSync(join(BDD_PROJECT, entry), { recursive: true, force: true });
+  for (const entry of readdirSync(BDD_PROJECT)) rmSync(join(BDD_PROJECT, entry), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   rmSync(BDD_USER, { recursive: true, force: true });
   mkdirSync(BDD_USER, { recursive: true });
   // Reviews after a 1-second pause and at most one a second, so scenarios do not wait 5 and 10 seconds.
@@ -38,6 +38,7 @@ Before(async () => {
   // The readiness review's request capture and test control (CR-0015, src/lib/providers/fake.ts).
   rmSync(`${FAKE_LOG}.requests`, { force: true });
   rmSync(`${FAKE_LOG}.control.json`, { force: true });
+  rmSync(`${FAKE_LOG}.discuss`, { force: true });
 });
 
 /** How many model calls the fake provider has made so far in this scenario, not counting the startup check's health probe (CR-0012), which sends no project content. */
