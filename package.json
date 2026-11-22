@@ -19,6 +19,7 @@
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "verify": "npm run lint && npm run typecheck && npm test && npm run test:bdd",
+    "build:cli": "node scripts/build-cli.mjs",
     "keel": "tsx src/cli.ts",
     "ui:shots": "tsx scripts/ui-shots.ts"
   },
@@ -42,6 +43,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.3.0",
+    "esbuild": "^0.28.2",
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.4.6",
     "playwright-bdd": "^9.2.1",

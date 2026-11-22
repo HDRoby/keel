@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // `npx keel [path]`: starts Keel on one folder and opens the browser (ADR-0005, ADR-0009, task R3).
 //   keel [path] [--title "..."] [--description "..."] [--port N] [--no-open] [--create] [--dry-run]
+//   keel import <v0.1 project folder> --dir <folder>
+//   keel --version
 // The server binds to 127.0.0.1 only. A folder Keel already runs on is opened again, not started twice.
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -20,13 +22,17 @@ Opens Keel on one folder (default: the current folder).
   --no-open            do not open the browser
   --create             create the folder if it does not exist, without asking
   --dry-run            print what would run, as JSON, and exit
-  --help               show this help`;
+  --version            print the version
+  --help               show this help
+
+  keel import <v0.1 project folder> --dir <folder>
+                       import a Keel v0.1 project into a folder`;
 
 /** Parses the command line. Unknown options are an error. */
 export function parseArgs(argv) {
-  const options = { path: '.', open: true, create: false, dryRun: false, help: false };
+  const options = { path: '.', open: true, create: false, dryRun: false, help: false, version: false };
   const values = { '--title': 'title', '--description': 'description', '--port': 'port' };
-  const flags = { '--no-open': ['open', false], '--create': ['create', true], '--dry-run': ['dryRun', true], '--help': ['help', true], '-h': ['help', true] };
+  const flags = { '--no-open': ['open', false], '--create': ['create', true], '--dry-run': ['dryRun', true], '--help': ['help', true], '-h': ['help', true], '--version': ['version', true], '-v': ['version', true] };
   let positional = 0;
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -140,6 +146,7 @@ async function waitUntilUp(url, seconds = 120) {
 }
 
 async function main(argv) {
+  if (argv[0] === 'import') return runImport(argv.slice(1));
   let options;
   try {
     options = parseArgs(argv);
@@ -149,6 +156,10 @@ async function main(argv) {
   }
   if (options.help) {
     console.log(HELP);
+    return 0;
+  }
+  if (options.version) {
+    console.log(keelVersion());
     return 0;
   }
   const root = resolve(options.path);
@@ -224,6 +235,37 @@ export function installFolder() {
   return join(dirname(fileURLToPath(import.meta.url)), '..');
 }
 
+/** The version in the installed package.json. */
+export function keelVersion(install = installFolder()) {
+  return JSON.parse(readFileSync(join(install, 'package.json'), 'utf8')).version;
+}
+
+/**
+ * Where the server finds Keel's own files, whatever folder it runs from. A KEEL_SEED already set wins.
+ * @param {string} install
+ * @param {Record<string, string | undefined>} env
+ */
+export function installEnv(install, env = process.env) {
+  return { KEEL_HOME_DIR: install, KEEL_SEED: env.KEEL_SEED?.trim() || join(install, 'seed') };
+}
+
+/** `keel import`: the compiled command in the package, or the TypeScript source in a clone. */
+function runImport(args) {
+  const install = installFolder();
+  const compiled = join(install, 'dist', 'cli.mjs');
+  const command = existsSync(compiled)
+    ? [process.execPath, [compiled, 'import', ...args]]
+    : [process.execPath, [createRequire(import.meta.url).resolve('tsx/cli'), join(install, 'src', 'cli.ts'), 'import', ...args]];
+  return new Promise((done) => {
+    spawn(command[0], command[1], { stdio: 'inherit', env: { ...process.env, ...installEnv(install) } })
+      .on('exit', (code) => done(code ?? 1))
+      .on('error', (error) => {
+        console.error(`keel import: ${error.message}`);
+        done(1);
+      });
+  });
+}
+
 /** 'standalone' when the pre-built server is there (the published package, or a clone after npm run build), else 'dev'. */
 export function serverMode(install) {
   return existsSync(join(install, '.next', 'standalone', 'server.js')) ? 'standalone' : 'dev';
@@ -231,7 +273,7 @@ export function serverMode(install) {
 
 /** Starts the server on 127.0.0.1 for one project folder. */
 function startServer(install, mode, port, root) {
-  const env = { ...process.env, KEEL_PROJECT_DIR: root };
+  const env = { ...process.env, KEEL_PROJECT_DIR: root, ...installEnv(install) };
   const stdio = ['ignore', 'inherit', 'inherit'];
   if (mode === 'standalone') {
     const dir = join(install, '.next', 'standalone');
