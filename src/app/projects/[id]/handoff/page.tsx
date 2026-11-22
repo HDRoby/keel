@@ -37,17 +37,17 @@ export default async function HandoffPage({ params, searchParams }: StageProps) 
   const { id } = await params;
   const { error, notice } = await (searchParams as Promise<{ error?: string; notice?: string }>);
   const page = await loadStage(id, 'handoff');
-  const built = page.gate.available ? await buildHandoff(page.store, id) : undefined;
-  const commands = handoffCommands(page.store, id);
-  const repository = repositoryOf(page.store, id);
+  const built = page.gate.available ? await buildHandoff(page.store) : undefined;
+  const commands = handoffCommands(page.store);
+  const repository = repositoryOf(page.store);
   const lastPush = repository?.pushes.at(-1);
-  const readback = readbackState(page.store, id);
+  const readback = readbackState(page.store);
   const allowLocal = process.env.KEEL_ALLOW_LOCAL_REMOTES === '1';
   const interval = readbackInterval();
   const pending = await Promise.all(readback.pending.map(async (change) => {
-    const theirs = await changedContent(page.store, id, change);
+    const theirs = await changedContent(page.store, change);
     const parsed = theirs === undefined ? undefined : parseDocument(theirs);
-    const mine = readDocument(page.store, id, change.path);
+    const mine = readDocument(page.store, change.path);
     const after = parsed?.ok ? parsed.value.body : (theirs ?? '');
     return { change, mine, lines: compactChanges(lineChanges(mine.ok ? mine.value.body : '', after), 1) };
   }));
@@ -59,7 +59,6 @@ export default async function HandoffPage({ params, searchParams }: StageProps) 
           <div className="row spread">
             <h2 id="readback">Read-back from repository</h2>
             <form action={checkRepositoryAction}>
-              <input type="hidden" name="slug" value={id} />
               <SubmitButton label="Check now" busyLabel="Checking…" />
             </form>
           </div>
@@ -80,14 +79,12 @@ export default async function HandoffPage({ params, searchParams }: StageProps) 
                   </ol>
                   <div className="row">
                     <form action={acceptChangeAction}>
-                      <input type="hidden" name="slug" value={id} />
                       <input type="hidden" name="path" value={change.path} />
                       <button type="submit" className="primary">
                         {mine.ok ? `Accept as ${change.path.split('/').pop()?.replace('.md', '')} v${mine.value.header.version + 1}` : `Accept ${change.path}`}
                       </button>
                     </form>
                     <form action={dismissChangeAction}>
-                      <input type="hidden" name="slug" value={id} />
                       <input type="hidden" name="path" value={change.path} />
                       <button type="submit">Dismiss</button>
                     </form>
@@ -147,7 +144,6 @@ export default async function HandoffPage({ params, searchParams }: StageProps) 
           )}
           {notice && <p role="status" className="notice">{notice}</p>}
           <form action={pushHandoffAction} aria-label="Push" className="stack">
-            <input type="hidden" name="slug" value={id} />
             <label>Target <select name="kind" defaultValue={repository?.kind ?? 'github'}>
               <option value="github">GitHub repository</option>
               {allowLocal && <option value="local">Local repository (tests)</option>}
@@ -164,7 +160,6 @@ export default async function HandoffPage({ params, searchParams }: StageProps) 
         <form action={saveHandoffCommandsAction} aria-label="Commands" className="card stack">
           <h2>Commands</h2>
           <p className="muted">Keel does not know the project&apos;s stack. These go into AGENTS.md, the agent kit and CI.</p>
-          <input type="hidden" name="slug" value={id} />
           {(Object.keys(LABELS) as (keyof Commands)[]).map((key) => (
             <label key={key}>{LABELS[key]} <input name={key} defaultValue={commands[key]} required /></label>
           ))}

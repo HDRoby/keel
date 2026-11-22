@@ -2,12 +2,10 @@
 import { buildHandoff } from '@/lib/handoff/scaffold';
 import { createZip } from '@/lib/handoff/zip';
 import { serverStore } from '@/lib/store/server-store';
-import { SLUG } from '@/lib/store/workspace';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }): Promise<Response> {
   const { id } = await params;
-  if (!SLUG.test(id)) return new Response(null, { status: 404 });
-  const built = await buildHandoff(serverStore(), id);
+  const built = await buildHandoff(serverStore());
   if (!built.ok) {
     const back = new URL(`/projects/${id}/handoff?error=${encodeURIComponent(built.message)}`, request.url);
     return Response.redirect(back, 303);

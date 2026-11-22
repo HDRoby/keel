@@ -5,7 +5,6 @@ import { MockReferences } from '@/components/MockReferences';
 import { StageLayout } from '@/components/StageBar';
 import { listMocks } from '@/lib/mocks/references';
 import { readDocument } from '@/lib/store/documents';
-import { projectDir } from '@/lib/store/workspace';
 import { requirementIds } from '@/lib/trace/index';
 import { loadStage, type StageProps } from '../stage';
 
@@ -16,8 +15,8 @@ export default async function IntentPage({ params, searchParams }: StageProps) {
   const { error } = await searchParams;
   const page = await loadStage(id, 'intent');
   const { store, reviewer } = page;
-  const intent = readDocument(store, id, 'docs/intent.md');
-  const dir = projectDir(id, store.home);
+  const intent = readDocument(store, 'docs/intent.md');
+  const dir = store.root;
   return (
     <StageLayout page={page} error={error}
       meta={intent.ok ? `${page.project.id} · intent.md · ${intent.value.header.id}` : undefined}
@@ -26,7 +25,7 @@ export default async function IntentPage({ params, searchParams }: StageProps) {
         {intent.ok && intent.value.header.status === 'approved' && <Link href={`/projects/${id}/spec`} className="button primary">Go to spec</Link>}
       </>}>
       {intent.ok ? (
-        <DocumentReview slug={id} home={store.home} document="intent" doc={intent.value} reviewer={reviewer}
+        <DocumentReview slug={id} home={store.root} document="intent" doc={intent.value} reviewer={reviewer}
           aside={<MockReferences slug={id} document="intent" references={listMocks(dir)} requirements={requirementIds(dir)} />} />
       ) : (
         <section className="card"><p>Every required section is captured. <Link href={`/projects/${id}/explore`}>Draft intent.md in Explore</Link>.</p></section>

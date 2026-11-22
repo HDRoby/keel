@@ -3,10 +3,9 @@ import type { ReactNode } from 'react';
 import { regenerateAction } from '@/app/projects/actions';
 import { SubmitButton } from '@/components/SubmitButton';
 
-export function RegenerateForm({ slug, document, children }: { slug: string; document: 'spec' | 'plan'; children: ReactNode }) {
+export function RegenerateForm({ document, children }: { document: 'spec' | 'plan'; children: ReactNode }) {
   return (
     <form action={regenerateAction} aria-label={`Regenerate ${document}`} className="card">
-      <input type="hidden" name="slug" value={slug} />
       <input type="hidden" name="document" value={document} />
       <p className="muted">{children} Your edits stay; parts changed on both sides become conflicts to resolve before approval.</p>
       <SubmitButton label={`Regenerate ${document}`} busyLabel={`Regenerating ${document}…`} />

@@ -5,7 +5,7 @@ import { Bulb, Folder } from './Icons';
 import { NavLink } from './NavLink';
 
 export interface ShellProject {
-  slug: string;
+  id: string;
   title: string;
 }
 
@@ -16,8 +16,7 @@ export function Shell({ project, children }: { project?: ShellProject; children:
         <Link href="/" className="brand">Keel</Link>
         <nav aria-label="Workspace" className="nav-group">
           <div className="nav-heading"><Folder /> Workspace</div>
-          <NavLink href="/" exact>Projects</NavLink>
-          <NavLink href="/templates">Templates</NavLink>
+                    <NavLink href="/templates">Templates</NavLink>
           <NavLink href="/styles">Brainstorm styles</NavLink>
           <NavLink href="/settings">Settings</NavLink>
         </nav>
@@ -27,7 +26,7 @@ export function Shell({ project, children }: { project?: ShellProject; children:
             {[
               ['setup', 'Project setup'], ['explore', 'Explore'], ['intent', 'Intent'], ['spec', 'Spec'],
               ['plan', 'Plan'], ['handoff', 'Handoff'], ['trace', 'Traceability'],
-            ].map(([path, label]) => <NavLink key={path} href={`/projects/${project.slug}/${path}`}>{label}</NavLink>)}
+            ].map(([path, label]) => <NavLink key={path} href={`/projects/${project.id}/${path}`}>{label}</NavLink>)}
           </nav>
         )}
       </aside>

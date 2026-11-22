@@ -11,7 +11,7 @@ import { standardsFor, type Standard } from '../standards/library';
 import type { Store } from '../store/db';
 import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
 import { commitFiles } from '../store/git';
-import { projectDir, readProject } from '../store/workspace';
+import { fileNameFor, readProject } from '../store/workspace';
 import { parseTemplateRef, readTemplate } from '../templates/library';
 import { renderTemplate } from '../templates/render';
 import { requirementStatements } from '../trace/parse';
@@ -61,19 +61,19 @@ interface ComposedSpec {
   extra: Record<string, unknown>;
 }
 
-async function composeSpec(store: Store, slug: string, templateRef: string, write: Writer): Promise<Result<ComposedSpec, GenerateError>> {
-  const intent = readDocument(store, slug, 'docs/intent.md');
+async function composeSpec(store: Store, templateRef: string, write: Writer): Promise<Result<ComposedSpec, GenerateError>> {
+  const intent = readDocument(store, 'docs/intent.md');
   if (!intent.ok) return fail('not-found', intent.message);
   const ref = parseTemplateRef(templateRef);
-  const template = ref && readTemplate(store.home, ref.id, ref.version);
+  const template = ref && readTemplate(store.root, ref.id, ref.version);
   if (!template?.ok || template.value.kind !== 'spec') return fail('unknown-template', `No spec template ${templateRef}`);
-  const project = readProject(slug, store.home);
+  const project = readProject(store.root);
   const chosen = project.ok ? project.value.standards : [];
 
   const { title } = intent.value.header;
   const statements = requirementStatements(intent.value.body);
-  const featurePath = `features/${slug}.feature`;
-  const sources = [`Intent ${intent.value.header.id} v${intent.value.header.version}:\n\n${intent.value.body}`, standardsSources(standardsFor(store.home, chosen, 'spec'))]
+  const featurePath = `features/${fileNameFor(project.ok ? project.value.title : title)}.feature`;
+  const sources = [`Intent ${intent.value.header.id} v${intent.value.header.version}:\n\n${intent.value.body}`, standardsSources(standardsFor(store.root, chosen, 'spec'))]
     .filter(Boolean).join('\n\n');
   const sections: Record<string, string[]> = {};
   let feature: string | undefined;
@@ -93,7 +93,7 @@ async function composeSpec(store: Store, slug: string, templateRef: string, writ
       feature = featureFile(title, scenarios);
       sections[heading] = [`Saved to \`${featurePath}\`.\n\n\`\`\`gherkin\n${feature}\`\`\``];
     } else if (heading === 'Standards applied') {
-      sections[heading] = [standardsApplied(standardsFor(store.home, chosen))];
+      sections[heading] = [standardsApplied(standardsFor(store.root, chosen))];
     } else {
       const task = heading === 'Feasibility review' ? 'feasibility' : 'documents';
       sections[heading] = [await writeSection(write, task, { kind: 'spec', title, heading, guidance, sources })];
@@ -106,17 +106,17 @@ async function composeSpec(store: Store, slug: string, templateRef: string, writ
   });
 }
 
-/** Writes docs/spec.md from a spec template, and the acceptance scenarios to features/<slug>.feature. */
-export async function generateSpec(store: Store, slug: string, templateRef: string, write: Writer): Promise<Result<StoredDocument, GenerateError>> {
-  const gate = gateFor(projectState(store, slug), 'spec');
+/** Writes docs/spec.md from a spec template, and the acceptance scenarios to features/<project title>.feature. */
+export async function generateSpec(store: Store, templateRef: string, write: Writer): Promise<Result<StoredDocument, GenerateError>> {
+  const gate = gateFor(projectState(store), 'spec');
   if (!gate.available) return fail('locked', gate.reason ?? 'The spec stage is locked');
-  if (readDocument(store, slug, 'docs/spec.md').ok) return fail('already-exists', 'spec.md already exists');
-  const composed = await composeSpec(store, slug, templateRef, write);
+  if (readDocument(store, 'docs/spec.md').ok) return fail('already-exists', 'spec.md already exists');
+  const composed = await composeSpec(store, templateRef, write);
   if (!composed.ok) return composed;
   const { title, body, feature, featurePath, extra } = composed.value;
-  const created = await createDocument(store, slug, { kind: 'spec', title, body, template: templateRef, extra: { ...extra, conflicts: [] } });
+  const created = await createDocument(store, { kind: 'spec', title, body, template: templateRef, extra: { ...extra, conflicts: [] } });
   if (!created.ok) return fail('invalid-input', created.message);
-  const dir = projectDir(slug, store.home);
+  const dir = store.root;
   if (feature) writeFeature(dir, featurePath, feature);
   await commitFiles(dir, [...(feature ? [featurePath] : []), ...specBaselines(dir, composed.value)], `Generation baseline for ${created.value.header.id} v1`);
   return created;
@@ -127,23 +127,23 @@ export async function generateSpec(store: Store, slug: string, templateRef: stri
  * what Keel generated last time: edits stay, new text comes in, and pieces changed on both sides
  * become conflicts that block approval until resolved.
  */
-export async function regenerateSpec(store: Store, slug: string, write: Writer): Promise<Result<StoredDocument, GenerateError>> {
-  const gate = gateFor(projectState(store, slug), 'spec');
+export async function regenerateSpec(store: Store, write: Writer): Promise<Result<StoredDocument, GenerateError>> {
+  const gate = gateFor(projectState(store), 'spec');
   if (!gate.available) return fail('locked', gate.reason ?? 'The spec stage is locked');
-  const spec = readDocument(store, slug, 'docs/spec.md');
+  const spec = readDocument(store, 'docs/spec.md');
   if (!spec.ok) return fail('not-found', spec.message);
   if (spec.value.header.status !== 'draft') return fail('not-draft', `spec.md is ${spec.value.header.status}; only a draft spec can be regenerated`);
-  const composed = await composeSpec(store, slug, spec.value.header.template, write);
+  const composed = await composeSpec(store, spec.value.header.template, write);
   if (!composed.ok) return composed;
   const { body, feature, featurePath, extra } = composed.value;
-  const dir = projectDir(slug, store.home);
+  const dir = store.root;
   const merged = mergeSections(readBaseline(dir, 'docs/spec.md') ?? '', spec.value.body, body);
   const featureNow = existsSync(join(dir, featurePath)) ? readFileSync(join(dir, featurePath), 'utf8') : undefined;
   const featureMerge = feature === undefined ? { value: featureNow, conflict: false } : mergePiece(readBaseline(dir, featurePath), featureNow, feature);
   const conflicts: Conflict[] = [...merged.conflicts];
   if (featureMerge.conflict) conflicts.push({ kind: 'file', name: featurePath, mine: featureNow ?? '', theirs: feature ?? '' });
 
-  const saved = await saveDocument(store, slug, 'docs/spec.md', {
+  const saved = await saveDocument(store, 'docs/spec.md', {
     body: merged.body,
     extra: { ...extra, conflicts },
     reason: `Regenerated from ${String(extra.from_intent)}${conflictNote(conflicts)}`,

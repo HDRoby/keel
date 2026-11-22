@@ -2,8 +2,7 @@
 // for review. Kept in project.md, so they live in git like everything else. Accepting one saves the agent's
 // text as the document's next version, with the commit as the reason; dismissing hides it. Either way that
 // commit is handled for that file and only a later commit to the file shows up again.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { writeFileAtomic } from '../store/atomic';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import matter from 'gray-matter';
 import { z } from 'zod';
@@ -13,7 +12,7 @@ import type { Store } from '../store/db';
 import { kindFromPath, parseDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
 import { commitFiles, fileAt } from '../store/git';
 import { handoffDir } from '../github/push';
-import { fromYamlTime, PROJECT_FILE, projectDir, readProject } from '../store/workspace';
+import { fromYamlTime, readConfig, updateConfig, writeConfig } from '../store/workspace';
 
 export interface PendingChange {
   path: string;        // e.g. docs/plan.md
@@ -47,79 +46,75 @@ const stateSchema = z.object({
   ciNote: z.string().optional(),
 });
 
-export function readbackState(store: Store, slug: string): ReadbackState {
-  const file = join(projectDir(slug, store.home), PROJECT_FILE);
-  if (!existsSync(file)) return { pending: [], handled: [] };
-  const parsed = stateSchema.safeParse(matter(readFileSync(file, 'utf8'), {}).data.readback ?? {});
+export function readbackState(store: Pick<Store, 'root'>): ReadbackState {
+  const parsed = stateSchema.safeParse(readConfig(store.root)?.readback ?? {});
   return parsed.success ? parsed.data : { pending: [], handled: [] };
 }
 
 /** Saves the state; commits only when the pending or handled changes are different. */
-export async function saveReadbackState(store: Store, slug: string, state: ReadbackState, message: string): Promise<void> {
-  const dir = projectDir(slug, store.home);
-  const file = join(dir, PROJECT_FILE);
-  const parsed = matter(readFileSync(file, 'utf8'), {});
-  const previous = readbackState(store, slug);
+export async function saveReadbackState(store: Store, state: ReadbackState, message: string): Promise<void> {
+  const previous = readbackState(store);
   const before = JSON.stringify({ pending: previous.pending, handled: previous.handled });
-  writeFileAtomic(file, matter.stringify(parsed.content, { ...parsed.data, readback: state }));
+  const config = readConfig(store.root) ?? {};
   if (before !== JSON.stringify({ pending: state.pending, handled: state.handled })) {
-    const project = readProject(slug, store.home);
-    await commitFiles(dir, [PROJECT_FILE], `${project.ok ? project.value.id : slug}: ${message}`);
+    await updateConfig(store, { readback: state }, `Keel: ${message}`);
+  } else {
+    writeConfig(store.root, { ...config, readback: state });
   }
 }
 
 /** The agent's version of a file, read from Keel's working copy of the repository. */
-export async function changedContent(store: Store, slug: string, change: PendingChange): Promise<string | undefined> {
-  return fileAt(handoffDir(store, slug), change.commit, change.path);
+export async function changedContent(store: Store, change: PendingChange): Promise<string | undefined> {
+  return fileAt(handoffDir(store), change.commit, change.path);
 }
 
 /**
  * Accepts a pending change. For an existing document the agent's text becomes its next version and Keel keeps
  * the header (ID, status, approvals); a new file, such as a task the agent added, is taken as it is.
  */
-export async function acceptChange(store: Store, slug: string, path: string): Promise<Result<StoredDocument, ReadbackError>> {
-  const state = readbackState(store, slug);
+export async function acceptChange(store: Store, path: string): Promise<Result<StoredDocument, ReadbackError>> {
+  const state = readbackState(store);
   const change = state.pending.find((c) => c.path === path);
   if (!change) return fail('not-found', `No pending change for ${path}`);
   if (!kindFromPath(path)) return fail('invalid-change', `${path} is not a document Keel keeps`);
-  const content = await changedContent(store, slug, change);
+  const content = await changedContent(store, change);
   if (content === undefined) return fail('invalid-change', `${path} was removed in the repository`);
   const reason = `Read back from ${change.commit.slice(0, 7)}: ${change.messages.join('; ') || 'agent change'}`;
   const parsed = parseDocument(content);
-  const current = readDocument(store, slug, path);
+  const current = readDocument(store, path);
   let saved: Result<StoredDocument, string>;
   if (current.ok) {
     const body = parsed.ok ? parsed.value.body : matter(content, {}).content.replace(/^\n/, '');
     // Owner decision: an accepted change to an approved document needs a new approval.
     const reopen = current.value.header.status === 'approved';
-    saved = await saveDocument(store, slug, path, { body, reason: reopen ? `${reason} (back to draft for approval)` : reason, ...(reopen ? { status: 'draft' as const } : {}) });
+    saved = await saveDocument(store, path, { body, reason: reopen ? `${reason} (back to draft for approval)` : reason, ...(reopen ? { status: 'draft' as const } : {}) });
   } else {
     if (!parsed.ok) return fail('invalid-change', `${path} has no valid Keel header, so it cannot be taken as a new document`);
-    const dir = projectDir(slug, store.home);
+    const dir = store.root;
     mkdirSync(dirname(join(dir, path)), { recursive: true });
     writeFileSync(join(dir, path), content);
     await commitFiles(dir, [path], `${parsed.value.header.id} v${parsed.value.header.version}: ${reason}`);
-    saved = readDocument(store, slug, path);
-    if (saved.ok) store.index.upsertDocument(slug, saved.value);
+    saved = readDocument(store, path);
+    if (saved.ok) store.index.upsertDocument(saved.value);
   }
   if (!saved.ok) return fail('invalid-change', saved.message);
-  await markHandled(store, slug, state, change, 'accepted');
+  await markHandled(store, state, change, 'accepted');
   return ok(saved.value);
 }
 
 /** Dismisses a pending change. The same file changes again in a later commit: it shows up again. */
-export async function dismissChange(store: Store, slug: string, path: string): Promise<Result<PendingChange, ReadbackError>> {
-  const state = readbackState(store, slug);
+export async function dismissChange(store: Store, path: string): Promise<Result<PendingChange, ReadbackError>> {
+  const state = readbackState(store);
   const change = state.pending.find((c) => c.path === path);
   if (!change) return fail('not-found', `No pending change for ${path}`);
-  await markHandled(store, slug, state, change, 'dismissed');
+  await markHandled(store, state, change, 'dismissed');
   return ok(change);
 }
 
 /** Moves a change from pending to handled, so that commit is not shown again for that file. */
-async function markHandled(store: Store, slug: string, state: ReadbackState, change: PendingChange, outcome: 'accepted' | 'dismissed'): Promise<void> {
+async function markHandled(store: Store, state: ReadbackState, change: PendingChange, outcome: 'accepted' | 'dismissed'): Promise<void> {
   const { path, commit } = change;
-  await saveReadbackState(store, slug, {
+  await saveReadbackState(store, {
     ...state,
     pending: state.pending.filter((c) => c.path !== path),
     handled: [...state.handled, { path, commit, outcome }],

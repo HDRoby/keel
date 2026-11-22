@@ -3,18 +3,16 @@ import { notFound } from 'next/navigation';
 import { PageHead, Topbar } from '@/components/Shell';
 import { listMocks } from '@/lib/mocks/references';
 import { serverStore } from '@/lib/store/server-store';
-import { projectDir, readProject, SLUG } from '@/lib/store/workspace';
+import { readProject } from '@/lib/store/workspace';
 import { buildTrace, latestIntentChange } from '@/lib/trace/index';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TracePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  if (!SLUG.test(id)) notFound();
-  const { home } = serverStore();
-  const project = readProject(id, home);
+export default async function TracePage() {
+  const { root: home } = serverStore();
+  const project = readProject(home);
   if (!project.ok) notFound();
-  const dir = projectDir(id, home);
+  const dir = home;
   const trace = buildTrace(dir);
   const mocks = listMocks(dir);
   const change = await latestIntentChange(dir, trace);

@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
-import { answerRequiredSections, startIdea, world } from './support';
+import { answerRequiredSections, stagePath, startIdea } from './support';
 
 const { Given, When, Then } = createBdd();
 
@@ -25,7 +25,7 @@ Given('a project whose intent is a draft', async ({ page }) => {
 
 // A locked stage is not a link in the stage bar, so the step goes to its address directly.
 When('I open the Spec stage', async ({ page }) => {
-  await page.goto(`/projects/${world.slug}/spec`);
+  await page.goto(stagePath('spec'));
 });
 
 Then('the stage is locked', async ({ page }) => {

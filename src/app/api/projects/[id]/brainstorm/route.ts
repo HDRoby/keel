@@ -4,17 +4,14 @@ import { fallbackQuestion, loadContext, pendingQuestion, questionPrompt, recordA
 import { describeProviderError } from '@/lib/providers/errors';
 import { providerForTask } from '@/lib/providers/registry';
 import { serverStore } from '@/lib/store/server-store';
-import { SLUG } from '@/lib/store/workspace';
 
 const body = z.strictObject({ answer: z.string().trim().min(1).max(20_000).optional() });
-const slug = z.string().regex(SLUG);
 
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }): Promise<Response> {
-  const id = slug.safeParse((await params).id);
+export async function POST(request: Request): Promise<Response> {
   const input = body.safeParse(await request.json().catch(() => undefined));
-  if (!id.success || !input.success) return Response.json({ error: 'Invalid request' }, { status: 400 });
+  if (!input.success) return Response.json({ error: 'Invalid request' }, { status: 400 });
   const store = serverStore();
-  let context = loadContext(store, id.data);
+  let context = loadContext(store);
   if (!context.ok) return Response.json({ error: context.message }, { status: 404 });
   if (input.data.answer) {
     const answered = await recordAnswer(store, context.value, input.data.answer);

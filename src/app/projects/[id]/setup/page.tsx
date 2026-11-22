@@ -7,7 +7,7 @@ import { readSession } from '@/lib/brainstorm/session';
 import { listStyles } from '@/lib/brainstorm/styles';
 import { listStandards } from '@/lib/standards/library';
 import { serverStore } from '@/lib/store/server-store';
-import { readProject, SLUG } from '@/lib/store/workspace';
+import { readProject } from '@/lib/store/workspace';
 import { templateOptions } from '@/lib/templates/library';
 
 export const dynamic = 'force-dynamic';
@@ -15,11 +15,10 @@ export const dynamic = 'force-dynamic';
 export default async function SetupPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string }> }) {
   const { id } = await params;
   const { error } = await searchParams;
-  if (!SLUG.test(id)) notFound();
   const store = serverStore();
-  const session = readSession(store, id);
+  const session = readSession(store);
   if (!session.ok) notFound();
-  const project = readProject(id, store.home);
+  const project = readProject(store.root);
   const chosen = project.ok ? project.value.standards : [];
   return (
     <>
@@ -29,14 +28,13 @@ export default async function SetupPage({ params, searchParams }: { params: Prom
         <div className="card">
           <ErrorAlert error={error} />
           <form action={setupAction} className="stack">
-            <input type="hidden" name="slug" value={id} />
             <label>Intent template <select name="template" defaultValue={session.value.template}>
-              {templateOptions(store.home, 'intent', 'all').map((t) => <option key={t.ref} value={t.ref}>{t.name}</option>)}
+              {templateOptions(store.root, 'intent', 'all').map((t) => <option key={t.ref} value={t.ref}>{t.name}</option>)}
             </select></label>
             <label>Brainstorm style <select name="style" defaultValue={session.value.brainstorm_style}>
-              {listStyles(store.home).map((s) => <option key={s.ref} value={s.ref}>{s.name}</option>)}
+              {listStyles(store.root).map((s) => <option key={s.ref} value={s.ref}>{s.name}</option>)}
             </select></label>
-            <StandardsPicker standards={listStandards(store.home)} chosen={chosen} />
+            <StandardsPicker standards={listStandards(store.root)} chosen={chosen} />
             <button type="submit">Save</button>
           </form>
         </div>

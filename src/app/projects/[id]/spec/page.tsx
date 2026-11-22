@@ -10,7 +10,6 @@ import { DECISION_TITLE, decisionsOf } from '@/lib/gates/approvals';
 import { conflictsOf } from '@/lib/generate/resolve';
 import { listMocks } from '@/lib/mocks/references';
 import { readDocument } from '@/lib/store/documents';
-import { projectDir } from '@/lib/store/workspace';
 import { templateOptions } from '@/lib/templates/library';
 import { requirementIds } from '@/lib/trace/index';
 import { loadStage, type StageProps } from '../stage';
@@ -22,8 +21,8 @@ export default async function SpecPage({ params, searchParams }: StageProps) {
   const { error } = await searchParams;
   const page = await loadStage(id, 'spec');
   const { store, reviewer } = page;
-  const spec = readDocument(store, id, 'docs/spec.md');
-  const dir = projectDir(id, store.home);
+  const spec = readDocument(store, 'docs/spec.md');
+  const dir = store.root;
   const decisions = decisionsOf(dir);
 
   const decision = (
@@ -31,7 +30,6 @@ export default async function SpecPage({ params, searchParams }: StageProps) {
       <h2 id="decision">Decision</h2>
       <p className="muted">{decisions.length === 0 ? 'No decision yet.' : `Latest decision: ${decisions.at(-1)}.`} The plan needs a Go decision.</p>
       <form action={decisionAction} aria-label="Decision" className="stack">
-        <input type="hidden" name="slug" value={id} />
         <fieldset>
           <legend>Go, Park or No-go</legend>
           {Object.entries(DECISION_TITLE).map(([value, label]) => (
@@ -49,10 +47,10 @@ export default async function SpecPage({ params, searchParams }: StageProps) {
   return (
     <StageLayout page={page} error={error} meta={spec.ok ? `${page.project.id} · spec.md · ${spec.value.header.id}` : undefined}>
       {spec.ok ? (
-        <DocumentReview slug={id} home={store.home} document="spec" doc={spec.value} reviewer={reviewer}
-          before={<Conflicts slug={id} document="spec" conflicts={conflictsOf(spec.value)} />}
+        <DocumentReview slug={id} home={store.root} document="spec" doc={spec.value} reviewer={reviewer}
+          before={<Conflicts document="spec" conflicts={conflictsOf(spec.value)} />}
           after={spec.value.header.status === 'draft'
-            ? <RegenerateForm slug={id} document="spec">Regenerating writes the spec again from the current intent and standards.</RegenerateForm>
+            ? <RegenerateForm document="spec">Regenerating writes the spec again from the current intent and standards.</RegenerateForm>
             : undefined}
           aside={<>{decision}<MockReferences slug={id} document="spec" references={listMocks(dir)} requirements={requirementIds(dir)} /></>} />
       ) : (
@@ -60,9 +58,8 @@ export default async function SpecPage({ params, searchParams }: StageProps) {
           <form action={generateSpecAction} aria-label="Generate spec" className="card stack">
             <h2>Generate spec</h2>
             <p className="muted">Keel fills a spec template from the approved intent: the requirements and scenario tags come from the intent, the model writes the other sections.</p>
-            <input type="hidden" name="slug" value={id} />
             <label>Spec template <select name="template">
-              {templateOptions(store.home, 'spec', 'latest').map((t) => <option key={t.ref} value={t.ref}>{t.name}</option>)}
+              {templateOptions(store.root, 'spec', 'latest').map((t) => <option key={t.ref} value={t.ref}>{t.name}</option>)}
             </select></label>
             <div><SubmitButton primary label="Generate spec" busyLabel="Generating spec…" /></div>
           </form>

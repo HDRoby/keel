@@ -16,8 +16,26 @@ function git(dir: string): SimpleGit {
   });
 }
 
+const queues = globalThis as typeof globalThis & { keelGitQueues?: Map<string, Promise<unknown>> };
+
+/**
+ * Runs git writes for one folder one at a time, so two saves never race for .git/index.lock
+ * (for example a brainstorm turn still committing while a form saves).
+ */
+function serialised<T>(dir: string, run: () => Promise<T>): Promise<T> {
+  queues.keelGitQueues ??= new Map();
+  const previous = queues.keelGitQueues.get(dir) ?? Promise.resolve();
+  const next = previous.catch(() => undefined).then(run);
+  queues.keelGitQueues.set(dir, next);
+  return next;
+}
+
 /** Creates the folder and an empty git repository if there is none yet. */
 export async function initRepo(dir: string): Promise<void> {
+  return serialised(dir, () => initRepoNow(dir));
+}
+
+async function initRepoNow(dir: string): Promise<void> {
   mkdirSync(dir, { recursive: true });
   if (!(await git(dir).checkIsRepo(CheckRepoActions.IS_REPO_ROOT).catch(() => false))) {
     await git(dir).init(['--initial-branch=main']);
@@ -26,6 +44,10 @@ export async function initRepo(dir: string): Promise<void> {
 
 /** Stages the given files and commits them with one message. Nothing changed: no commit, and '' is returned. */
 export async function commitFiles(dir: string, paths: string[], message: string): Promise<string> {
+  return serialised(dir, () => commitFilesNow(dir, paths, message));
+}
+
+async function commitFilesNow(dir: string, paths: string[], message: string): Promise<string> {
   const repo = git(dir);
   await repo.add(paths);
   if ((await repo.status(paths)).staged.length === 0) return '';
@@ -37,6 +59,10 @@ export async function commitFiles(dir: string, paths: string[], message: string)
  * Keeps a run of small saves (brainstorm turns) as one commit. Only local, unpushed history is amended.
  */
 export async function commitSquashing(dir: string, paths: string[], message: string, prefix: string): Promise<string> {
+  return serialised(dir, () => commitSquashingNow(dir, paths, message, prefix));
+}
+
+async function commitSquashingNow(dir: string, paths: string[], message: string, prefix: string): Promise<string> {
   const repo = git(dir);
   await repo.add(paths);
   const head = await repo.log({ maxCount: 1 }).catch(() => undefined);
@@ -60,9 +86,11 @@ export async function gitUserName(cwd: string = process.cwd()): Promise<string |
 
 /** Removes files from the working tree and commits that. */
 export async function removeFiles(dir: string, paths: string[], message: string): Promise<string> {
-  const repo = git(dir);
-  await repo.rm(paths);
-  return (await repo.commit(message, paths, { '--no-verify': null })).commit;
+  return serialised(dir, async () => {
+    const repo = git(dir);
+    await repo.rm(paths);
+    return (await repo.commit(message, paths, { '--no-verify': null })).commit;
+  });
 }
 
 /** Commits that touched a file, oldest first. */

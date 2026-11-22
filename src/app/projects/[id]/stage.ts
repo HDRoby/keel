@@ -7,7 +7,7 @@ import { stageGates, type StageGate } from '@/lib/gates/rules';
 import type { Store } from '@/lib/store/db';
 import { gitUserName } from '@/lib/store/git';
 import { serverStore } from '@/lib/store/server-store';
-import { readProject, SLUG } from '@/lib/store/workspace';
+import { readProject } from '@/lib/store/workspace';
 
 export interface StagePage extends StageFrame {
   store: Store;
@@ -21,11 +21,10 @@ export interface StageProps {
 }
 
 export async function loadStage(id: string, stage: Stage): Promise<StagePage> {
-  if (!SLUG.test(id)) notFound();
   const store = serverStore();
-  const project = readProject(id, store.home);
+  const project = readProject(store.root);
   if (!project.ok) notFound();
-  const gates = stageGates(projectState(store, id));
+  const gates = stageGates(projectState(store));
   const reviewer = (await gitUserName()) ?? project.value.author;
-  return { store, project: project.value, gates, gate: gates.find((g) => g.stage === stage) as StageGate, summaries: stageSummaries(store, id), reviewer };
+  return { store, project: project.value, gates, gate: gates.find((g) => g.stage === stage) as StageGate, summaries: stageSummaries(store), reviewer };
 }

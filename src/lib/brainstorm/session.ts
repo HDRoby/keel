@@ -1,6 +1,6 @@
-// The brainstorm of one project, kept as brainstorm.md in its repository (REQ-001, REQ-011).
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+// The project's brainstorm, kept in .keel/brainstorm/explore.md (REQ-001, REQ-011, ADR-0010).
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import matter from 'gray-matter';
 import { z } from 'zod';
 import type { ChatMessage } from '../providers/types';
@@ -9,7 +9,8 @@ import type { Store } from '../store/db';
 import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
 import { writeFileAtomic } from '../store/atomic';
 import { commitSquashing } from '../store/git';
-import { createProject, listProjectSlugs, projectDir, reserveRequirementIds } from '../store/workspace';
+import { initialiseProject, isInitialised, readProject, reserveRequirementIds, updateConfig } from '../store/workspace';
+import { previewRoot } from '../seed';
 import { REQUIREMENTS_SECTION, renderRequirements, requirementCandidates, unassigned } from '../trace/assign';
 import { maxReqNumber } from '../trace/parse';
 import { parseTemplateRef, readTemplate, templateName } from '../templates/library';
@@ -18,7 +19,8 @@ import { appendToSection, fillSections, isCaptured, nextQuestion, parseSections,
 import { readStyle, type Style } from './styles';
 import { readStandard } from '../standards/library';
 
-export const BRAINSTORM_FILE = 'brainstorm.md';
+/** Repository path of the transcript; the template library reads the same path. */
+export const BRAINSTORM_FILE = '.keel/brainstorm/explore.md';
 
 const question = z.strictObject({ section: z.string(), step: z.enum(['ask', 'probe']) });
 const entry = z.strictObject({ role: z.enum(['user', 'assistant']), text: z.string(), section: z.string().optional(), step: z.enum(['ask', 'probe']).optional() });
@@ -35,7 +37,7 @@ const sessionSchema = z.strictObject({
 });
 
 export type Entry = z.infer<typeof entry>;
-export type Session = z.infer<typeof sessionSchema> & { slug: string };
+export type Session = z.infer<typeof sessionSchema>;
 
 export type BrainstormError =
   | 'invalid-input' | 'not-found' | 'invalid-file' | 'unknown-template' | 'unknown-style'
@@ -64,40 +66,48 @@ export interface NewIdea {
   template: string;  // e.g. standard-intent@3
   style: string;     // e.g. challenger@1
   standards?: string[];  // e.g. security-baseline@2
+  templates?: { spec?: string; plan?: string };   // document templates chosen at Initialise
 }
 
-/** Start: creates the project and its brainstorm, with the first question pending. */
+/**
+ * Initialise and start: writes .keel/ with config, libraries and the brainstorm (first question pending)
+ * as one commit. The choices are checked against the seed library, since .keel/ does not exist yet.
+ */
 export async function startIdea(store: Store, input: NewIdea): Promise<Result<Session, BrainstormError>> {
   if (!input.title.trim() || !input.author.trim()) return fail('invalid-input', 'A title and your name are needed');
-  const sections = loadSetup(store, input);
+  if (isInitialised(store.root)) return fail('invalid-input', 'This folder is already initialised');
+  const library = previewRoot();
+  const sections = loadSetup(library, input);
   if (!sections.ok) return sections;
-  const slug = slugFor(input.title, listProjectSlugs(store.home));
-  const unknown = (input.standards ?? []).filter((ref) => !readStandard(store.home, ref).ok);
+  const unknown = (input.standards ?? []).filter((ref) => !readStandard(library, ref).ok);
   if (unknown.length > 0) return fail('invalid-input', `Unknown standard ${unknown.join(', ')}`);
-  const project = await createProject(store, { slug, title: input.title.trim(), author: input.author.trim(), standards: input.standards ?? [] });
-  if (!project.ok) return fail('invalid-input', project.message);
   const session: Session = {
-    slug, title: project.value.title, idea: input.idea.trim(), template: input.template, brainstorm_style: input.style,
+    title: input.title.trim(), idea: input.idea.trim(), template: input.template, brainstorm_style: input.style,
     answers: {}, req_ids: {}, in_intent: {}, current: nextQuestion(sections.value, {}) ?? null, transcript: [],
   };
-  await save(store, session);
+  const project = await initialiseProject(store, {
+    title: session.title, description: session.idea, author: input.author,
+    templates: { intent: input.template, ...input.templates }, style: input.style, standards: input.standards ?? [],
+    files: [{ path: BRAINSTORM_FILE, content: sessionFile(session) }],
+  });
+  if (!project.ok) return fail('invalid-input', project.message);
   return ok(session);
 }
 
-export function readSession(store: Store, slug: string): Result<Session, BrainstormError> {
-  const file = join(projectDir(slug, store.home), BRAINSTORM_FILE);
-  if (!existsSync(file)) return fail('not-found', `No brainstorm for ${slug}`);
+export function readSession(store: Pick<Store, 'root'>): Result<Session, BrainstormError> {
+  const file = join(store.root, BRAINSTORM_FILE);
+  if (!existsSync(file)) return fail('not-found', 'No brainstorm yet');
   const parsed = sessionSchema.safeParse(matter(readFileSync(file, 'utf8'), {}).data);
-  return parsed.success ? ok({ ...parsed.data, slug }) : fail('invalid-file', z.prettifyError(parsed.error));
+  return parsed.success ? ok(parsed.data) : fail('invalid-file', z.prettifyError(parsed.error));
 }
 
 /** The session with its template sections and style. */
-export function loadContext(store: Store, slug: string): Result<Context, BrainstormError> {
-  const session = readSession(store, slug);
+export function loadContext(store: Pick<Store, 'root'>): Result<Context, BrainstormError> {
+  const session = readSession(store);
   if (!session.ok) return session;
-  const template = loadTemplate(store, session.value.template);
+  const template = loadTemplate(store.root, session.value.template);
   if (!template.ok) return template;
-  const style = readStyle(store.home, session.value.brainstorm_style);
+  const style = readStyle(store.root, session.value.brainstorm_style);
   if (!style.ok) return fail('unknown-style', style.message);
   return ok({ session: session.value, sections: parseSections(template.value), style: style.value, templateContent: template.value });
 }
@@ -187,7 +197,7 @@ export async function draftIntent(store: Store, given: Context): Promise<Result<
   if (!assigned.ok) return assigned;
   const context = assigned.value;
   const { session } = context;
-  const created = await createDocument(store, session.slug, {
+  const created = await createDocument(store, {
     kind: 'intent', title: session.title, body: intentBody(context),
     template: session.template, extra: { brainstorm_style: session.brainstorm_style },
   });
@@ -225,7 +235,7 @@ export async function assignRequirementIds(store: Store, context: Context): Prom
   const ids = context.session.req_ids;
   const fresh = unassigned(requirementCandidates(answers), ids);
   if (fresh.length === 0) return ok(context);
-  const reserved = await reserveRequirementIds(store, context.session.slug, fresh.length, maxReqNumber(answers.join('\n')));
+  const reserved = await reserveRequirementIds(store, fresh.length, maxReqNumber(answers.join('\n')));
   if (!reserved.ok) return fail('invalid-input', reserved.message);
   const session: Session = { ...context.session, req_ids: { ...ids, ...Object.fromEntries(fresh.map((statement, i) => [statement, reserved.value[i] ?? ''])) } };
   await save(store, session);
@@ -237,7 +247,7 @@ export async function assignRequirementIds(store: Store, context: Context): Prom
  * itself do not count. Only a draft intent takes updates; an approved one changes through approval.
  */
 export function intentUpdate(store: Store, context: Context): Result<{ sections: string[]; status: string }, BrainstormError> {
-  const intent = readDocument(store, context.session.slug, 'docs/intent.md');
+  const intent = readDocument(store, 'docs/intent.md');
   if (!intent.ok) return fail('not-drafted', 'intent.md has not been drafted yet');
   const fresh = newAnswers(context.session);
   const sections = context.sections.map((s) => s.heading).filter((h) => h in fresh);
@@ -256,11 +266,11 @@ export async function updateIntent(store: Store, given: Context): Promise<Result
   const assigned = await assignRequirementIds(store, given);
   if (!assigned.ok) return assigned;
   const { session } = assigned.value;
-  const intent = readDocument(store, session.slug, 'docs/intent.md');
+  const intent = readDocument(store, 'docs/intent.md');
   if (!intent.ok) return fail('not-drafted', intent.message);
   const fresh = newAnswers(session);
   const body = update.value.sections.reduce((text, h) => appendToSection(text, h, (fresh[h] ?? []).join('\n\n')), intent.value.body);
-  const saved = await saveDocument(store, session.slug, 'docs/intent.md', {
+  const saved = await saveDocument(store, 'docs/intent.md', {
     reason: `Brainstorm: add answers for ${update.value.sections.join(', ')}`,
     body,
   });
@@ -270,10 +280,10 @@ export async function updateIntent(store: Store, given: Context): Promise<Result
 }
 
 /** Project setup: changes the template or style; the next question follows the new template. */
-export async function changeSetup(store: Store, slug: string, change: { template: string; style: string }): Promise<Result<Session, BrainstormError>> {
-  const session = readSession(store, slug);
+export async function changeSetup(store: Store, change: { template: string; style: string }): Promise<Result<Session, BrainstormError>> {
+  const session = readSession(store);
   if (!session.ok) return session;
-  const loaded = loadSetup(store, change);
+  const loaded = loadSetup(store.root, change);
   if (!loaded.ok) return loaded;
   const sections = loaded.value;
   const keep = session.value.current && sections.some((s) => s.heading === session.value.current?.section);
@@ -282,6 +292,8 @@ export async function changeSetup(store: Store, slug: string, change: { template
     current: keep ? session.value.current : nextQuestion(sections, session.value.answers) ?? null,
   };
   await save(store, next);
+  const project = readProject(store.root);
+  if (project.ok) await updateConfig(store, { templates: { ...project.value.templates, intent: change.template }, style: change.style }, 'Keel: project setup');
   return ok(next);
 }
 
@@ -290,18 +302,18 @@ export function templateLabel(ref: string): string {
   return parsed ? templateName(parsed.id, parsed.version) : ref;
 }
 
-function loadTemplate(store: Store, ref: string): Result<string, BrainstormError> {
+function loadTemplate(library: string, ref: string): Result<string, BrainstormError> {
   const parsed = parseTemplateRef(ref);
-  const template = parsed && readTemplate(store.home, parsed.id, parsed.version);
+  const template = parsed && readTemplate(library, parsed.id, parsed.version);
   if (!template?.ok || template.value.kind !== 'intent') return fail('unknown-template', `No intent template ${ref}`);
   return ok(template.value.content);
 }
 
 /** Checks a template and style choice; the template's sections when both exist. */
-function loadSetup(store: Store, choice: { template: string; style: string }): Result<Section[], BrainstormError> {
-  const template = loadTemplate(store, choice.template);
+function loadSetup(library: string, choice: { template: string; style: string }): Result<Section[], BrainstormError> {
+  const template = loadTemplate(library, choice.template);
   if (!template.ok) return template;
-  if (!readStyle(store.home, choice.style).ok) return fail('unknown-style', `No style ${choice.style}`);
+  if (!readStyle(library, choice.style).ok) return fail('unknown-style', `No style ${choice.style}`);
   return ok(parseSections(template.value));
 }
 
@@ -311,11 +323,14 @@ export function brainstormCommitMessage(session: Session): string {
   return `Brainstorm: ${captured.length ? `captured ${captured.join(', ')}` : 'start'}`;
 }
 
+function sessionFile(session: Session): string {
+  return matter.stringify(`\n${readable(session)}`, session);
+}
+
 async function save(store: Store, session: Session): Promise<void> {
-  const { slug, ...data } = session;
-  const dir = projectDir(slug, store.home);
-  writeFileAtomic(join(dir, BRAINSTORM_FILE), matter.stringify(`\n${readable(session)}`, data));
-  await commitSquashing(dir, [BRAINSTORM_FILE], brainstormCommitMessage(session), 'Brainstorm:');
+  mkdirSync(dirname(join(store.root, BRAINSTORM_FILE)), { recursive: true });
+  writeFileAtomic(join(store.root, BRAINSTORM_FILE), sessionFile(session));
+  await commitSquashing(store.root, [BRAINSTORM_FILE], brainstormCommitMessage(session), 'Brainstorm:');
 }
 
 // The body is for people reading the repository; Keel reads the front matter.

@@ -1,11 +1,13 @@
 // Start a new idea (mockup: start.png): intent template, brainstorm style and standards (REQ-001, REQ-011).
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { startAction } from '@/app/projects/actions';
 import { ErrorAlert, PageHead, Topbar } from '@/components/Shell';
 import { StandardsPicker } from '@/components/StandardsPicker';
 import { parseSections } from '@/lib/brainstorm/sections';
 import { listStyles } from '@/lib/brainstorm/styles';
-import { ensureSeed } from '@/lib/seed';
+import { previewRoot } from '@/lib/seed';
+import { isInitialised } from '@/lib/store/workspace';
 import { listStandards } from '@/lib/standards/library';
 import { gitUserName } from '@/lib/store/git';
 import { serverStore } from '@/lib/store/server-store';
@@ -17,8 +19,10 @@ const DEFAULT_TEMPLATE = 'standard-intent@3';
 
 export default async function StartPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  const { home } = serverStore();
-  const problems = ensureSeed(home);
+  const { root } = serverStore();
+  if (isInitialised(root)) redirect('/');
+  const home = previewRoot();
+  const problems: string[] = [];
   const templates = templateOptions(home, 'intent', 'latest').map((t) => {
     const ref = parseTemplateRef(t.ref);
     const content = ref ? readTemplate(home, ref.id, ref.version) : undefined;

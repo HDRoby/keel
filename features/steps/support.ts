@@ -1,32 +1,65 @@
-// Shared helpers for scenarios that drive the brainstorm in the browser.
-import { readFileSync } from 'node:fs';
+// Shared helpers for the scenarios. The dev server works on one temporary project folder and one
+// temporary user folder (playwright.config.ts); every scenario starts with both empty.
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { expect, type Page } from '@playwright/test';
+import { expect, type Page, type TestInfo } from '@playwright/test';
+import { createBdd } from 'playwright-bdd';
 import { recordDecision, review } from '../../src/lib/gates/approvals';
 import { generatePlan } from '../../src/lib/generate/plan';
 import { generateSpec } from '../../src/lib/generate/spec';
-import { ensureSeed } from '../../src/lib/seed';
 import { openIndex, type Store } from '../../src/lib/store/db';
 import { createDocument, parseDocument } from '../../src/lib/store/documents';
-import { createProject } from '../../src/lib/store/workspace';
+import { initialiseProject, readProject } from '../../src/lib/store/workspace';
 
-/** Same workspace folder the dev server uses (playwright.config.ts). */
-export const BDD_HOME = join(tmpdir(), 'keel-bdd');
+/** The folders the dev server uses (playwright.config.ts). */
+export const BDD_PROJECT = join(tmpdir(), 'keel-bdd-project');
+export const BDD_USER = join(tmpdir(), 'keel-bdd-user');
 
-/** The project the current scenario works on. Scenarios run one at a time (workers: 1). */
-export const world = { slug: '' };
+const { Before } = createBdd();
 
-export async function startIdea(page: Page, options: { template?: string; style?: string } = {}): Promise<void> {
-  await page.goto('/start');
-  await page.getByLabel('Title').fill(`Readme helper ${Date.now()}`);
+/** Each scenario starts from an empty project folder (not a git repository) and an empty user folder. */
+Before(async () => {
+  mkdirSync(BDD_PROJECT, { recursive: true });
+  for (const entry of readdirSync(BDD_PROJECT)) rmSync(join(BDD_PROJECT, entry), { recursive: true, force: true });
+  rmSync(BDD_USER, { recursive: true, force: true });
+  mkdirSync(BDD_USER, { recursive: true });
+});
+
+/** Marks a scenario step that a later rework task builds; the scenario is reported as fixme until then. */
+export function pending(testInfo: TestInfo, task: string): void {
+  testInfo.fixme(true, `Built in ${task} (CR-0004)`);
+}
+
+/** git in the project folder. */
+export function git(...args: string[]): string {
+  return execFileSync('git', args, { cwd: BDD_PROJECT, encoding: 'utf8' }).trim();
+}
+
+/** A store on the project folder, for steps that set up state through the same functions the pages use. */
+export function bddStore(): Store {
+  return { root: BDD_PROJECT, user: BDD_USER, index: openIndex(BDD_PROJECT) };
+}
+
+/** The address of a stage page. */
+export function stagePath(stage: string): string {
+  const project = readProject(BDD_PROJECT);
+  return `/projects/${project.ok ? project.value.id : 'PRJ-0001'}/${stage}`;
+}
+
+/** The screen that initialises a folder. */
+export const INITIALISE_PATH = '/start';
+
+export async function startIdea(page: Page, options: { template?: string; style?: string; title?: string } = {}): Promise<void> {
+  await page.goto(INITIALISE_PATH);
+  await page.getByLabel('Title').fill(options.title ?? 'Readme helper');
   await page.getByLabel('The idea in a sentence or two').fill('Help newcomers run any repository.');
   await page.getByLabel('Your name').fill('Ada Lovelace');
   await page.getByRole('radiogroup', { name: 'Intent template' }).getByRole('radio', { name: options.template ?? 'Standard intent v3', exact: true }).check();
   await page.getByRole('radiogroup', { name: 'Brainstorm style' }).getByRole('radio', { name: options.style ?? 'Challenger', exact: true }).check();
   await page.getByRole('button', { name: 'Start brainstorm' }).click();
-  await page.waitForURL(/\/projects\/[a-z0-9-]+\/explore$/);
-  world.slug = /\/projects\/([a-z0-9-]+)\/explore/.exec(page.url())?.[1] ?? '';
+  await page.waitForURL(/\/explore$/);
   await expect(chatEntries(page)).toHaveCount(1);
 }
 
@@ -52,30 +85,35 @@ export async function answerRequiredSections(page: Page): Promise<void> {
 }
 
 export function intentHeader(): Record<string, unknown> {
-  const parsed = parseDocument(readFileSync(join(BDD_HOME, 'projects', world.slug, 'docs', 'intent.md'), 'utf8'));
+  const parsed = parseDocument(readFileSync(join(BDD_PROJECT, 'docs', 'intent.md'), 'utf8'));
   if (!parsed.ok) throw new Error(parsed.message);
   return parsed.value.header;
+}
+
+/** An initialised folder: git repository, .keel and the project config, with nothing else yet. */
+export async function initialisedFolder(title = 'Handoff demo', standards: string[] = []): Promise<Store> {
+  const store = bddStore();
+  const made = await initialiseProject(store, { title, author: 'Ada Lovelace', standards });
+  if (!made.ok) throw new Error(made.message);
+  return store;
 }
 
 /**
  * A project taken to an approved plan through the same functions the stage pages use, with no model.
  * `extra` runs with the store before it is closed, for example to save a provider key.
  */
-export async function projectWithApprovedPlan(prefix: string, extra?: (store: Store) => void | Promise<void>): Promise<void> {
-  const store = { home: BDD_HOME, index: openIndex(BDD_HOME) };
+export async function projectWithApprovedPlan(extra?: (store: Store) => void | Promise<void>): Promise<void> {
+  const store = await initialisedFolder('Handoff demo', ['security-baseline@2']);
   const silent = async () => undefined;
-  ensureSeed(BDD_HOME);
-  world.slug = `${prefix}-${Date.now()}`;
-  await createProject(store, { slug: world.slug, title: 'Handoff demo', author: 'Ada Lovelace', standards: ['security-baseline@2'] });
-  await createDocument(store, world.slug, {
+  await createDocument(store, {
     kind: 'intent', title: 'Handoff demo', template: 'standard-intent@3',
     body: '# Intent: Handoff demo\n\n## Requirements\n\n- REQ-001 Show the run command\n- REQ-002 Export the log (as CSV)\n',
   });
-  expect((await review(store, world.slug, 'intent', { action: 'approve', by: 'Ada Lovelace', comment: '' })).ok).toBe(true);
-  expect((await generateSpec(store, world.slug, 'requirements-and-design-spec@2', silent)).ok).toBe(true);
-  expect((await recordDecision(store, world.slug, { decision: 'go', by: 'Ada Lovelace', reason: 'Worth it.', consequences: '' })).ok).toBe(true);
-  expect((await generatePlan(store, world.slug, silent)).ok).toBe(true);
-  expect((await review(store, world.slug, 'plan', { action: 'approve', by: 'Ada Lovelace', comment: '' })).ok).toBe(true);
+  expect((await review(store, 'intent', { action: 'approve', by: 'Ada Lovelace', comment: '' })).ok).toBe(true);
+  expect((await generateSpec(store, 'requirements-and-design-spec@2', silent)).ok).toBe(true);
+  expect((await recordDecision(store, { decision: 'go', by: 'Ada Lovelace', reason: 'Worth it.', consequences: '' })).ok).toBe(true);
+  expect((await generatePlan(store, silent)).ok).toBe(true);
+  expect((await review(store, 'plan', { action: 'approve', by: 'Ada Lovelace', comment: '' })).ok).toBe(true);
   await extra?.(store);
   store.index.close();
 }

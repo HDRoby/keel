@@ -2,6 +2,7 @@
 // Contents read and write on the one repository is enough (least privilege). Stored encrypted, never shown.
 import { fail, ok, type Result } from '../result';
 import { decryptSecret, encryptSecret, workspaceKey } from '../settings/secrets';
+import { setUserSetting, userSetting } from '../settings/user-dir';
 import type { Store } from '../store/db';
 
 const SETTING = 'github.token';
@@ -13,22 +14,22 @@ export function looksLikeGithubToken(token: string): boolean {
 
 export function saveGithubToken(store: Store, token: string | undefined): Result<{ hasToken: boolean }, 'invalid-token'> {
   if (token === undefined || token.trim() === '') {
-    store.index.setSetting(SETTING, '');
+    setUserSetting(store.user, SETTING, undefined);
     return ok({ hasToken: false });
   }
   if (!looksLikeGithubToken(token)) return fail('invalid-token', 'That does not look like a GitHub token (github_pat_… or ghp_…)');
-  store.index.setSetting(SETTING, encryptSecret(workspaceKey(store.home), token.trim()));
+  setUserSetting(store.user, SETTING, encryptSecret(workspaceKey(store.user), token.trim()));
   return ok({ hasToken: true });
 }
 
 export function hasGithubToken(store: Store): boolean {
-  return Boolean(store.index.getSetting(SETTING));
+  return typeof userSetting(store.user, SETTING) === 'string';
 }
 
 /** The decrypted token, for one push. Never log it. */
 export function githubToken(store: Store): string | undefined {
-  const sealed = store.index.getSetting(SETTING);
-  if (!sealed) return undefined;
-  const plain = decryptSecret(workspaceKey(store.home), sealed);
+  const sealed = userSetting(store.user, SETTING);
+  if (typeof sealed !== 'string' || !sealed) return undefined;
+  const plain = decryptSecret(workspaceKey(store.user), sealed);
   return plain.ok ? plain.value : undefined;
 }

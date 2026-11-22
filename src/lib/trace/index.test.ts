@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { createDocument, saveDocument } from '../store/documents';
 import { tempStore } from '../store/test-store';
-import { createProject, projectDir } from '../store/workspace';
+import { initialiseProject } from '../store/workspace';
 import { buildTrace, changedRequirements, impactOf, latestIntentChange, requirementIds, traceabilityJson } from './index';
 
 const REPO = process.cwd();
@@ -43,14 +43,14 @@ describe('impact', () => {
 
   it('compares the last two intent versions in git', async () => {
     const store = tempStore();
-    await createProject(store, { slug: 'p', title: 'P', author: 'Ada' });
-    expect(await latestIntentChange(projectDir('p', store.home))).toBeUndefined();
-    await createDocument(store, 'p', { kind: 'intent', title: 'P', body: '- REQ-001 A\n- REQ-002 B\n', template: 't@1' });
-    await createDocument(store, 'p', { kind: 'task', title: 'T', body: '# T1 · T\n', template: 'task@1', extra: { requirements: ['REQ-002'] } });
-    mkdirSync(join(projectDir('p', store.home), 'features'));
-    writeFileSync(join(projectDir('p', store.home), 'features/b.feature'), 'Feature: B\n  @REQ-002\n  Scenario: S\n');
-    await saveDocument(store, 'p', 'docs/intent.md', { reason: 'Change B', body: '- REQ-001 A\n- REQ-002 B2\n' });
-    expect(await latestIntentChange(projectDir('p', store.home))).toEqual({
+    await initialiseProject(store, { title: 'P', author: 'Ada' });
+    expect(await latestIntentChange(store.root)).toBeUndefined();
+    await createDocument(store, { kind: 'intent', title: 'P', body: '- REQ-001 A\n- REQ-002 B\n', template: 't@1' });
+    await createDocument(store, { kind: 'task', title: 'T', body: '# T1 · T\n', template: 'task@1', extra: { requirements: ['REQ-002'] } });
+    mkdirSync(join(store.root, 'features'));
+    writeFileSync(join(store.root, 'features/b.feature'), 'Feature: B\n  @REQ-002\n  Scenario: S\n');
+    await saveDocument(store, 'docs/intent.md', { reason: 'Change B', body: '- REQ-001 A\n- REQ-002 B2\n' });
+    expect(await latestIntentChange(store.root)).toEqual({
       from: 1, to: 2, changed: ['REQ-002'], added: [], removed: [],
       impact: { tasks: [{ id: 'T1', title: 'T', requirements: ['REQ-002'] }], scenarios: [{ label: 'features/b.feature › S', requirements: ['REQ-002'] }] },
     });

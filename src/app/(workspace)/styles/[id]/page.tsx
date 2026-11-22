@@ -1,3 +1,5 @@
+import { serverStore } from '@/lib/store/server-store';
+import { NAME } from '@/lib/skill-files';
 // One brainstorm style: its versions and editing (REQ-011). Saving creates a new version.
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -5,7 +7,6 @@ import { saveStyleAction } from '../actions';
 import { ErrorAlert, Topbar } from '@/components/Shell';
 import { parseStyle, readStyleFile, styleVersions } from '@/lib/brainstorm/styles';
 import { ensureSeed } from '@/lib/seed';
-import { keelHome, SLUG } from '@/lib/store/workspace';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,9 +18,9 @@ interface Props {
 export default async function StylePage({ params, searchParams }: Props) {
   const { id } = await params;
   const { v, error } = await searchParams;
-  const home = keelHome();
+  const home = serverStore().root;
   ensureSeed(home);
-  const versions = SLUG.test(id) ? styleVersions(home, id) : [];
+  const versions = NAME.test(id) ? styleVersions(home, id) : [];
   const latest = versions.at(-1);
   const version = v && versions.includes(Number(v)) ? Number(v) : latest;
   const file = version === undefined ? undefined : readStyleFile(home, `${id}@${version}`);

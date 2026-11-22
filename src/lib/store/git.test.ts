@@ -54,4 +54,14 @@ describe('git', () => {
     expect(existsSync(join(dir, 'a.md'))).toBe(false);
     expect((await fileHistory(dir, 'a.md')).map((c) => c.message)).toEqual(['first', 'remove a']);
   });
+
+  it('runs concurrent commits in one folder one after another', async () => {
+    const dir = join(mkdtempSync(join(tmpdir(), 'keel-git-')), 'repo');
+    await initRepo(dir);
+    const names = ['a', 'b', 'c', 'd', 'e'];
+    names.forEach((n) => writeFileSync(join(dir, `${n}.md`), n));
+    const hashes = await Promise.all(names.map((n) => commitFiles(dir, [`${n}.md`], `add ${n}`)));
+    expect(hashes.every((h) => h !== '')).toBe(true);
+    expect((await fileHistory(dir, 'c.md')).map((c) => c.message)).toEqual(['add c']);
+  });
 });

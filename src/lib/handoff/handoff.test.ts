@@ -11,7 +11,7 @@ import { ensureSeed } from '../seed';
 import { saveProvider } from '../settings/settings';
 import { createDocument, saveDocument } from '../store/documents';
 import { tempStore } from '../store/test-store';
-import { createProject, projectDir } from '../store/workspace';
+import { initialiseProject } from '../store/workspace';
 import { buildHandoff, DEFAULT_COMMANDS, handoffCommands, minimalSetup, saveHandoffCommands } from './scaffold';
 import { scanForSecrets } from './secrets-scan';
 import { featureSteps, stepExpression, stepStubs } from './stubs';
@@ -95,24 +95,24 @@ describe('minimalSetup', () => {
 describe('buildHandoff', () => {
   async function approvedPlan() {
     const store = tempStore();
-    ensureSeed(store.home, join(process.cwd(), 'seed'));
+    ensureSeed(store.root, join(process.cwd(), 'seed'));
     const silent = async () => undefined;
-    await createProject(store, { slug: 'demo', title: 'Demo', author: 'Ada', standards: ['security-baseline@2'] });
-    await createDocument(store, 'demo', { kind: 'intent', title: 'Demo', template: 'standard-intent@3', body: '## Requirements\n\n- REQ-001 Show the run command\n' });
-    await review(store, 'demo', 'intent', { action: 'approve', by: 'Ada', comment: '' });
-    expect(await buildHandoff(store, 'demo')).toMatchObject({ error: 'locked' });
-    await generateSpec(store, 'demo', 'requirements-and-design-spec@2', silent);
-    await recordDecision(store, 'demo', { decision: 'go', by: 'Ada', reason: 'Yes', consequences: '' });
-    await generatePlan(store, 'demo', silent);
-    await review(store, 'demo', 'plan', { action: 'approve', by: 'Ada', comment: '' });
+    await initialiseProject(store, { title: 'Demo', author: 'Ada', standards: ['security-baseline@2'] });
+    await createDocument(store, { kind: 'intent', title: 'Demo', template: 'standard-intent@3', body: '## Requirements\n\n- REQ-001 Show the run command\n' });
+    await review(store, 'intent', { action: 'approve', by: 'Ada', comment: '' });
+    expect(await buildHandoff(store)).toMatchObject({ error: 'locked' });
+    await generateSpec(store, 'requirements-and-design-spec@2', silent);
+    await recordDecision(store, { decision: 'go', by: 'Ada', reason: 'Yes', consequences: '' });
+    await generatePlan(store, silent);
+    await review(store, 'plan', { action: 'approve', by: 'Ada', comment: '' });
     return store;
   }
 
   it('builds the scaffold from the project, with the commands, agent kit and standards', async () => {
     const store = await approvedPlan();
-    await saveHandoffCommands(store, 'demo', { ...DEFAULT_COMMANDS, verify: 'make check' });
-    expect(handoffCommands(store, 'demo').verify).toBe('make check');
-    const built = await buildHandoff(store, 'demo');
+    await saveHandoffCommands(store, { ...DEFAULT_COMMANDS, verify: 'make check' });
+    expect(handoffCommands(store).verify).toBe('make check');
+    const built = await buildHandoff(store);
     if (!built.ok) throw new Error(built.message);
     const paths = built.value.map((f) => f.path);
     expect(paths).toEqual(expect.arrayContaining([
@@ -140,10 +140,10 @@ describe('buildHandoff', () => {
   it('refuses to write a package that would contain a key', async () => {
     const store = await approvedPlan();
     saveProvider(store, 'openai', { apiKey: 'a-stored-key-0123456789' });
-    const plan = readFileSync(join(projectDir('demo', store.home), 'docs/plan.md'), 'utf8');
+    const plan = readFileSync(join(store.root, 'docs/plan.md'), 'utf8');
     expect(plan).not.toContain('a-stored-key');
-    await saveDocument(store, 'demo', 'tasks/T1.md', { reason: 'Oops', body: '# T1\n\nUse a-stored-key-0123456789 to log in.\n' });
-    const built = await buildHandoff(store, 'demo');
+    await saveDocument(store, 'tasks/T1.md', { reason: 'Oops', body: '# T1\n\nUse a-stored-key-0123456789 to log in.\n' });
+    const built = await buildHandoff(store);
     expect(built).toMatchObject({ ok: false, error: 'secrets-found', message: expect.stringMatching(/^The package was not written: Stored credential in tasks\/T1\.md line \d+$/) });
     expect(built.ok ? '' : built.message).not.toContain('a-stored-key');
   });

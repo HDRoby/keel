@@ -19,7 +19,7 @@ export default async function ExplorePage({ params, searchParams }: StageProps) 
   const { id } = await params;
   const { error } = await searchParams;
   const { store, project, gates, summaries } = await loadStage(id, 'explore');
-  const context = loadContext(store, id);
+  const context = loadContext(store);
   if (!context.ok && context.error === 'not-found') notFound();
   if (!context.ok) {
     return (
@@ -30,7 +30,7 @@ export default async function ExplorePage({ params, searchParams }: StageProps) 
     );
   }
   const { session, sections, style } = context.value;
-  const intent = readDocument(store, id, 'docs/intent.md');
+  const intent = readDocument(store, 'docs/intent.md');
   const ready = requiredCaptured(sections, session.answers);
   const update = intentUpdate(store, context.value);
   const newAnswers = update.ok ? update.value.sections : [];
@@ -40,13 +40,11 @@ export default async function ExplorePage({ params, searchParams }: StageProps) 
 
   const action = !intent.ok ? (
     <form action={draftIntentAction}>
-      <input type="hidden" name="slug" value={id} />
       <input type="hidden" name="mode" value="draft" />
       <button type="submit" className="primary" disabled={!ready}>Draft intent.md</button>
     </form>
   ) : intent.value.header.status === 'draft' && newAnswers.length > 0 ? (
     <form action={draftIntentAction}>
-      <input type="hidden" name="slug" value={id} />
       <input type="hidden" name="mode" value="update" />
       <button type="submit" className="primary">Update intent.md</button>
     </form>
@@ -105,7 +103,6 @@ export default async function ExplorePage({ params, searchParams }: StageProps) 
           <details className="space-above">
             <summary>Add to a section</summary>
             <form action={addToSectionAction} aria-label="Add to a section" className="stack space-above">
-              <input type="hidden" name="slug" value={id} />
               <label>Section <select name="section" defaultValue="Requirements">
                 {sections.map((s) => <option key={s.heading} value={s.heading}>{s.heading}</option>)}
               </select></label>

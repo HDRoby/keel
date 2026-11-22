@@ -4,8 +4,7 @@ import { join } from 'node:path';
 import matter from 'gray-matter';
 import { z } from 'zod';
 import { fail, ok, type Result } from '../result';
-import { latestSkills, readSkillFile, seedSkills, skillDir } from '../skill-files';
-import { SLUG } from '../store/workspace';
+import { latestSkills, NAME, readSkillFile, seedSkills, skillDir } from '../skill-files';
 
 export interface Style {
   id: string;           // e.g. challenger
@@ -17,7 +16,7 @@ export interface Style {
 }
 
 const header = z.looseObject({
-  name: z.string().regex(SLUG),
+  name: z.string().regex(NAME),
   description: z.string().default(''),
   version: z.number().int().min(1),
 });
@@ -37,26 +36,26 @@ export function parseStyle(content: string): Result<Style, 'invalid-style'> {
   return ok({ id: name, version, ref: `${name}@${version}`, name: title, description, instructions: parsed.content.trim() });
 }
 
-/** Copies seed/styles/<name>/SKILL.md into the workspace on first run. */
-export function ensureStyles(home: string, seedDir: string): Result<number, 'invalid-style'> {
-  return seedSkills(home, seedDir, 'styles', parseStyle);
+/** Copies seed/styles/<name>/SKILL.md into the project's .keel/ at Initialise. */
+export function ensureStyles(root: string, seedDir: string): Result<number, 'invalid-style'> {
+  return seedSkills(root, seedDir, 'styles', parseStyle);
 }
 
 /** The latest version of every style, sorted by name. */
-export function listStyles(home: string): Style[] {
-  return latestSkills(home, 'styles', parseStyle);
+export function listStyles(root: string): Style[] {
+  return latestSkills(root, 'styles', parseStyle);
 }
 
 /** One version of a style, by ref such as "challenger@1". */
-export function readStyle(home: string, ref: string): Result<Style, 'not-found' | 'invalid-style'> {
-  const content = readSkillFile(home, 'styles', ref);
+export function readStyle(root: string, ref: string): Result<Style, 'not-found' | 'invalid-style'> {
+  const content = readSkillFile(root, 'styles', ref);
   return content === undefined ? fail('not-found', `No style ${ref}`) : parseStyle(content);
 }
 
 /** Version numbers of one style, oldest first. */
-export function styleVersions(home: string, id: string): number[] {
-  const dir = skillDir(home, 'styles');
-  if (!SLUG.test(id) || !existsSync(dir)) return [];
+export function styleVersions(root: string, id: string): number[] {
+  const dir = skillDir(root, 'styles');
+  if (!NAME.test(id) || !existsSync(dir)) return [];
   return readdirSync(dir)
     .flatMap((f) => {
       const match = /^(.+)@(\d+)\.md$/.exec(f);
@@ -66,14 +65,14 @@ export function styleVersions(home: string, id: string): number[] {
 }
 
 /** The raw skill file of one style version, for editing. */
-export function readStyleFile(home: string, ref: string): Result<string, 'not-found'> {
-  const content = readSkillFile(home, 'styles', ref);
+export function readStyleFile(root: string, ref: string): Result<string, 'not-found'> {
+  const content = readSkillFile(root, 'styles', ref);
   return content === undefined ? fail('not-found', `No style ${ref}`) : ok(content);
 }
 
 /** Saves edited content as the next version of a style. Earlier versions, and brainstorms using them, stay as they were. */
-export function saveStyleVersion(home: string, id: string, content: string): Result<Style, 'not-found' | 'invalid-style' | 'name-changed'> {
-  const versions = styleVersions(home, id);
+export function saveStyleVersion(root: string, id: string, content: string): Result<Style, 'not-found' | 'invalid-style' | 'name-changed'> {
+  const versions = styleVersions(root, id);
   const latest = versions.at(-1);
   if (latest === undefined) return fail('not-found', `No style ${id}`);
   const edited = parseStyle(content);
@@ -81,6 +80,6 @@ export function saveStyleVersion(home: string, id: string, content: string): Res
   if (edited.value.id !== id) return fail('name-changed', `The name must stay "${id}"`);
   const parsed = matter(content, {});
   const next = matter.stringify(parsed.content, { ...parsed.data, version: latest + 1 });
-  writeFileSync(join(skillDir(home, 'styles'), `${id}@${latest + 1}.md`), next);
+  writeFileSync(join(skillDir(root, 'styles'), `${id}@${latest + 1}.md`), next);
   return parseStyle(next);
 }

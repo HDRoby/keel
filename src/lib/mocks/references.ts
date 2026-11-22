@@ -1,5 +1,5 @@
 // Mock references (REQ-010, ADR-0004): links and files made elsewhere, attached to the intent or spec and
-// linked to requirements. Kept in docs/mocks/: the files, and README.md listing them. No mock generation.
+// linked to requirements. Kept in .keel/mocks/: the files, and references.md listing them (ADR-0010). No mock generation.
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import matter from 'gray-matter';
@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { fail, ok, type Result } from '../result';
 import type { Store } from '../store/db';
 import { commitFiles } from '../store/git';
-import { projectDir, readProject } from '../store/workspace';
+import { readProject } from '../store/workspace';
 
 export type MockKind = 'link' | 'image' | 'pdf' | 'html';
 export type MockDocument = 'intent' | 'spec';
@@ -16,7 +16,7 @@ export interface MockReference {
   id: string;              // MOCK-001
   title: string;
   kind: MockKind;
-  source: string;          // a URL, or a file name under docs/mocks/
+  source: string;          // a URL, or a file name under .keel/mocks/
   document: MockDocument;
   requirements: string[];
   added: string;           // ISO date
@@ -24,7 +24,9 @@ export interface MockReference {
 
 export type MockError = 'invalid-input' | 'too-large' | 'unsupported-file' | 'not-found' | 'unknown-requirement';
 
-export const MOCKS_INDEX = 'docs/mocks/README.md';
+/** Repository folder of the mock files, and the index listing them. */
+export const MOCKS_DIR = '.keel/mocks';
+export const MOCKS_INDEX = '.keel/mocks/references.md';
 export const MAX_MOCK_BYTES = 10 * 1024 * 1024;
 export const MOCK_ID = /^MOCK-\d{3,}$/;
 export const REQ_ID = /^REQ-\d{3,}$/;
@@ -41,7 +43,7 @@ const referenceSchema = z.object({
 
 const KIND_LABEL: Record<MockKind, string> = { link: 'Link', image: 'Image', pdf: 'PDF', html: 'HTML' };
 
-/** The next free reference number. IDs are never reused, also after a removal (next_mock in README.md). */
+/** The next free reference number. IDs are never reused, also after a removal (next_mock in references.md). */
 export function nextMockNumber(dir: string): number {
   const file = join(dir, MOCKS_INDEX);
   const fromList = Math.max(0, ...listMocks(dir).map((r) => Number(r.id.slice(5)))) + 1;
@@ -54,7 +56,7 @@ export function nextMockNumber(dir: string): number {
   }
 }
 
-/** The references listed in docs/mocks/README.md. */
+/** The references listed in the mock index. */
 export function listMocks(dir: string): MockReference[] {
   const file = join(dir, MOCKS_INDEX);
   if (!existsSync(file)) return [];
@@ -66,7 +68,7 @@ export function listMocks(dir: string): MockReference[] {
   }
 }
 
-/** README.md for docs/mocks: the references in front matter for Keel, and a table for people. */
+/** references.md for .keel/mocks: the references in front matter for Keel, and a table for people. */
 export function mocksIndex(project: string, references: MockReference[], nextMock?: number): string {
   const rows = references.map((r) => {
     const reference = `[${r.title.replace(/[[\]]/g, '')}](${r.source})`;
@@ -91,7 +93,7 @@ export function sniffFile(bytes: Uint8Array): { kind: MockKind; extension: strin
   return undefined;
 }
 
-/** A safe file name under docs/mocks/: lower case, letters, digits and dashes, with the sniffed extension. */
+/** A safe file name under .keel/mocks/: lower case, letters, digits and dashes, with the sniffed extension. */
 export function mockFileName(id: string, original: string, extension: string): string {
   const stem = original.replace(/\.[^.]*$/, '').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
   return `${id.toLowerCase()}${stem ? `-${stem}` : ''}.${extension}`;
@@ -103,7 +105,7 @@ export type NewMock =
 
 interface CheckedSource {
   kind: MockKind;
-  source: string;                                 // the URL, or the file name under docs/mocks/
+  source: string;                                 // the URL, or the file name under .keel/mocks/
   title: string;
   file?: { name: string; bytes: Uint8Array };
 }
@@ -131,15 +133,15 @@ function checkSource(id: string, input: NewMock): Result<CheckedSource, MockErro
 /** Writes the index (and a new file, if any), removes an old file, and commits it all at once. */
 async function saveMocks(dir: string, project: string, references: MockReference[], message: string, change: { add?: CheckedSource['file']; remove?: string } = {}): Promise<void> {
   const nextMock = Math.max(nextMockNumber(dir), ...references.map((r) => Number(r.id.slice(5)) + 1));
-  mkdirSync(join(dir, 'docs', 'mocks'), { recursive: true });
+  mkdirSync(join(dir, MOCKS_DIR), { recursive: true });
   const paths = [MOCKS_INDEX];
   if (change.remove) {
-    rmSync(join(dir, 'docs', 'mocks', change.remove), { force: true });
-    paths.push(`docs/mocks/${change.remove}`);
+    rmSync(join(dir, MOCKS_DIR, change.remove), { force: true });
+    paths.push(`${MOCKS_DIR}/${change.remove}`);
   }
   if (change.add) {
-    writeFileSync(join(dir, 'docs', 'mocks', change.add.name), change.add.bytes);
-    paths.push(`docs/mocks/${change.add.name}`);
+    writeFileSync(join(dir, MOCKS_DIR, change.add.name), change.add.bytes);
+    paths.push(`${MOCKS_DIR}/${change.add.name}`);
   }
   writeFileSync(join(dir, MOCKS_INDEX), mocksIndex(project, references, nextMock));
   await commitFiles(dir, [...new Set(paths)], message);
@@ -147,11 +149,11 @@ async function saveMocks(dir: string, project: string, references: MockReference
 
 const isFile = (r: MockReference) => r.kind !== 'link';
 
-/** Attaches a link or a file (PNG, JPG, PDF or HTML, up to 10 MB) and commits it under docs/mocks/. */
-export async function attachMock(store: Store, slug: string, input: NewMock): Promise<Result<MockReference, MockError>> {
-  const project = readProject(slug, store.home);
+/** Attaches a link or a file (PNG, JPG, PDF or HTML, up to 10 MB) and commits it under .keel/mocks/. */
+export async function attachMock(store: Store, input: NewMock): Promise<Result<MockReference, MockError>> {
+  const project = readProject(store.root);
   if (!project.ok) return fail('not-found', project.message);
-  const dir = projectDir(slug, store.home);
+  const dir = store.root;
   const references = listMocks(dir);
   const id = `MOCK-${String(nextMockNumber(dir)).padStart(3, '0')}`;
   const checked = checkSource(id, input);
@@ -163,10 +165,10 @@ export async function attachMock(store: Store, slug: string, input: NewMock): Pr
 }
 
 /** Replaces a reference's link or file. It keeps its ID, document and linked requirements; an old file is removed. */
-export async function replaceMock(store: Store, slug: string, id: string, input: { title: string } & ({ url: string } | { file: { name: string; bytes: Uint8Array } })): Promise<Result<MockReference, MockError>> {
-  const project = readProject(slug, store.home);
+export async function replaceMock(store: Store, id: string, input: { title: string } & ({ url: string } | { file: { name: string; bytes: Uint8Array } })): Promise<Result<MockReference, MockError>> {
+  const project = readProject(store.root);
   if (!project.ok) return fail('not-found', project.message);
-  const dir = projectDir(slug, store.home);
+  const dir = store.root;
   const references = listMocks(dir);
   const current = references.find((r) => r.id === id);
   if (!current) return fail('not-found', `No mock reference ${id}`);
@@ -180,10 +182,10 @@ export async function replaceMock(store: Store, slug: string, id: string, input:
 }
 
 /** Removes a reference and its file. Git keeps the history. */
-export async function removeMock(store: Store, slug: string, id: string): Promise<Result<MockReference, MockError>> {
-  const project = readProject(slug, store.home);
+export async function removeMock(store: Store, id: string): Promise<Result<MockReference, MockError>> {
+  const project = readProject(store.root);
   if (!project.ok) return fail('not-found', project.message);
-  const dir = projectDir(slug, store.home);
+  const dir = store.root;
   const references = listMocks(dir);
   const current = references.find((r) => r.id === id);
   if (!current) return fail('not-found', `No mock reference ${id}`);
@@ -198,7 +200,7 @@ export async function removeMock(store: Store, slug: string, id: string): Promis
 export function mockImage(dir: string, id: string): Result<{ bytes: Uint8Array; type: 'image/png' | 'image/jpeg' }, MockError> {
   const reference = listMocks(dir).find((r) => r.id === id);
   if (!reference || reference.kind !== 'image' || !/^[a-z0-9-]+\.(png|jpg)$/.test(reference.source)) return fail('not-found', `No image ${id}`);
-  const file = join(dir, 'docs', 'mocks', reference.source);
+  const file = join(dir, MOCKS_DIR, reference.source);
   if (!existsSync(file)) return fail('not-found', `No image ${id}`);
   const bytes = new Uint8Array(readFileSync(file));
   const sniffed = sniffFile(bytes);
@@ -207,10 +209,10 @@ export function mockImage(dir: string, id: string): Result<{ bytes: Uint8Array; 
 }
 
 /** Sets the requirements a reference shows. Only IDs that exist in the project can be linked. */
-export async function linkMock(store: Store, slug: string, id: string, requirements: string[], known: string[]): Promise<Result<MockReference, MockError>> {
-  const project = readProject(slug, store.home);
+export async function linkMock(store: Store, id: string, requirements: string[], known: string[]): Promise<Result<MockReference, MockError>> {
+  const project = readProject(store.root);
   if (!project.ok) return fail('not-found', project.message);
-  const dir = projectDir(slug, store.home);
+  const dir = store.root;
   const references = listMocks(dir);
   const reference = references.find((r) => r.id === id);
   if (!reference) return fail('not-found', `No mock reference ${id}`);

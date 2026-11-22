@@ -1,14 +1,14 @@
 // Template library (mockup screen "Templates", REQ-003).
+import { serverStore } from '@/lib/store/server-store';
 import Link from 'next/link';
 import { ErrorAlert, PageHead, Topbar } from '@/components/Shell';
-import { keelHome } from '@/lib/store/workspace';
 import { ensureLibrary, GROUPS, listTemplates, seedDir } from '@/lib/templates/library';
 
 export const dynamic = 'force-dynamic';
 
 export default async function TemplatesPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  const home = keelHome();
+  const home = serverStore().root;
   const seeded = ensureLibrary(home, seedDir());
   const templates = listTemplates(home);
   return (

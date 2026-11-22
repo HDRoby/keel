@@ -8,7 +8,6 @@ import { githubToken } from '../github/auth';
 import type { Store } from '../store/db';
 import { kindFromPath } from '../store/documents';
 import { initRepo } from '../store/git';
-import { listProjectSlugs, projectDir } from '../store/workspace';
 import { fetchCiResults } from './ci';
 import { changedContent, readbackState, saveReadbackState, type PendingChange, type ReadbackError, type ReadbackState } from './changes';
 
@@ -45,11 +44,11 @@ export function pendingFrom(commits: AgentCommit[], handled: ReadbackState['hand
  * Fetches the branch Keel pushed to and records the agent's changes since Keel's last push as pending.
  * A change whose file already matches Keel's version is left out.
  */
-export async function checkRepository(store: Store, slug: string, options: { token?: string; fetch?: Parameters<typeof fetchCiResults>[3] } = {}): Promise<Result<ReadbackState, ReadbackError>> {
-  const repository = repositoryOf(store, slug);
+export async function checkRepository(store: Store, options: { token?: string; fetch?: Parameters<typeof fetchCiResults>[3] } = {}): Promise<Result<ReadbackState, ReadbackError>> {
+  const repository = repositoryOf(store);
   const lastPush = repository?.pushes.at(-1);
   if (!repository || !lastPush) return fail('not-pushed', 'The project has not been pushed to a repository yet');
-  const dir = handoffDir(store, slug);
+  const dir = handoffDir(store);
   await initRepo(dir);
   const token = options.token ?? (repository.kind === 'github' ? githubToken(store) : undefined);
   const git = handoffGit(dir, token);
@@ -67,11 +66,11 @@ export async function checkRepository(store: Store, slug: string, options: { tok
   } catch (error) {
     return fail('check-failed', `Could not check the repository: ${cleanError(error, token)}`);
   }
-  const state = readbackState(store, slug);
+  const state = readbackState(store);
   const pending: PendingChange[] = [];
   for (const change of pendingFrom(commits, state.handled)) {
-    const theirs = await changedContent(store, slug, change);
-    const file = join(projectDir(slug, store.home), change.path);
+    const theirs = await changedContent(store, change);
+    const file = join(store.root, change.path);
     const mine = existsSync(file) ? readFileSync(file, 'utf8') : undefined;
     if (theirs === undefined || mine === undefined || theirs.trimEnd() !== mine.trimEnd()) pending.push(change);
   }
@@ -86,17 +85,13 @@ export async function checkRepository(store: Store, slug: string, options: { tok
     ...rest, checked: (store.now?.() ?? new Date()).toISOString(), head, pending,
     ...(ci?.ok ? { ci: ci.value } : { ciNote: ci ? ci.message : 'CI results are read from GitHub repositories only' }),
   };
-  await saveReadbackState(store, slug, next, `read-back found ${pending.length} change${pending.length === 1 ? '' : 's'}`);
+  await saveReadbackState(store, next, `read-back found ${pending.length} change${pending.length === 1 ? '' : 's'}`);
   return ok(next);
 }
 
-/** Checks every pushed project. Used by the schedule; errors are kept per project and never thrown. */
-export async function checkAll(store: Store): Promise<Record<string, string>> {
-  const results: Record<string, string> = {};
-  for (const slug of listProjectSlugs(store.home)) {
-    if (!repositoryOf(store, slug)?.pushes.length) continue;
-    const checked = await checkRepository(store, slug);
-    results[slug] = checked.ok ? `${checked.value.pending.length} pending` : checked.message;
-  }
-  return results;
+/** Checks the project when it was pushed. Used by the schedule; errors are returned, never thrown. */
+export async function checkAll(store: Store): Promise<string> {
+  if (!repositoryOf(store)?.pushes.length) return 'not pushed';
+  const checked = await checkRepository(store);
+  return checked.ok ? `${checked.value.pending.length} pending` : checked.message;
 }

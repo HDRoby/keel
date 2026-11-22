@@ -10,7 +10,7 @@ import { standardsFor } from '../standards/library';
 import type { Store } from '../store/db';
 import { createDocument, readDocument, saveDocument, type StoredDocument } from '../store/documents';
 import { commitFiles, removeFiles } from '../store/git';
-import { projectDir, readProject } from '../store/workspace';
+import { readProject } from '../store/workspace';
 import { readTemplate } from '../templates/library';
 import { renderTemplate } from '../templates/render';
 import { parseFeature, requirementStatements, scenarioLabel, type ScenarioTrace } from '../trace/parse';
@@ -77,21 +77,21 @@ interface ComposedPlan {
   taskTemplate: string;
 }
 
-async function composePlan(store: Store, slug: string, write: Writer): Promise<Result<ComposedPlan, GenerateError>> {
-  const intent = readDocument(store, slug, 'docs/intent.md');
+async function composePlan(store: Store, write: Writer): Promise<Result<ComposedPlan, GenerateError>> {
+  const intent = readDocument(store, 'docs/intent.md');
   if (!intent.ok) return fail('not-found', intent.message);
-  const spec = readDocument(store, slug, 'docs/spec.md');
-  const planTemplate = readTemplate(store.home, 'implementation-plan');
-  const taskTemplate = readTemplate(store.home, 'task');
+  const spec = readDocument(store, 'docs/spec.md');
+  const planTemplate = readTemplate(store.root, 'implementation-plan');
+  const taskTemplate = readTemplate(store.root, 'task');
   if (!planTemplate.ok || !taskTemplate.ok) return fail('unknown-template', 'The plan or task template is missing');
-  const project = readProject(slug, store.home);
+  const project = readProject(store.root);
   const chosen = project.ok ? project.value.standards : [];
 
   const { title } = intent.value.header;
   const statements = { ...requirementStatements(intent.value.body), ...(spec.ok ? requirementStatements(spec.value.body) : {}) };
-  const sources = [`Intent:\n\n${intent.value.body}`, spec.ok ? `Spec:\n\n${spec.value.body}` : '', standardsSources(standardsFor(store.home, chosen, 'plan'))]
+  const sources = [`Intent:\n\n${intent.value.body}`, spec.ok ? `Spec:\n\n${spec.value.body}` : '', standardsSources(standardsFor(store.root, chosen, 'plan'))]
     .filter(Boolean).join('\n\n');
-  const scenarios = scenariosIn(projectDir(slug, store.home));
+  const scenarios = scenariosIn(store.root);
   const planned = plannedTasks(await write('documents', [
     { role: 'system', content: 'Split the work into small tasks, each fitting one pull request, in build order. Reply with one line per task: "T<n> | <title> | <REQ IDs>". Use only the requirement IDs in the sources.' },
     { role: 'user', content: sources },
@@ -122,20 +122,20 @@ async function composePlan(store: Store, slug: string, write: Writer): Promise<R
 }
 
 /** Writes docs/plan.md from the plan template and tasks/T<n>.md from the task template. */
-export async function generatePlan(store: Store, slug: string, write: Writer): Promise<Result<StoredDocument, GenerateError>> {
-  const gate = gateFor(projectState(store, slug), 'plan');
+export async function generatePlan(store: Store, write: Writer): Promise<Result<StoredDocument, GenerateError>> {
+  const gate = gateFor(projectState(store), 'plan');
   if (!gate.available) return fail('locked', gate.reason ?? 'The plan stage is locked');
-  if (readDocument(store, slug, 'docs/plan.md').ok) return fail('already-exists', 'plan.md already exists');
-  const dir = projectDir(slug, store.home);
+  if (readDocument(store, 'docs/plan.md').ok) return fail('already-exists', 'plan.md already exists');
+  const dir = store.root;
   if (taskIds(dir).length > 0) return fail('already-exists', 'The project already has task files');
-  const composed = await composePlan(store, slug, write);
+  const composed = await composePlan(store, write);
   if (!composed.ok) return composed;
   const { title, body, extra, tasks, planTemplate, taskTemplate } = composed.value;
-  const plan = await createDocument(store, slug, { kind: 'plan', title, template: planTemplate, body, extra: { ...extra, conflicts: [] } });
+  const plan = await createDocument(store, { kind: 'plan', title, template: planTemplate, body, extra: { ...extra, conflicts: [] } });
   if (!plan.ok) return fail('invalid-input', plan.message);
   const planRef = `${plan.value.header.id}@${plan.value.header.version}`;
   for (const task of tasks) {
-    const created = await createDocument(store, slug, {
+    const created = await createDocument(store, {
       kind: 'task', id: task.id, title: task.title, body: task.body, template: taskTemplate, status: 'todo',
       extra: { plan: planRef, requirements: task.requirements },
     });
@@ -150,16 +150,16 @@ export async function generatePlan(store: Store, slug: string, write: Writer): P
  * as a whole with what Keel generated last time. A task the proposer edited that the regeneration would
  * change or remove is a conflict; new tasks are added, unedited tasks the regeneration drops are removed.
  */
-export async function regeneratePlan(store: Store, slug: string, write: Writer): Promise<Result<StoredDocument, GenerateError>> {
-  const gate = gateFor(projectState(store, slug), 'plan');
+export async function regeneratePlan(store: Store, write: Writer): Promise<Result<StoredDocument, GenerateError>> {
+  const gate = gateFor(projectState(store), 'plan');
   if (!gate.available) return fail('locked', gate.reason ?? 'The plan stage is locked');
-  const plan = readDocument(store, slug, 'docs/plan.md');
+  const plan = readDocument(store, 'docs/plan.md');
   if (!plan.ok) return fail('not-found', plan.message);
   if (plan.value.header.status !== 'draft') return fail('not-draft', `plan.md is ${plan.value.header.status}; only a draft plan can be regenerated`);
-  const composed = await composePlan(store, slug, write);
+  const composed = await composePlan(store, write);
   if (!composed.ok) return composed;
   const { body, extra, tasks, taskTemplate } = composed.value;
-  const dir = projectDir(slug, store.home);
+  const dir = store.root;
   const merged = mergeSections(readBaseline(dir, 'docs/plan.md') ?? '', plan.value.body, body);
   const conflicts: Conflict[] = [...merged.conflicts];
   const planRef = `${plan.value.header.id}@${plan.value.header.version + 1}`;
@@ -168,7 +168,7 @@ export async function regeneratePlan(store: Store, slug: string, write: Writer):
   const ids = [...new Set([...taskIds(dir), ...generatedIds, ...tasks.map((t) => t.id)])];
   for (const id of ids) {
     const path = `tasks/${id}.md`;
-    const mine = readDocument(store, slug, path);
+    const mine = readDocument(store, path);
     const theirs = tasks.find((t) => t.id === id);
     const piece = mergePiece(readBaseline(dir, path), mine.ok ? mine.value.body : undefined, theirs?.body);
     if (piece.conflict) {
@@ -176,13 +176,13 @@ export async function regeneratePlan(store: Store, slug: string, write: Writer):
     } else if (piece.value === undefined && mine.ok) {
       await removeFiles(dir, [path], `${id}: removed by regenerating ${planRef}`);
     } else if (piece.value !== undefined && !mine.ok && theirs) {
-      await createDocument(store, slug, { kind: 'task', id, title: theirs.title, body: theirs.body, template: taskTemplate, status: 'todo', extra: { plan: planRef, requirements: theirs.requirements } });
+      await createDocument(store, { kind: 'task', id, title: theirs.title, body: theirs.body, template: taskTemplate, status: 'todo', extra: { plan: planRef, requirements: theirs.requirements } });
     } else if (mine.ok && theirs && piece.value !== mine.value.body) {
-      await saveDocument(store, slug, path, { body: piece.value ?? '', title: theirs.title, extra: { plan: planRef, requirements: theirs.requirements }, reason: `Regenerated with ${planRef}` });
+      await saveDocument(store, path, { body: piece.value ?? '', title: theirs.title, extra: { plan: planRef, requirements: theirs.requirements }, reason: `Regenerated with ${planRef}` });
     }
   }
 
-  const saved = await saveDocument(store, slug, 'docs/plan.md', {
+  const saved = await saveDocument(store, 'docs/plan.md', {
     body: merged.body,
     extra: { ...extra, conflicts },
     reason: `Regenerated${conflictNote(conflicts)}`,

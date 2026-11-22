@@ -1,3 +1,5 @@
+import { readFileSync, statSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { tempStore } from '../store/test-store';
 import { DEFAULT_CHOICE, modelChoice, providerConfig, providerView, saveModelChoice, saveProvider } from './settings';
@@ -6,7 +8,8 @@ describe('provider settings', () => {
   it('stores the key encrypted, shows only that one is set, and decrypts it for the adapter', () => {
     const store = tempStore();
     saveProvider(store, 'openai', { apiKey: 'sk-live-abc' });
-    expect(store.index.getSetting('provider.openai')).not.toContain('sk-live-abc');
+    expect(readFileSync(join(store.user, 'settings.json'), 'utf8')).not.toContain('sk-live-abc');
+    expect(statSync(join(store.user, 'settings.json')).mode & 0o777).toBe(0o600);
     expect(providerView(store, 'openai')).toEqual({ hasKey: true });
     expect(providerConfig(store, 'openai')).toEqual({ ok: true, value: { apiKey: 'sk-live-abc' } });
   });
@@ -22,7 +25,7 @@ describe('provider settings', () => {
 
   it('ignores a corrupted setting', () => {
     const store = tempStore();
-    store.index.setSetting('provider.anthropic', '{nope');
+    writeFileSync(join(store.user, 'settings.json'), '{"provider.anthropic": "{nope"}');
     expect(providerView(store, 'anthropic')).toEqual({ hasKey: false });
   });
 });

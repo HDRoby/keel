@@ -6,4 +6,4 @@ Feature: Mock references
     When I attach the link "https://example.com/mock" to the intent
     And I link it to REQ-001
     Then the reference lists REQ-001
-    And it is saved under docs/mocks/
+    And it is saved under .keel/mocks/

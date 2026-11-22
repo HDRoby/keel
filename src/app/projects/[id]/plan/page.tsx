@@ -8,7 +8,6 @@ import { StageLayout } from '@/components/StageBar';
 import { SubmitButton } from '@/components/SubmitButton';
 import { conflictsOf } from '@/lib/generate/resolve';
 import { readDocument } from '@/lib/store/documents';
-import { projectDir } from '@/lib/store/workspace';
 import { buildTrace } from '@/lib/trace/index';
 import { loadStage, type StageProps } from '../stage';
 
@@ -19,8 +18,8 @@ export default async function PlanPage({ params, searchParams }: StageProps) {
   const { error } = await searchParams;
   const page = await loadStage(id, 'plan');
   const { store, reviewer } = page;
-  const plan = readDocument(store, id, 'docs/plan.md');
-  const trace = buildTrace(projectDir(id, store.home));
+  const plan = readDocument(store, 'docs/plan.md');
+  const trace = buildTrace(store.root);
   const tasks = Object.values(trace.tasks).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
 
   return (
@@ -29,10 +28,10 @@ export default async function PlanPage({ params, searchParams }: StageProps) {
       actions={page.gates.find((g) => g.stage === 'handoff')?.available ? <Link href={`/projects/${id}/handoff`} className="button primary">Prepare handoff</Link> : undefined}>
       {plan.ok ? (
         <>
-          <DocumentReview slug={id} home={store.home} document="plan" doc={plan.value} reviewer={reviewer} collapsed
-            before={<Conflicts slug={id} document="plan" conflicts={conflictsOf(plan.value)} />}
+          <DocumentReview slug={id} home={store.root} document="plan" doc={plan.value} reviewer={reviewer} collapsed
+            before={<Conflicts document="plan" conflicts={conflictsOf(plan.value)} />}
             after={plan.value.header.status === 'draft'
-              ? <RegenerateForm slug={id} document="plan">Regenerating writes the plan and task files again from the current intent, spec and standards.</RegenerateForm>
+              ? <RegenerateForm document="plan">Regenerating writes the plan and task files again from the current intent, spec and standards.</RegenerateForm>
               : undefined} />
           <section className="card" aria-labelledby="tasks">
             <div className="row spread">
@@ -58,7 +57,6 @@ export default async function PlanPage({ params, searchParams }: StageProps) {
         <form action={generatePlanAction} aria-label="Generate plan" className="card stack">
           <h2>Generate plan</h2>
           <p className="muted">Keel fills the plan template from the intent and spec, and writes one task file per task in tasks/.</p>
-          <input type="hidden" name="slug" value={id} />
           <div><SubmitButton primary label="Generate plan" busyLabel="Generating plan…" /></div>
         </form>
       )}

@@ -25,27 +25,27 @@ function seedWith(home: string, files: Record<string, string>): string {
 
 describe('skill files', () => {
   it('keeps each kind in its own workspace folder', () => {
-    expect(skillDir('/ws', 'standards')).toBe(join('/ws', 'standards'));
+    expect(skillDir('/ws', 'standards')).toBe(join('/ws', '.keel', 'standards'));
   });
 
   it('seeds once, skipping folders without SKILL.md', () => {
-    const { home } = tempStore();
+    const { root: home } = tempStore();
     const seed = seedWith(home, { beta: 'beta@2|Beta', alpha: 'alpha@1|Alpha' });
     expect(seedSkills(join(home, 'ws'), seed, 'styles', parse)).toEqual({ ok: true, value: 2 });
-    expect(readdirSync(join(home, 'ws', 'styles')).sort()).toEqual(['alpha@1.md', 'beta@2.md']);
+    expect(readdirSync(join(home, 'ws', '.keel', 'styles')).sort()).toEqual(['alpha@1.md', 'beta@2.md']);
     expect(seedSkills(join(home, 'ws'), seed, 'styles', parse)).toEqual({ ok: true, value: 0 });
     expect(seedSkills(join(home, 'ws'), seed, 'standards', parse)).toEqual({ ok: true, value: 0 });
   });
 
   it('copies nothing when a seed file does not parse', () => {
-    const { home } = tempStore();
+    const { root: home } = tempStore();
     const seed = seedWith(home, { alpha: 'alpha@1|Alpha', bad: 'nonsense' });
     expect(seedSkills(join(home, 'ws'), seed, 'styles', parse)).toMatchObject({ ok: false, error: 'invalid', message: expect.stringContaining('bad') });
     expect(latestSkills(join(home, 'ws'), 'styles', parse)).toEqual([]);
   });
 
   it('lists the latest version of each, by name, skipping broken or misnamed files', () => {
-    const { home } = tempStore();
+    const { root: home } = tempStore();
     const dir = skillDir(home, 'styles');
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, 'zed@1.md'), 'zed@1|A zed');
@@ -57,7 +57,7 @@ describe('skill files', () => {
   });
 
   it('reads one version by ref and refuses unknown or unsafe refs', () => {
-    const { home } = tempStore();
+    const { root: home } = tempStore();
     mkdirSync(skillDir(home, 'standards'), { recursive: true });
     writeFileSync(join(skillDir(home, 'standards'), 'alpha@1.md'), 'alpha@1|Alpha');
     expect(readSkillFile(home, 'standards', 'alpha@1')).toBe('alpha@1|Alpha');

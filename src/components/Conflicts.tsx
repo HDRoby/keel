@@ -4,14 +4,13 @@ import type { Conflict } from '@/lib/generate/merge';
 
 const box = { whiteSpace: 'pre-wrap' as const, border: '1px solid #ddd', borderRadius: 6, padding: 8, margin: 0, fontSize: 13, overflowX: 'auto' as const };
 
-export function Conflicts({ slug, document, conflicts }: { slug: string; document: 'spec' | 'plan'; conflicts: Conflict[] }) {
+export function Conflicts({ document, conflicts }: { document: 'spec' | 'plan'; conflicts: Conflict[] }) {
   if (conflicts.length === 0) return null;
   return (
     <section aria-labelledby="conflicts" style={{ border: '2px solid #c77700', borderRadius: 8, padding: 16, margin: '16px 0' }}>
       <h2 id="conflicts">Conflicts to resolve ({conflicts.length})</h2>
       <p>The regeneration and your edits changed the same part. Approval waits until each one is resolved.</p>
       <form action={resolveConflictsAction} aria-label="Resolve conflicts" style={{ display: 'grid', gap: 16 }}>
-        <input type="hidden" name="slug" value={slug} />
         <input type="hidden" name="document" value={document} />
         {conflicts.map((c) => (
           <fieldset key={c.name}>

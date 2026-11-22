@@ -1,5 +1,5 @@
 // Encrypts credentials at rest with AES-256-GCM (Security baseline v2, rule 2).
-// The key lives in KEEL_HOME/secret.key (owner read/write only), never in keel.db, git or logs.
+// The key lives in the user config folder's secret.key (owner read/write only), never in a project, git or logs.
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -7,11 +7,11 @@ import { fail, ok, type Result } from '../result';
 
 const KEY_FILE = 'secret.key';
 
-/** Reads the workspace key, creating it on first use. */
-export function workspaceKey(home: string): Buffer {
-  const file = join(home, KEY_FILE);
+/** Reads the user's key, creating it on first use. */
+export function workspaceKey(dir: string): Buffer {
+  const file = join(dir, KEY_FILE);
   if (!existsSync(file)) {
-    mkdirSync(home, { recursive: true });
+    mkdirSync(dir, { recursive: true, mode: 0o700 });
     writeFileSync(file, randomBytes(32).toString('base64'), { mode: 0o600, flag: 'wx' });
   }
   chmodSync(file, 0o600);

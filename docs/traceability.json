@@ -137,7 +137,8 @@
         "REQ-012"
       ],
       "features": [
-        "features/project-folder.feature"
+        "features/project-folder.feature",
+        "features/mock-references.feature"
       ]
     },
     "R2": {

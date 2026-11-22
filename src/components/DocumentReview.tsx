@@ -5,7 +5,6 @@ import type { ReactNode } from 'react';
 import { reviewAction } from '@/app/projects/actions';
 import { approvalsOf, type Approvable } from '@/lib/gates/approvals';
 import type { StoredDocument } from '@/lib/store/documents';
-import { projectDir } from '@/lib/store/workspace';
 import { documentVersions } from '@/lib/versions/diff';
 import { Markdown } from './Markdown';
 
@@ -30,7 +29,7 @@ interface Props {
 export async function DocumentReview({ slug, home, document, doc, reviewer, before, after, aside, collapsed = false }: Props) {
   const approvals = approvalsOf(doc);
   const { header } = doc;
-  const versions = (await documentVersions(projectDir(slug, home), doc.path)).reverse();
+  const versions = (await documentVersions(home, doc.path)).reverse();
   const facts: [string, unknown][] = [
     ['ID', header.id], ['Project', header.project], ['Status', header.status],
     ['Author', header.author], ['Created', header.created], ['Updated', header.updated],
@@ -72,7 +71,6 @@ export async function DocumentReview({ slug, home, document, doc, reviewer, befo
           {header.status === 'approved' && <p className="muted">Approved. Changes to it go through a change request.</p>}
           {header.status !== 'closed' && header.status !== 'approved' && (
             <form action={reviewAction} aria-label="Review" className="stack space-above">
-              <input type="hidden" name="slug" value={slug} />
               <input type="hidden" name="document" value={document} />
               <fieldset>
                 <legend>Decision</legend>

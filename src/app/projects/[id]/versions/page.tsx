@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { PageHead, Topbar } from '@/components/Shell';
 import { kindFromPath } from '@/lib/store/documents';
 import { serverStore } from '@/lib/store/server-store';
-import { projectDir, readProject, SLUG } from '@/lib/store/workspace';
+import { readProject } from '@/lib/store/workspace';
 import { buildTrace } from '@/lib/trace/index';
 import { bodyAt, compactChanges, documentVersions, lineChanges } from '@/lib/versions/diff';
 import { versionImpact } from '@/lib/versions/impact';
@@ -21,11 +21,11 @@ interface Props {
 export default async function VersionsPage({ params, searchParams }: Props) {
   const { id } = await params;
   const { doc = 'docs/intent.md', v } = await searchParams;
-  if (!SLUG.test(id) || !kindFromPath(doc)) notFound();
-  const { home } = serverStore();
-  const project = readProject(id, home);
+  if (!kindFromPath(doc)) notFound();
+  const { root: home } = serverStore();
+  const project = readProject(home);
   if (!project.ok) notFound();
-  const dir = projectDir(id, home);
+  const dir = home;
   const versions = await documentVersions(dir, doc);
   if (versions.length === 0) notFound();
   const selected = versions.find((x) => String(x.version) === v) ?? versions.at(-1);

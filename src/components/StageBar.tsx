@@ -59,7 +59,7 @@ export function StageLayout({ page, error, meta, description, actions, locked, c
       <Topbar crumb={`${project.title} · ${project.id}`} title={gate.label} />
       <main className="content">
         <PageHead title={project.title} meta={meta ?? project.id} description={description} actions={gate.available ? actions : undefined} />
-        <StageBar slug={project.slug} gates={gates} current={gate.stage} summaries={summaries} />
+        <StageBar slug={project.id} gates={gates} current={gate.stage} summaries={summaries} />
         {!gate.available ? (
           <>
             <section aria-label={`${gate.label} stage`} className="card">

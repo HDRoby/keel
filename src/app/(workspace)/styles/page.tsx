@@ -1,15 +1,15 @@
 // Brainstorm styles (mockup screen "Brainstorm styles", REQ-011).
+import { serverStore } from '@/lib/store/server-store';
 import Link from 'next/link';
 import { ErrorAlert, PageHead, Topbar } from '@/components/Shell';
 import { listStyles } from '@/lib/brainstorm/styles';
 import { ensureSeed } from '@/lib/seed';
-import { keelHome } from '@/lib/store/workspace';
 
 export const dynamic = 'force-dynamic';
 
 export default async function StylesPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  const home = keelHome();
+  const home = serverStore().root;
   const problems = ensureSeed(home);
   return (
     <>

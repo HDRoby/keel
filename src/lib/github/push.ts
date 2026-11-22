@@ -1,17 +1,15 @@
-// Pushes the handoff package to a GitHub repository (REQ-006, T8b). Keel keeps a working copy per project in
-// KEEL_HOME/handoffs/<slug>, fetches the branch, writes the package over it (other files, such as the agent's
+// Pushes the handoff package to a GitHub repository (REQ-006, T8b). Keel keeps a working copy in
+// .keel/cache/handoff (replaced by R8), fetches the branch, writes the package over it (other files, such as the agent's
 // code, stay), commits as Keel and pushes. The token is passed to git through the environment for that one
 // command only: it is never written to a git config, a remote URL, a document or a log.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { writeFileAtomic } from '../store/atomic';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
-import matter from 'gray-matter';
 import { simpleGit } from 'simple-git';
 import { z } from 'zod';
 import { fail, ok, type Result } from '../result';
 import type { Store } from '../store/db';
 import { commitFiles, initRepo } from '../store/git';
-import { fromYamlTime, PROJECT_FILE, projectDir, readProject } from '../store/workspace';
+import { fromYamlTime, readConfig, readProject, updateConfig } from '../store/workspace';
 
 export type Target =
   | { kind: 'github'; repo: string; branch: string }   // repo: owner/name
@@ -59,8 +57,8 @@ export function remoteUrl(repository: Pick<RepositoryRecord, 'kind' | 'location'
 }
 
 /** Keel's working copy of the project's repository. */
-export function handoffDir(store: Store, slug: string): string {
-  return join(store.home, 'handoffs', slug);
+export function handoffDir(store: Store): string {
+  return join(store.root, '.keel', 'cache', 'handoff');
 }
 
 /**
@@ -88,13 +86,11 @@ export function handoffGit(dir: string, token?: string) {
 }
 
 /** The repository the project was pushed to, from project.md. */
-export function repositoryOf(store: Store, slug: string): RepositoryRecord | undefined {
-  const file = join(projectDir(slug, store.home), PROJECT_FILE);
-  if (!existsSync(file)) return undefined;
+export function repositoryOf(store: Store): RepositoryRecord | undefined {
   const parsed = z.object({
     kind: z.enum(['github', 'local']), location: z.string(), branch: z.string(),
     pushes: z.array(z.object({ commit: z.string(), date: z.preprocess(fromYamlTime, z.string()), plan: z.string() })),
-  }).safeParse(matter(readFileSync(file, 'utf8'), {}).data.repository);
+  }).safeParse(readConfig(store.root)?.repository);
   return parsed.success ? parsed.data : undefined;
 }
 
@@ -107,17 +103,17 @@ export function cleanError(error: unknown, token?: string): string {
 
 /** Pushes the package files as one Keel commit on the target branch, and records the push in project.md. */
 export async function pushHandoff(
-  store: Store, slug: string, target: Target, files: { path: string; data: Uint8Array }[], plan: string,
+  store: Store, target: Target, files: { path: string; data: Uint8Array }[], plan: string,
   options: { token?: string; env?: Record<string, string | undefined> } = {},
 ): Promise<Result<Push, PushError>> {
-  const project = readProject(slug, store.home);
+  const project = readProject(store.root);
   if (!project.ok) return fail('not-found', project.message);
   const checked = checkTarget(target, options.env);
   if (!checked.ok) return checked;
   const to = checked.value;
   if (to.kind === 'github' && !options.token) return fail('no-token', 'Add a GitHub token in Settings first');
   const location = to.kind === 'github' ? to.repo : to.path;
-  const dir = handoffDir(store, slug);
+  const dir = handoffDir(store);
   await initRepo(dir);
   const repo = handoffGit(dir, options.token);
   const url = remoteUrl({ kind: to.kind, location });
@@ -136,25 +132,20 @@ export async function pushHandoff(
     const committed = await commitFiles(dir, files.map((f) => f.path), `${KEEL_COMMIT_PREFIX}handoff from ${plan}`);
     await repo.push(url, `HEAD:refs/heads/${to.branch}`);
     const commit = committed || (await repo.revparse(['HEAD'])).trim();
-    const previous = repositoryOf(store, slug);
+    const previous = repositoryOf(store);
     const same = previous?.location === location && previous.branch === to.branch && previous.pushes.at(-1)?.commit === commit;
     if (same) return ok({ ...(previous.pushes.at(-1) as Push), unchanged: true });
     const push: Push = { commit, date: (store.now?.() ?? new Date()).toISOString(), plan };
-    await recordPush(store, slug, { kind: to.kind, location, branch: to.branch }, push);
+    await recordPush(store, { kind: to.kind, location, branch: to.branch }, push);
     return ok(push);
   } catch (error) {
     return fail('push-failed', `The push failed: ${cleanError(error, options.token)}`);
   }
 }
 
-async function recordPush(store: Store, slug: string, to: Omit<RepositoryRecord, 'pushes'>, push: Push): Promise<void> {
-  const dir = projectDir(slug, store.home);
-  const file = join(dir, PROJECT_FILE);
-  const parsed = matter(readFileSync(file, 'utf8'), {});
-  const previous = repositoryOf(store, slug);
+async function recordPush(store: Store, to: Omit<RepositoryRecord, 'pushes'>, push: Push): Promise<void> {
+  const previous = repositoryOf(store);
   const pushes = previous && previous.location === to.location && previous.branch === to.branch ? previous.pushes : [];
   const repository: RepositoryRecord = { ...to, pushes: [...pushes, push] };
-  writeFileAtomic(file, matter.stringify(parsed.content, { ...parsed.data, repository }));
-  const project = readProject(slug, store.home);
-  await commitFiles(dir, [PROJECT_FILE], `${project.ok ? project.value.id : slug}: pushed ${push.plan} to ${to.location} (${push.commit.slice(0, 7)})`);
+  await updateConfig(store, { repository }, `Keel: pushed ${push.plan} to ${to.location} (${push.commit.slice(0, 7)})`);
 }

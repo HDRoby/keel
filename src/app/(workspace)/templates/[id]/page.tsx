@@ -1,9 +1,9 @@
-// One template: its versions, the projects that use it, editing and removal (REQ-003).
+// One template: its versions, the documents in this folder that use it, editing and removal (REQ-003).
+import { serverStore } from '@/lib/store/server-store';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { removeTemplateAction, saveTemplateAction } from '../actions';
 import { ErrorAlert, Topbar } from '@/components/Shell';
-import { keelHome } from '@/lib/store/workspace';
 import { ensureLibrary, listTemplates, readTemplate, seedDir, templateName, templateUsage } from '@/lib/templates/library';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +16,7 @@ interface Props {
 export default async function TemplatePage({ params, searchParams }: Props) {
   const { id } = await params;
   const { v, error } = await searchParams;
-  const home = keelHome();
+  const home = serverStore().root;
   ensureLibrary(home, seedDir());
   const summary = listTemplates(home).find((t) => t.id === id);
   const version = v && /^\d+$/.test(v) ? Number(v) : undefined;
@@ -44,10 +44,10 @@ export default async function TemplatePage({ params, searchParams }: Props) {
           <h2 id="used-by">Used by</h2>
           {inUse ? (
             <ul aria-labelledby="used-by">
-              {uses.map((u) => <li key={u.slug}>{u.title} — {u.documents.join(', ')}</li>)}
+              {uses.map((u) => <li key={u}>{u}</li>)}
             </ul>
           ) : (
-            <p>No project uses this template.</p>
+            <p>No document in this folder uses this template.</p>
           )}
 
           <form action={removeTemplateAction}>
@@ -55,7 +55,7 @@ export default async function TemplatePage({ params, searchParams }: Props) {
             <button type="submit" disabled={inUse} aria-describedby="remove-note">Remove</button>
             <p id="remove-note">
               {inUse
-                ? `This template cannot be removed while ${uses.length} project${uses.length === 1 ? '' : 's'} use${uses.length === 1 ? 's' : ''} it.`
+                ? `This template cannot be removed while this project uses it (${uses.length} document${uses.length === 1 ? '' : 's'}).`
                 : 'Removing deletes every version of this template.'}
             </p>
           </form>

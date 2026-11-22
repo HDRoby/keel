@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { tempStore } from '../store/test-store';
-import { createProject, projectDir } from '../store/workspace';
+import { initialiseProject } from '../store/workspace';
 import { githubToken, hasGithubToken, looksLikeGithubToken, saveGithubToken } from './auth';
 import { checkTarget, cleanError, gitEnv, handoffDir, handoffGit, parseGithubRepo, pushHandoff, remoteUrl, repositoryOf } from './push';
 
@@ -25,7 +25,7 @@ describe('GitHub token', () => {
     expect(looksLikeGithubToken(token)).toBe(true);
     expect(saveGithubToken(store, 'sk-ant-nope')).toMatchObject({ error: 'invalid-token' });
     expect(saveGithubToken(store, token)).toEqual({ ok: true, value: { hasToken: true } });
-    expect(store.index.getSetting('github.token')).not.toContain('github_pat_');
+    expect(readFileSync(join(store.user, 'settings.json'), 'utf8')).not.toContain('github_pat_');
     expect(githubToken(store)).toBe(token);
     saveGithubToken(store, '');
     expect(hasGithubToken(store)).toBe(false);
@@ -47,11 +47,11 @@ describe('targets', () => {
 });
 
 describe('git helpers', () => {
-  it('builds the remote URL without a token, and keeps the working copy under KEEL_HOME/handoffs', () => {
+  it('builds the remote URL without a token, and keeps the working copy in .keel/cache/handoff', () => {
     expect(remoteUrl({ kind: 'github', location: 'my-org/keel' })).toBe('https://github.com/my-org/keel.git');
     expect(remoteUrl({ kind: 'local', location: '/tmp/repo.git' })).toBe('/tmp/repo.git');
     const store = tempStore();
-    expect(handoffDir(store, 'demo')).toBe(join(store.home, 'handoffs', 'demo'));
+    expect(handoffDir(store)).toBe(join(store.root, '.keel', 'cache', 'handoff'));
   });
 
   it('shows only the first line of a git error, with the token and the header hidden', () => {
@@ -66,10 +66,10 @@ describe('git helpers', () => {
 describe('pushHandoff', () => {
   it('pushes the package as a Keel commit, keeps files the agent added on the next push, and records each push', async () => {
     const store = tempStore();
-    await createProject(store, { slug: 'demo', title: 'Demo', author: 'Ada' });
+    await initialiseProject(store, { title: 'Demo', author: 'Ada' });
     const remote = bare();
     const target = { kind: 'local' as const, path: remote, branch: 'main' };
-    const first = await pushHandoff(store, 'demo', target, [{ path: 'AGENTS.md', data: enc('v1') }, { path: 'docs/plan.md', data: enc('plan v1') }], 'PLN-0001@1', { env: LOCAL });
+    const first = await pushHandoff(store, target, [{ path: 'AGENTS.md', data: enc('v1') }, { path: 'docs/plan.md', data: enc('plan v1') }], 'PLN-0001@1', { env: LOCAL });
     if (!first.ok) throw new Error(first.message);
     expect(sh(remote, 'log', '--format=%an|%s', 'main')).toBe('Keel|Keel: handoff from PLN-0001@1');
 
@@ -80,30 +80,30 @@ describe('pushHandoff', () => {
     sh(agent, 'push', '-q', 'origin', 'main');
 
     // With a token set, the same push still works (the header only applies to github.com).
-    const second = await pushHandoff(store, 'demo', target, [{ path: 'AGENTS.md', data: enc('v2') }], 'PLN-0001@2', { env: LOCAL, token: `github_pat_${'D'.repeat(40)}` });
+    const second = await pushHandoff(store, target, [{ path: 'AGENTS.md', data: enc('v2') }], 'PLN-0001@2', { env: LOCAL, token: `github_pat_${'D'.repeat(40)}` });
     if (!second.ok) throw new Error(second.message);
     sh(agent, 'pull', '-q');
     expect(readFileSync(join(agent, 'AGENTS.md'), 'utf8')).toBe('v2');
     expect(readFileSync(join(agent, 'src/app.ts'), 'utf8')).toBe('code\n');
     expect(sh(remote, 'log', '--format=%s', 'main').split('\n')).toEqual(['Keel: handoff from PLN-0001@2', 'Add app', 'Keel: handoff from PLN-0001@1']);
-    expect(repositoryOf(store, 'demo')).toMatchObject({ kind: 'local', location: remote, branch: 'main', pushes: [{ plan: 'PLN-0001@1' }, { plan: 'PLN-0001@2', commit: second.value.commit }] });
+    expect(repositoryOf(store)).toMatchObject({ kind: 'local', location: remote, branch: 'main', pushes: [{ plan: 'PLN-0001@1' }, { plan: 'PLN-0001@2', commit: second.value.commit }] });
     // Pushing the same package again changes nothing and records nothing.
-    const again = await pushHandoff(store, 'demo', target, [{ path: 'AGENTS.md', data: enc('v2') }], 'PLN-0001@2', { env: LOCAL });
+    const again = await pushHandoff(store, target, [{ path: 'AGENTS.md', data: enc('v2') }], 'PLN-0001@2', { env: LOCAL });
     expect(again).toMatchObject({ ok: true, value: { unchanged: true, commit: second.value.commit } });
-    expect(repositoryOf(store, 'demo')?.pushes).toHaveLength(2);
-    expect(sh(projectDir('demo', store.home), 'log', '-1', '--format=%s')).toMatch(/^PRJ-0001: pushed PLN-0001@2 to /);
+    expect(repositoryOf(store)?.pushes).toHaveLength(2);
+    expect(sh(store.root, 'log', '-1', '--format=%s')).toMatch(/^Keel: pushed PLN-0001@2 to /);
   });
 
   it('needs a token for GitHub, and never writes the token into the working copy', async () => {
     const store = tempStore();
-    await createProject(store, { slug: 'demo', title: 'Demo', author: 'Ada' });
-    expect(await pushHandoff(store, 'demo', { kind: 'github', repo: 'a/b', branch: 'main' }, [], 'PLN-0001@1')).toMatchObject({ error: 'no-token' });
+    await initialiseProject(store, { title: 'Demo', author: 'Ada' });
+    expect(await pushHandoff(store, { kind: 'github', repo: 'a/b', branch: 'main' }, [], 'PLN-0001@1')).toMatchObject({ error: 'no-token' });
     const token = `github_pat_${'B'.repeat(40)}`;
-    const failed = await pushHandoff(store, 'demo', { kind: 'local', path: join(tmpdir(), 'missing-remote-for-keel.git'), branch: 'main' }, [{ path: 'a.md', data: enc('x') }], 'PLN-0001@1', { token, env: LOCAL });
+    const failed = await pushHandoff(store, { kind: 'local', path: join(tmpdir(), 'missing-remote-for-keel.git'), branch: 'main' }, [{ path: 'a.md', data: enc('x') }], 'PLN-0001@1', { token, env: LOCAL });
     expect(failed).toMatchObject({ ok: false, error: 'push-failed' });
     expect(failed.ok ? '' : failed.message).not.toMatch(/environment guard|not permitted/);
     expect(failed.ok ? '' : failed.message).not.toContain(token);
-    const config = readFileSync(join(store.home, 'handoffs', 'demo', '.git', 'config'), 'utf8');
+    const config = readFileSync(join(store.root, '.keel', 'cache', 'handoff', '.git', 'config'), 'utf8');
     expect(config).not.toContain(token);
     expect(config).not.toContain('extraheader');
   });

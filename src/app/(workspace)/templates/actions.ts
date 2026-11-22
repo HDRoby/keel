@@ -1,9 +1,9 @@
 'use server';
+import { serverStore } from '@/lib/store/server-store';
 // Form actions for the template library. Input is validated before it reaches the library.
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { removeTemplate, removeTemplateVersion, saveTemplateVersion, TEMPLATE_ID } from '@/lib/templates/library';
-import { keelHome } from '@/lib/store/workspace';
 import { formFields } from '@/lib/form-fields';
 
 const idField = z.string().regex(TEMPLATE_ID);
@@ -14,7 +14,7 @@ export async function removeTemplateAction(form: FormData): Promise<void> {
   const input = removeForm.safeParse(formFields(form));
   if (!input.success) redirect('/templates?error=Invalid+request');
   const { id, version } = input.data;
-  const removed = version ? removeTemplateVersion(keelHome(), id, Number(version)) : removeTemplate(keelHome(), id);
+  const removed = version ? removeTemplateVersion(serverStore().root, id, Number(version)) : removeTemplate(serverStore().root, id);
   if (!removed.ok) redirect(`/templates/${id}?error=${encodeURIComponent(removed.message)}`);
   redirect(removed.value > 0 && version ? `/templates/${id}` : '/templates');
 }
@@ -22,7 +22,7 @@ export async function removeTemplateAction(form: FormData): Promise<void> {
 export async function saveTemplateAction(form: FormData): Promise<void> {
   const input = saveForm.safeParse(formFields(form));
   if (!input.success) redirect('/templates?error=Invalid+request');
-  const saved = saveTemplateVersion(keelHome(), input.data.id, input.data.content);
+  const saved = saveTemplateVersion(serverStore().root, input.data.id, input.data.content);
   if (!saved.ok) redirect(`/templates/${input.data.id}?error=${encodeURIComponent(saved.message)}`);
   redirect(`/templates/${input.data.id}?v=${saved.value.version}`);
 }
