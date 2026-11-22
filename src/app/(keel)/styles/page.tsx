@@ -12,7 +12,7 @@ export default async function StylesPage({ searchParams }: { searchParams: Promi
   const home = serverStore().root;
   return (
     <>
-      <Topbar crumb="Library" title="Brainstorm styles" />
+      <Topbar title="Brainstorm styles" />
       <main className="content">
         <PageHead title="Brainstorm styles" description={<>Stored in <code>.keel/styles</code>. Editing saves a new version; brainstorms keep the version they started with.</>} />
         {!isInitialised(home) && <NotInitialised what="brainstorm styles" />}

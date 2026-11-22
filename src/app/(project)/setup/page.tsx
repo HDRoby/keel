@@ -21,7 +21,7 @@ export default async function SetupPage({ searchParams }: { searchParams: Promis
   const chosen = project.ok ? project.value.standards : [];
   return (
     <>
-      <Topbar crumb={project.ok ? `${project.value.title} · ${project.value.id}` : 'Project'} title="Project setup" />
+      <Topbar title="Project setup" />
       <main className="content">
         <PageHead title="Project setup" />
         <div className="card">

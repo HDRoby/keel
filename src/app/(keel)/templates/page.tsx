@@ -13,7 +13,7 @@ export default async function TemplatesPage({ searchParams }: { searchParams: Pr
   const templates = listTemplates(home);
   return (
     <>
-      <Topbar crumb="Library" title="Templates" />
+      <Topbar title="Templates" />
       <main className="content">
         <PageHead title="Templates"
           description={<>Stored in <code>.keel/templates</code> (the agent kit in <code>.keel/agent-kit</code>). Editing saves a new version; a template in use cannot be removed.</>} />

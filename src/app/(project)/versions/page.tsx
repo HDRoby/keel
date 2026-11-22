@@ -36,7 +36,7 @@ export default async function VersionsPage({ searchParams }: Props) {
 
   return (
     <>
-      <Topbar crumb={`${project.value.title} · ${project.value.id}`} title="Versions" />
+      <Topbar title="Versions" />
       <main className="content">
         <PageHead title={`Versions of ${doc}`} />
         <div className="card">

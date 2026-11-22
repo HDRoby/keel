@@ -27,7 +27,7 @@ export default async function StylePage({ params, searchParams }: Props) {
 
   return (
     <>
-      <Topbar crumb="Library · Brainstorm styles" title="Brainstorm style" />
+      <Topbar title="Brainstorm style" />
       <main className="content">
         <h1>{style.value.name} v{version}</h1>
         <div className="card">

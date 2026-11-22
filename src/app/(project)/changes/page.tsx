@@ -9,7 +9,6 @@ import { ErrorAlert, PageHead, Topbar } from '@/components/Shell';
 import { computeStatus, listChanges, nextToApply, progressLabel, type ChangeRequest } from '@/lib/changes/store';
 import { migrateDocsChanges } from '@/lib/generate/intent';
 import { serverStore } from '@/lib/store/server-store';
-import { readProject } from '@/lib/store/workspace';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +26,6 @@ export default async function ChangesPage({ searchParams }: { searchParams: Prom
   const filter: Filter = given === 'applied' || given === 'all' ? given : 'open';
   const store = serverStore();
   await migrateDocsChanges(store);
-  const project = readProject(store.root);
   const all = listChanges(store.root);
   const rows = all.map((cr) => ({ cr, status: computeStatus(cr, all) }))
     .filter(({ status }) => filter === 'all' || (filter === 'applied' ? status.kind === 'applied' : status.kind !== 'applied' && status.kind !== 'rejected'));
@@ -36,7 +34,7 @@ export default async function ChangesPage({ searchParams }: { searchParams: Prom
 
   return (
     <>
-      <Topbar crumb={`${project.ok ? project.value.title : 'Project'} · Project`} title="Changes" />
+      <Topbar title="Changes" />
       <main className="content">
         <PageHead title="Changes"
           description={<>Every change request for this project, read from the <code>changes/</code> folder. Keel raises them when an approved document changes; you can also add your own. Status comes from each request&apos;s header and the status of its tasks.</>} />

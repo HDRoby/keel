@@ -15,7 +15,7 @@ export default async function StandardsPage({ searchParams }: { searchParams: Pr
   const chosen = project.ok ? project.value.standards : [];
   return (
     <>
-      <Topbar crumb="Library" title="Standards" />
+      <Topbar title="Standards" />
       <main className="content">
         <PageHead title="Standards" description={<>Stored in <code>.keel/standards</code>. Choose them for this project in Project setup; they go into the handoff as skills.</>} />
         <ErrorAlert error={error} />

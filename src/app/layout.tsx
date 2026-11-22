@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <Shell folder={root} project={project.ok ? { title: project.value.title, id: project.value.id } : undefined}>{children}</Shell>
+        <Shell project={project.ok ? { title: project.value.title, id: project.value.id } : undefined}>{children}</Shell>
       </body>
     </html>
   );

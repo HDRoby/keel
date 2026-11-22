@@ -1,10 +1,11 @@
-// App shell (mockups in docs/mocks/): the project and its folder at the top of the sidebar, then the
-// Project, Library and Settings groups. One project per folder (CR-0004): no project list.
+// App shell (docs/ui-guide.md › Shell, docs/ui/keel-components.css navigation): the side menu with the Project,
+// Library and Settings groups, and the header bar. One project per folder (CR-0004): no project list.
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { Book, Bulb, Gear } from './Icons';
-import { NavLink } from './NavLink';
+import { serverStore } from '@/lib/store/server-store';
+import { NavGroup } from './NavLink';
+import styles from './Shell.module.css';
 
 export interface ShellProject {
   title: string;
@@ -15,47 +16,36 @@ const PROJECT_LINKS: [string, string][] = [
   ['/setup', 'Project setup'], ['/explore', 'Explore'], ['/intent', 'Intent'], ['/spec', 'Spec'], ['/plan', 'Plan'],
   ['/handoff', 'Handoff'], ['/roadmap', 'Roadmap'], ['/changes', 'Changes'], ['/trace', 'Traceability'],
 ];
+const LIBRARY_LINKS: [string, string][] = [['/templates', 'Templates'], ['/styles', 'Brainstorm styles'], ['/standards', 'Standards']];
 
-export function Shell({ project, folder, children }: { project?: ShellProject; folder: string; children: ReactNode }) {
+/** The side menu (docs/ui-guide.md › Shell) and the page. Before initialisation the project group has only Initialise. */
+export function Shell({ project, children }: { project?: ShellProject; children: ReactNode }) {
   return (
-    <div className="shell">
-      <aside className="sidebar">
-        <Link href="/" className="brand">
-          {/* As wide as the word below it: the image takes no width of its own (globals.css). */}
-          <Image src="/keel-logo.png" alt="" width={266} height={296} priority className="brand-logo" />
+    <div className={styles.shell}>
+      <aside className={styles.side}>
+        <Link href="/" className={styles.brand}>
+          {/* As wide as the word below it: the image takes no width of its own. */}
+          <Image src="/keel-logo.png" alt="" width={266} height={296} priority className={styles.logo} />
           <span>Keel</span>
         </Link>
-        <div className="project-head" aria-label="This folder">
-          <strong>{project ? project.title : 'Not initialised'}</strong>
-          <span className="folder-path" title={folder}>{folder}</span>
-        </div>
-        <nav aria-label="Project" className="nav-group">
-          <div className="nav-heading"><Bulb /> Project</div>
-          {project
-            ? PROJECT_LINKS.map(([href, label]) => <NavLink key={href} href={href}>{label}</NavLink>)
-            : <NavLink href="/" exact>Initialise</NavLink>}
-        </nav>
-        <nav aria-label="Library" className="nav-group">
-          <div className="nav-heading"><Book /> Library</div>
-          <NavLink href="/templates">Templates</NavLink>
-          <NavLink href="/styles">Brainstorm styles</NavLink>
-          <NavLink href="/standards">Standards</NavLink>
-        </nav>
-        <nav aria-label="Settings" className="nav-group nav-bottom">
-          <NavLink href="/settings"><Gear /> Settings</NavLink>
-        </nav>
+        {project
+          ? <NavGroup label={`Project · ${project.title}`} name="Project" icon="lightbulb" links={PROJECT_LINKS} />
+          : <NavGroup label="This folder" name="Project" icon="lightbulb" links={[['/', 'Initialise']]} exact />}
+        <NavGroup label="Library (.keel)" name="Library" icon="folder" links={LIBRARY_LINKS} />
+        <NavGroup label="Settings" name="Settings" icon="settings" links={[['/settings', 'Settings']]} />
       </aside>
-      <div>{children}</div>
+      <div className={styles.main}>{children}</div>
     </div>
   );
 }
 
-/** The white bar at the top of a page: a breadcrumb line and the screen name. */
-export function Topbar({ crumb, title }: { crumb: string; title: string }) {
+/** The header bar at the top of a page: "Keel · <folder>" over the screen name. */
+export function Topbar({ title }: { title: string }) {
+  const folder = serverStore().root.replace(process.env.HOME ?? '\0', '~');
   return (
-    <header className="topbar">
-      <div className="crumb">{crumb}</div>
-      <div className="title">{title}</div>
+    <header className={styles.header}>
+      <span className={styles.subtitle}>Keel · {folder}</span>
+      <span className={styles.title}>{title}</span>
     </header>
   );
 }

@@ -14,7 +14,6 @@ import { packageFiles } from '@/lib/changes/flow';
 import { changeImpact } from '@/lib/changes/impact';
 import { computeStatus, listChanges, progressLabel, type ImpactDecision } from '@/lib/changes/store';
 import { serverStore } from '@/lib/store/server-store';
-import { readProject } from '@/lib/store/workspace';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,7 +37,6 @@ export default async function ChangePage({ params, searchParams }: { params: Pro
   const all = listChanges(store.root);
   const cr = all.find((c) => c.id === id);
   if (!cr) notFound();
-  const project = readProject(store.root);
   const status = computeStatus(cr, all);
   const keel = cr.origin === 'keel';
   const open = cr.status === 'draft' || cr.status === 'waiting';
@@ -52,7 +50,7 @@ export default async function ChangePage({ params, searchParams }: { params: Pro
 
   return (
     <>
-      <Topbar crumb={`${project.ok ? project.value.title : 'Project'} · Changes`} title={cr.id} />
+      <Topbar title={cr.id} />
       <main className="content">
         <PageHead title={`${cr.id} · ${cr.title}`} meta={<span className={`pill ${status.kind}`}>{status.label}</span>}
           description={<>{keel ? 'Keel' : 'Written by hand'}{cr.affects.length ? ` · ${cr.affects.join(', ')}` : ''}{cr.created ? ` · raised ${cr.created}` : ''}{cr.author ? ` by ${cr.author}` : ''} · <code>{cr.file}</code> · <Link href="/changes">All change requests</Link></>} />

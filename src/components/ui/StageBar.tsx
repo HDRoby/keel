@@ -60,7 +60,7 @@ export function StageLayout({ page, error, meta, description, actions, locked, c
   const { project, gates, gate, summaries } = page;
   return (
     <>
-      <Topbar crumb={`${project.title} · ${project.id}`} title={gate.label} />
+      <Topbar title={gate.label} />
       <main className="content">
         <PageHead title={project.title} meta={meta ?? project.id} description={description} actions={gate.available ? actions : undefined} />
         <StageBar gates={gates} current={gate.stage} summaries={summaries} />

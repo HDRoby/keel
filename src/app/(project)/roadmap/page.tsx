@@ -4,21 +4,18 @@ import { Markdown } from '@/components/Markdown';
 import { PageHead, Topbar } from '@/components/Shell';
 import { readDocument } from '@/lib/store/documents';
 import { serverStore } from '@/lib/store/server-store';
-import { readProject } from '@/lib/store/workspace';
 
 export const dynamic = 'force-dynamic';
 
 export default async function RoadmapPage() {
   const store = serverStore();
-  const project = readProject(store.root);
   const roadmap = readDocument(store, 'docs/roadmap.md');
-  const title = project.ok ? project.value.title : 'Project';
   // The items under "## Next", one per "- " line.
   const nextSection = roadmap.ok ? /^## Next\s*\n([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(roadmap.value.body)?.[1] ?? '' : '';
   const next = nextSection.split('\n').map((l) => /^\s*[-*]\s+(.+)$/.exec(l)?.[1]?.trim()).filter((l): l is string => Boolean(l));
   return (
     <>
-      <Topbar crumb={`${title} · Project`} title="Roadmap" />
+      <Topbar title="Roadmap" />
       <main className="content">
         <PageHead title="Roadmap" meta={roadmap.ok ? `${roadmap.value.header.id} v${roadmap.value.header.version}` : undefined}
           description={<>An idea for this project goes on its roadmap. An unrelated idea gets its own folder: <code>npx keel ../another-idea</code>.</>} />

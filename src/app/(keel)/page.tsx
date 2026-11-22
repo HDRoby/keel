@@ -64,7 +64,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
 
   return (
     <>
-      <Topbar crumb={store.root} title="Initialise" />
+      <Topbar title="Initialise" />
       <main className="content narrow">
         <PageHead title="Initialise this folder"
           description={<>Keel will create <code>.keel/</code> here. Nothing else changes until you approve documents.</>} />

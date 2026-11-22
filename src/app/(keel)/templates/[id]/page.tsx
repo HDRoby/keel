@@ -28,7 +28,7 @@ export default async function TemplatePage({ params, searchParams }: Props) {
 
   return (
     <>
-      <Topbar crumb="Library · Templates" title="Template" />
+      <Topbar title="Template" />
       <main className="content">
         <h1>{templateName(id, shown)}</h1>
         <div className="card">

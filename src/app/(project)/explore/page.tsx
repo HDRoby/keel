@@ -24,7 +24,7 @@ export default async function ExplorePage({ searchParams }: StageProps) {
   if (!context.ok) {
     return (
       <>
-        <Topbar crumb={`${project.title} · ${project.id}`} title="Explore" />
+        <Topbar title="Explore" />
         <main className="content"><ErrorAlert error={`The brainstorm could not be read: ${context.message}`} /></main>
       </>
     );
@@ -38,7 +38,7 @@ export default async function ExplorePage({ searchParams }: StageProps) {
 
   return (
     <>
-      <Topbar crumb={`${project.title} · ${project.id}`} title="Explore" />
+      <Topbar title="Explore" />
       <main className="content">
         <PageHead title={state.title}
           meta={<>{project.id} · created {project.created} · <Link href="/setup"><Pencil /> Project setup</Link></>}

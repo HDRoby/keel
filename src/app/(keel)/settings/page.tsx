@@ -20,7 +20,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const project = readProject(store.root);
   return (
     <>
-      <Topbar crumb={store.root} title="Settings" />
+      <Topbar title="Settings" />
       <main className="content">
         <PageHead title="Settings" description="What belongs to this project, and what belongs to you on this computer." />
         <ErrorAlert error={error} />

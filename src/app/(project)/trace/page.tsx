@@ -20,7 +20,7 @@ export default async function TracePage() {
 
   return (
     <>
-      <Topbar crumb={`${project.value.title} · ${project.value.id}`} title="Traceability" />
+      <Topbar title="Traceability" />
       <main className="content">
         <PageHead title={`Traceability · ${project.value.title}`} />
         <div className="card">
