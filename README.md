@@ -108,6 +108,6 @@ src/           the app (Next.js, TypeScript)
 
 ## Status
 
-Keel v0.1 plus the change requests in [`changes/README.md`](changes/README.md). Applied so far: CR-0003 to CR-0014. Still to come: the AI readiness report (CR-0015) and discussing a change (CR-0016). The user guide marks features that are not built yet.
+Keel v0.1 plus the change requests in [`changes/README.md`](changes/README.md). Applied so far: CR-0003 to CR-0015. Still to come: discussing a change (CR-0016). The user guide marks features that are not built yet.
 
 "Keel" is a working name.

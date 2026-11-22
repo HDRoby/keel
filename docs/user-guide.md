@@ -62,6 +62,15 @@ Set up the folder once:
 
 Press **Initialise and start brainstorm**. Keel copies the chosen templates, style and standards into `.keel/` and commits them. You can change these later in **Project setup**.
 
+### AI readiness report
+
+How ready is this folder for coding agents? Open **AI readiness** in the menu, or press **Check AI readiness** in What Keel found. It works in any folder: new, an existing project with or without AI files, or a Keel project. It runs only when you ask.
+
+1. **Scan**: Keel compares the folder's files with the Keel standard (agent instructions, project knowledge, verification, conventions, agent tooling, safety). No model call; nothing leaves your computer.
+2. **Model review**: your Feasibility review model explains each gap for this project, puts the advice in order and reviews the AI files you tick. Only file and folder names and the files you tick are sent. Files that may hold keys cannot be ticked.
+
+The report rates each area Ready, Partly or Missing, shows how your own AI files map to the Keel standard (Keep, Point to, Adopt), and lists advice with why, the files it is based on, impact and effort. Choose **Add**, **Adopt** or **Ignore** for each item, then create a change request (Keel folder), add the items to the baseline plan (existing project), or initialise (new folder). Reports are saved in `.keel/reports` so you can compare them later.
+
 ## 4. Explore: write the idea, section by section
 
 Explore shows one field per section of your intent template. Required sections are marked; a progress line shows what is still needed.
@@ -200,6 +209,7 @@ In the project folder (committed, except the cache):
   templates/  styles/  standards/  agent-kit/
   brainstorm/       Explore sections, comments and threads
   mocks/            mock files you attach
+  reports/          AI readiness reports
   cache/            run lock for this folder (not committed)
 docs/
   intent.md  spec.md  plan.md  roadmap.md
