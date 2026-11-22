@@ -9,6 +9,7 @@ const REVIEW_MARKER = 'Answer with one JSON object and nothing else.';
 const SCENARIO_MARKER = 'Answer with one scenario as JSON and nothing else.';
 const DESIGN_MARKER = 'Answer with the design topics as JSON and nothing else.';
 const BASELINE_MARKER = 'Answer with the baseline as JSON and nothing else.';
+const STARTUP_MARKER = 'Keel startup check: answer briefly.';
 
 export function fakeReply(standsFor: RealProviderId, messages: ChatMessage[]): string {
   const label = PROVIDERS.find((p) => p.id === standsFor)?.label ?? standsFor;
@@ -145,7 +146,7 @@ export function createFakeProvider(standsFor: RealProviderId, env: Record<string
     id: 'fake',
     async *stream(messages) {
       const log = env.KEEL_FAKE_LOG?.trim();
-      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : messages[0]?.content.includes(SCENARIO_MARKER) ? 'scenario' : messages[0]?.content.includes(DESIGN_MARKER) ? 'design' : messages[0]?.content.includes(BASELINE_MARKER) ? 'baseline' : 'chat'}\n`);
+      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : messages[0]?.content.includes(SCENARIO_MARKER) ? 'scenario' : messages[0]?.content.includes(DESIGN_MARKER) ? 'design' : messages[0]?.content.includes(BASELINE_MARKER) ? 'baseline' : messages[0]?.content.includes(STARTUP_MARKER) ? 'health' : 'chat'}\n`);
       for (const word of fakeReply(standsFor, messages).split(/(?<= )/)) yield word;
     },
   };

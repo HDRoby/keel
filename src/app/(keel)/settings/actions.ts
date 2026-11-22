@@ -4,10 +4,15 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { formFields } from '@/lib/form-fields';
 import { saveGithubToken } from '@/lib/github/auth';
-import { MODEL_TASK_IDS, PROVIDER_IDS, type ModelChoice } from '@/lib/providers/types';
+import { MODEL_TASK_IDS, MODEL_TASKS, PROVIDER_IDS, type ModelChoice } from '@/lib/providers/types';
+import { effectiveChoice } from '@/lib/providers/local';
+import { SETTINGS_FILE } from '@/lib/settings/user-dir';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { checkApiKey } from '@/lib/providers/errors';
 import { testConnection } from '@/lib/providers/test-connection';
-import { saveAuthor, saveExploreTiming, saveModelChoice, saveProvider } from '@/lib/settings/settings';
+import { exploreTiming, saveAuthor, saveExploreTiming, saveModelChoice, saveProvider } from '@/lib/settings/settings';
+import { forgetStartupCheck } from '@/lib/startup/check';
 import { serverStore } from '@/lib/store/server-store';
 import { updateConfig } from '@/lib/store/workspace';
 
@@ -87,4 +92,16 @@ export async function saveMockGateAction(form: FormData): Promise<void> {
   if (!input.success) redirect('/settings?error=Invalid+request');
   const saved = await updateConfig(serverStore(), { mock_gate: input.data.mockGate }, `Keel: Clickable mock before the plan: ${input.data.mockGate}`);
   redirect(saved.ok ? '/settings?saved=1' : `/settings?error=${encodeURIComponent(saved.message)}`);
+}
+
+/** First run (CR-0012): saves the providers and models shown (Ollama with the local models), then checks again. */
+export async function useTheseSettingsAction(): Promise<void> {
+  const store = serverStore();
+  for (const { task } of MODEL_TASKS) {
+    const choice = await effectiveChoice(store, task);
+    if (choice.model) saveModelChoice(store, task, choice);
+  }
+  if (!existsSync(join(store.user, SETTINGS_FILE))) saveExploreTiming(store, exploreTiming(store));
+  forgetStartupCheck(store);
+  redirect('/check');
 }

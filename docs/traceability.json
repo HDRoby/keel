@@ -3,8 +3,8 @@
   "generated": "2026-11-20",
   "from": {
     "intent": "INT-0001@4",
-    "spec": "SPC-0001@14",
-    "plan": "PLN-0001@15"
+    "spec": "SPC-0001@15",
+    "plan": "PLN-0001@16"
   },
   "requirements": {
     "REQ-001": {
@@ -61,6 +61,7 @@
         "R11",
         "R12",
         "R14",
+        "R17",
         "R18",
         "T6"
       ],
@@ -73,7 +74,8 @@
         "features/mock-references.feature › A required mock set locks the plan",
         "features/scenarios.feature › The plan needs a scenario for every requirement",
         "features/stage-gating.feature › Spec is locked until the intent is approved",
-        "features/stage-gating.feature › Approving the intent unlocks the spec"
+        "features/stage-gating.feature › Approving the intent unlocks the spec",
+        "features/startup-check.feature › Keel opens in setup mode when the model cannot be reached"
       ]
     },
     "REQ-006": {
@@ -95,6 +97,7 @@
       "tasks": [
         "R1",
         "R15",
+        "R17",
         "R2",
         "R3",
         "R4",
@@ -111,7 +114,9 @@
         "features/project-folder.feature › Opening an initialised folder goes to the current stage",
         "features/project-folder.feature › Keel never writes keys into the project folder",
         "features/project-folder.feature › Keel commits only its own files",
-        "features/project-folder.feature › Initialising a folder that already has Keel documents adopts them"
+        "features/project-folder.feature › Initialising a folder that already has Keel documents adopts them",
+        "features/startup-check.feature › An invalid project config keeps the project closed",
+        "features/startup-check.feature › When everything is fine Keel opens the project directly"
       ]
     },
     "REQ-014": {
@@ -149,6 +154,7 @@
     "REQ-009": {
       "tasks": [
         "R16",
+        "R17",
         "R2",
         "T3"
       ],
@@ -157,7 +163,11 @@
         "features/providers.feature › Switching provider keeps the brainstorm working",
         "features/providers.feature › Ollama is the default provider",
         "features/providers.feature › The models on this computer are listed",
-        "features/providers.feature › Keel says when Ollama is not running"
+        "features/providers.feature › Keel says when Ollama is not running",
+        "features/startup-check.feature › First run opens setup first",
+        "features/startup-check.feature › Keel opens in setup mode when the model cannot be reached",
+        "features/startup-check.feature › A task without an available model is reported",
+        "features/startup-check.feature › When everything is fine Keel opens the project directly"
       ]
     },
     "REQ-010": {
@@ -267,6 +277,17 @@
       "features": [
         "features/providers.feature",
         "features/providers-ollama.feature"
+      ]
+    },
+    "R17": {
+      "title": "Startup check and setup mode",
+      "requirements": [
+        "REQ-009",
+        "REQ-012",
+        "REQ-005"
+      ],
+      "features": [
+        "features/startup-check.feature"
       ]
     },
     "R18": {
@@ -751,6 +772,41 @@
       "feature": "features/stage-gating.feature",
       "scenario": "Approving the intent unlocks the spec",
       "requirement": "REQ-005"
+    },
+    {
+      "feature": "features/startup-check.feature",
+      "scenario": "First run opens setup first",
+      "requirement": "REQ-009"
+    },
+    {
+      "feature": "features/startup-check.feature",
+      "scenario": "Keel opens in setup mode when the model cannot be reached",
+      "requirement": "REQ-009"
+    },
+    {
+      "feature": "features/startup-check.feature",
+      "scenario": "Keel opens in setup mode when the model cannot be reached",
+      "requirement": "REQ-005"
+    },
+    {
+      "feature": "features/startup-check.feature",
+      "scenario": "A task without an available model is reported",
+      "requirement": "REQ-009"
+    },
+    {
+      "feature": "features/startup-check.feature",
+      "scenario": "An invalid project config keeps the project closed",
+      "requirement": "REQ-012"
+    },
+    {
+      "feature": "features/startup-check.feature",
+      "scenario": "When everything is fine Keel opens the project directly",
+      "requirement": "REQ-009"
+    },
+    {
+      "feature": "features/startup-check.feature",
+      "scenario": "When everything is fine Keel opens the project directly",
+      "requirement": "REQ-012"
     },
     {
       "feature": "features/templates.feature",

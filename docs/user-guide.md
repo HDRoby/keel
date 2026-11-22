@@ -33,7 +33,7 @@ Features marked **(coming: CR-NNNN)** are specified in `changes/` but not built 
 
 Install Keel as described in the README (`npm install`, `npm link`).
 
-**Startup check (coming: CR-0012).** Every time Keel starts, it checks your settings, that your model answers, that each task has a model, and that the project's config is valid. If something fails, Keel opens in setup mode: only Startup check and Settings are available until it is fixed.
+**Startup check.** Every time Keel starts, it checks your settings, that your model answers, that each task has a model, and that the project's config is valid. If something fails, Keel opens in setup mode: only Startup check and Settings are available until it is fixed.
 
 ## 2. Opening a folder
 

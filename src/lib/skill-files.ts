@@ -4,7 +4,7 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fail, ok, type Result } from './result';
-import { VERSIONED_REF } from './templates/library';
+import { VERSIONED_REF } from './refs';
 
 export type SkillKind = 'styles' | 'standards';
 

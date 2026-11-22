@@ -6,9 +6,9 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 15
+version: 16
 template: implementation-plan@2
-from_spec: SPC-0001@14
+from_spec: SPC-0001@15
 ---
 
 # Plan: Keel v0.1
@@ -96,8 +96,15 @@ Runs after CR-0005 (R10); CR-0006 builds on it.
 | --- | --- | --- | --- |
 | R16 | Ollama as the default provider | REQ-009 | providers |
 
+## Rework for CR-0012
+
+| Task | Title | Requirements | Scenarios |
+| --- | --- | --- | --- |
+| R17 | Startup check and setup mode | REQ-009, REQ-012, REQ-005 | startup-check |
+
 ## Version history
 
+- v16: task R17 for CR-0012.
 - v15: task R16 for CR-0011.
 - v14: task R15 for CR-0010.
 - v13: task R14 for CR-0009.

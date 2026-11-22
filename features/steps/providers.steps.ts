@@ -47,7 +47,7 @@ Then('I get a reply from the new provider', async ({ page }) => {
 let stub: Server | undefined;
 
 /** Starts a stub of Ollama's /api/tags and /api/show with the given models; returns its address. */
-async function ollamaStub(models: { name: string; size: number; parameters: string; context: number }[]): Promise<string> {
+export async function ollamaStub(models: { name: string; size: number; parameters: string; context: number }[]): Promise<string> {
   stub = createServer((request, response) => {
     let body = '';
     request.on('data', (chunk: Buffer) => { body += chunk.toString(); });
@@ -134,11 +134,12 @@ Then('I see "Ollama is not running" and how to start it', async ({ page }) => {
 });
 
 Then('actions that need a model say why they are unavailable', async ({ page }) => {
+  // In setup mode (CR-0012) a page whose actions need a model opens the Startup check, which says why.
   const store = await initialisedFolder('Readme helper');
   await createDocument(store, { kind: 'intent', title: 'Readme helper', template: 'standard-intent@3', status: 'approved', body: '# Intent\n\n## Requirements\n\n- REQ-001 Show the run command\n' });
   store.index.close();
   await page.goto(stagePath('spec'));
-  const form = page.getByRole('form', { name: 'Generate spec' });
-  await expect(form.getByRole('button', { name: 'Generate spec' })).toBeDisabled();
-  await expect(form.getByRole('note', { name: 'Model unavailable' })).toContainText('Ollama is not running');
+  await page.waitForURL(/\/check$/);
+  await expect(page.getByRole('listitem', { name: 'Model provider' })).toContainText('Keel could not reach Ollama');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Keel cannot reach your model');
 });
