@@ -2,7 +2,7 @@
 // For an Explore review (a system prompt asking for JSON) it answers with a scripted review keyed on the
 // sections' content, so the scenarios are deterministic. KEEL_FAKE_LOG names a file that gets one line per
 // call, so a scenario can check that no model call was made.
-import { appendFileSync } from 'node:fs';
+import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { PROVIDERS, type ChatMessage, type ChatProvider, type RealProviderId } from './types';
 
 const REVIEW_MARKER = 'Answer with one JSON object and nothing else.';
@@ -12,8 +12,12 @@ const BASELINE_MARKER = 'Answer with the baseline as JSON and nothing else.';
 const STARTUP_MARKER = 'Keel startup check: answer briefly.';
 const CHANGE_DRAFT_MARKER = 'Answer with the change request sections as JSON and nothing else.';
 const PLAN_MARKER = 'Answer with the change plan as JSON and nothing else.';
+const READINESS_MARKER = 'Answer with the readiness review for one area as JSON and nothing else.';
 
-export function fakeReply(standsFor: RealProviderId, messages: ChatMessage[]): string {
+/** Test control, from a file next to KEEL_FAKE_LOG: how the readiness review behaves in a scenario. */
+export interface FakeControl { readiness?: 'silent' | 'bad-path' }
+
+export function fakeReply(standsFor: RealProviderId, messages: ChatMessage[], control: FakeControl = {}): string {
   const label = PROVIDERS.find((p) => p.id === standsFor)?.label ?? standsFor;
   const last = [...messages].reverse().find((m) => m.role === 'user')?.content ?? '';
   if (messages[0]?.role === 'system' && messages[0].content.includes(REVIEW_MARKER)) return JSON.stringify(fakeReview(label, last));
@@ -22,6 +26,7 @@ export function fakeReply(standsFor: RealProviderId, messages: ChatMessage[]): s
   if (messages[0]?.role === 'system' && messages[0].content.includes(BASELINE_MARKER)) return JSON.stringify(fakeBaseline(last));
   if (messages[0]?.role === 'system' && messages[0].content.includes(CHANGE_DRAFT_MARKER)) return JSON.stringify(fakeChangeDraft(last));
   if (messages[0]?.role === 'system' && messages[0].content.includes(PLAN_MARKER)) return JSON.stringify(fakePlan(last));
+  if (messages[0]?.role === 'system' && messages[0].content.includes(READINESS_MARKER)) return JSON.stringify(fakeReadiness(messages[0].content, last, control));
   if (messages[0]?.role === 'system' && messages[0].content.includes('Answer with a fit line as JSON and nothing else.')) return JSON.stringify({ kind: 'follows', text: 'Fits the requirements; no standard is broken' });
   return `Reply from ${label}: I read "${last}".`;
 }
@@ -198,13 +203,47 @@ export function fakePlan(userMessage: string): Record<string, unknown> {
   };
 }
 
+/** Readiness review for one area (CR-0015): a why for each failed rule; one piece of advice on the README; with
+ *  bad-path, advice based on a file that does not exist, which Keel must drop. */
+function fakeReadiness(system: string, last: string, control: FakeControl) {
+  const area = /for one area: ([^.]+)\./.exec(system)?.[1] ?? '';
+  let input: { names?: string[]; rules?: { id: string; status: string; advice?: string }[] } = {};
+  try {
+    input = JSON.parse(last) as typeof input;
+  } catch { /* names only */ }
+  const why = (input.rules ?? []).filter((r) => r.status === 'fail').map((r) => ({ rule: r.id, text: `Here: ${r.advice ?? r.id}, so agents work from the same facts.` }));
+  const advice: Record<string, unknown>[] = [];
+  if (area === 'Project knowledge' && input.names?.includes('README.md')) {
+    advice.push({ title: 'Say in the README what the project is for', why: 'The README names the project but not its purpose.', evidence: [{ path: 'README.md', line: 1 }], impact: 'Low', effort: 'Small', action: 'add' });
+  }
+  if (area === 'Project knowledge' && control.readiness === 'bad-path') {
+    advice.push({ title: 'Write an architecture overview', why: 'There is none.', evidence: [{ path: 'docs/does-not-exist.md' }], impact: 'Medium', effort: 'Medium', action: 'add' });
+  }
+  return { why, findings: [], advice };
+}
+
+function readControl(log: string | undefined): FakeControl {
+  const file = log ? `${log}.control.json` : undefined;
+  try {
+    return file && existsSync(file) ? (JSON.parse(readFileSync(file, 'utf8')) as FakeControl) : {};
+  } catch {
+    return {};
+  }
+}
+
 export function createFakeProvider(standsFor: RealProviderId, env: Record<string, string | undefined> = process.env): ChatProvider {
   return {
     id: 'fake',
     async *stream(messages) {
       const log = env.KEEL_FAKE_LOG?.trim();
-      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : messages[0]?.content.includes(SCENARIO_MARKER) ? 'scenario' : messages[0]?.content.includes(DESIGN_MARKER) ? 'design' : messages[0]?.content.includes(BASELINE_MARKER) ? 'baseline' : messages[0]?.content.includes(STARTUP_MARKER) ? 'health' : messages[0]?.content.includes(CHANGE_DRAFT_MARKER) ? 'change' : messages[0]?.content.includes(PLAN_MARKER) ? 'plan' : 'chat'}\n`);
-      for (const word of fakeReply(standsFor, messages).split(/(?<= )/)) yield word;
+      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : messages[0]?.content.includes(SCENARIO_MARKER) ? 'scenario' : messages[0]?.content.includes(DESIGN_MARKER) ? 'design' : messages[0]?.content.includes(BASELINE_MARKER) ? 'baseline' : messages[0]?.content.includes(STARTUP_MARKER) ? 'health' : messages[0]?.content.includes(CHANGE_DRAFT_MARKER) ? 'change' : messages[0]?.content.includes(PLAN_MARKER) ? 'plan' : messages[0]?.content.includes(READINESS_MARKER) ? 'readiness' : 'chat'}\n`);
+      const control = readControl(log);
+      if (messages[0]?.content.includes(READINESS_MARKER)) {
+        // Scenarios check what a readiness call sends: the request is kept next to the log (test runs only).
+        if (log) appendFileSync(`${log}.requests`, `${JSON.stringify({ system: messages[0].content, user: messages.at(-1)?.content ?? '' })}\n`);
+        if (control.readiness === 'silent') throw new Error('The fake model does not answer');
+      }
+      for (const word of fakeReply(standsFor, messages, control).split(/(?<= )/)) yield word;
     },
   };
 }
