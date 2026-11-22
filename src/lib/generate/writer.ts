@@ -8,7 +8,7 @@ export type Writer = (task: ModelTask, messages: ChatMessage[]) => Promise<strin
 /** A Writer backed by Settings › Model per task. Message content is never logged. */
 export function providerWriter(store: Store, env: Record<string, string | undefined> = process.env): Writer {
   return async (task, messages) => {
-    const resolved = providerForTask(store, task, env);
+    const resolved = await providerForTask(store, task, env);
     if (!resolved.ok) return undefined;
     try {
       let text = '';

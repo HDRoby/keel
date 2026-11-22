@@ -1,6 +1,5 @@
 // Provider connections and model per task, stored in the user config folder's settings.json (REQ-009, ADR-0011).
 import { z } from 'zod';
-import { DEFAULT_ANTHROPIC_MODEL } from '../providers/anthropic';
 import { MODEL_TASKS, PROVIDER_IDS, type ModelChoice, type ModelTask, type ProviderConfig, type RealProviderId } from '../providers/types';
 import { fail, ok, type Result } from '../result';
 import type { Store } from '../store/db';
@@ -24,7 +23,8 @@ export const modelChoiceSchema = z.strictObject({
 /** What Settings may show: connection details, and whether a key is stored, never the key. */
 export type ProviderView = Omit<ProviderConfig, 'apiKey'> & { hasKey: boolean };
 
-export const DEFAULT_CHOICE: ModelChoice = { provider: 'anthropic', model: DEFAULT_ANTHROPIC_MODEL };
+/** With nothing saved, every task uses Ollama on this computer; the model is picked from what is installed (CR-0011). */
+export const DEFAULT_CHOICE: ModelChoice = { provider: 'ollama', model: '' };
 
 // settings.json: { "provider.<id>": {...}, "model.<task>": {...}, ... }, keys encrypted.
 function readJson<T>(store: Store, key: string, schema: z.ZodType<T>): T | undefined {
@@ -79,6 +79,11 @@ export function saveAuthor(store: Pick<Store, 'user'>, name: string): Result<str
   if (clean.length > 120) return fail('invalid-name', 'A name can be up to 120 characters');
   setUserSetting(store.user, 'author', clean || undefined);
   return ok(clean);
+}
+
+/** The saved choice for a task, or undefined when none is saved. */
+export function savedModelChoice(store: Store, task: ModelTask): ModelChoice | undefined {
+  return readJson(store, `model.${task}`, modelChoiceSchema);
 }
 
 export function modelChoice(store: Store, task: ModelTask): ModelChoice {

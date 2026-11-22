@@ -4,7 +4,8 @@ import { saveAuthorAction, saveExploreTimingAction, saveGithubAction, saveMockGa
 import { SubmitButton } from '@/components/SubmitButton';
 import { hasGithubToken } from '@/lib/github/auth';
 import { ErrorAlert, Topbar } from '@/components/Shell';
-import { Button } from '@/components/ui/Button';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { DataTable } from '@/components/ui/DataTable';
 import { Card } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
 import { MetaGrid } from '@/components/ui/MetaGrid';
@@ -13,13 +14,17 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Tag } from '@/components/ui/Tag';
 import css from './settings.module.css';
 import { MODEL_TASKS, PROVIDERS } from '@/lib/providers/types';
-import { exploreTiming, modelChoice, providerView } from '@/lib/settings/settings';
+import { exploreTiming, providerView } from '@/lib/settings/settings';
+import { effectiveChoice, localModels } from '@/lib/providers/local';
+import { DEFAULT_OLLAMA_URL, goodFor, SUGGESTED_OLLAMA_MODEL } from '@/lib/providers/ollama';
 import { userSetting } from '@/lib/settings/user-dir';
 import { serverStore } from '@/lib/store/server-store';
 import { readProject } from '@/lib/store/workspace';
 import { readbackInterval } from '@/lib/readback/schedule';
 
 export const dynamic = 'force-dynamic';
+
+const formatBytes = (n: number) => (n >= 1e9 ? `${(n / 1e9).toFixed(1)} GB` : `${Math.round(n / 1e6)} MB`);
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ error?: string; saved?: string; tested?: string }> }) {
   const { error, saved, tested } = await searchParams;
@@ -28,6 +33,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const project = readProject(store.root);
   const author = userSetting(store.user, 'author');
   const timing = exploreTiming(store);
+  const local = await localModels(store);
+  const choices = Object.fromEntries(await Promise.all(MODEL_TASKS.map(async ({ task }) => [task, await effectiveChoice(store, task)] as const)));
+  const ollamaView = providerView(store, 'ollama');
   return (
     <>
       <Topbar title="Settings" />
@@ -61,10 +69,39 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </div>
         </Card>
 
-        <Card title="Model per task" meta="Each task can use a different provider and model.">
+        <Card title={<span id="ollama-title">Ollama (on this computer)</span>} label="Ollama (on this computer)" meta="The default provider. No API key needed: nothing leaves this computer."
+          actions={local.status === 'running' ? <Tag tone="ok">Running · {local.models.length} model{local.models.length === 1 ? '' : 's'}</Tag> : local.status === 'no-models' ? <Tag tone="warn">No models yet</Tag> : <Tag tone="danger">Not running</Tag>}>
+          <div className={css.form}>
+            {local.status === 'not-running' && (
+              <Notice kind="warning" title="Ollama is not running">
+                Keel cannot reach Ollama at <code>{local.base}</code>. Open the Ollama app, or run <code>ollama serve</code> in a terminal, then Check again. Or pick another provider under Model per task.
+              </Notice>
+            )}
+            {local.status === 'no-models' && (
+              <Notice kind="warning" title="No models yet">
+                Ollama is running but has no models. Run <code>ollama pull {SUGGESTED_OLLAMA_MODEL}</code> for a model that suits Keel, then Check again. Until then, actions that need a model are unavailable.
+              </Notice>
+            )}
+            {local.models.length > 0 && (
+              <DataTable label="Models on this computer" columns={['Model', 'Size on disk', 'Parameters', 'Context', 'Good for']}
+                rows={[...local.models].sort((a, b) => b.billions - a.billions).map((m) => ({ key: m.name, label: m.name, cells: [
+                  <code key="n">{m.name}</code>, formatBytes(m.sizeBytes), m.parameters || '—', m.contextLength ? `${Math.round(m.contextLength / 1024)}K tokens` : '—', goodFor(m),
+                ] }))} />
+            )}
+            <form action={saveProviderAction} aria-label="Ollama (on this computer) connection" className={css.inlineForm}>
+              <input type="hidden" name="provider" value="ollama" />
+              <Field label="Server address" hint="Ollama's default address. No API key needed."><input name="baseUrl" type="url" defaultValue={ollamaView.baseUrl ?? ''} placeholder={DEFAULT_OLLAMA_URL} /></Field>
+              <Button type="submit" small>Save address</Button>
+              <ButtonLink href="/settings" small>Check again</ButtonLink>
+            </form>
+          </div>
+        </Card>
+
+        <Card title="Model per task" meta="Each task can use a different provider and model. With nothing saved, Keel uses Ollama and picks from the models on this computer: the largest for spec, plan and feasibility, a mid-size one for section comments.">
           <div className={css.tasks}>
+            <datalist id="local-models">{local.models.map((m) => <option key={m.name} value={m.name}>{m.parameters}</option>)}</datalist>
             {MODEL_TASKS.map(({ task, label }) => {
-              const choice = modelChoice(store, task);
+              const choice = choices[task] ?? { provider: 'ollama', model: '' };
               return (
                 <form key={task} action={saveModelAction} aria-label={`${label} model`} className={css.task}>
                   <input type="hidden" name="task" value={task} />
@@ -72,7 +109,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                   <Field label="Provider"><select name="provider" defaultValue={choice.provider}>
                     {PROVIDERS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
                   </select></Field>
-                  <Field label="Model"><input name="model" defaultValue={choice.model} required /></Field>
+                  <Field label="Model"><input name="model" defaultValue={choice.model} list="local-models" placeholder={local.models.length ? 'Choose a model' : 'Model name'} required /></Field>
                   <Button type="submit" small>Save</Button>
                 </form>
               );
@@ -80,9 +117,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </div>
         </Card>
 
-        <Card title="Model providers" meta="Your own key. Usage is billed by the provider. Keys are stored encrypted in your user folder and are never shown again, never written to the project folder, documents, git or logs.">
+        <Card title="Other providers" meta="Your own key. Usage is billed by the provider. Keys are stored encrypted in your user folder and are never shown again, never written to the project folder, documents, git or logs.">
           <div className={css.providers}>
-            {PROVIDERS.map(({ id, label }) => {
+            {PROVIDERS.filter((p) => p.id !== 'ollama').map(({ id, label }) => {
               const view = providerView(store, id);
               return (
                 <section key={id} aria-label={label} className={css.provider}>
