@@ -5,6 +5,9 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { approveChange, decideImpact, rejectChange, setChangeSize, submitChange, writePackage } from '@/lib/changes/flow';
+import { draftChange } from '@/lib/changes/draft';
+import { renumberRequirement } from '@/lib/changes/links';
+import { planChange, settlePlannedScenario } from '@/lib/changes/plan';
 import { createChange } from '@/lib/changes/store';
 import { formFields } from '@/lib/form-fields';
 import { providerWriter } from '@/lib/generate/writer';
@@ -35,7 +38,10 @@ export async function newChangeAction(form: FormData): Promise<void> {
   const input = z.strictObject({ title: z.string().trim().min(1).max(200), reason: z.string().trim().max(5_000), affects: z.array(z.enum(['intent', 'spec', 'plan'])).max(3) })
     .safeParse(formFields(form, ['affects']));
   if (!input.success) redirect(`${page()}?error=${encodeURIComponent('A change request needs a title')}`);
-  const made = await createChange(serverStore(), { title: input.data.title, reason: input.data.reason, affects: input.data.affects.map((a) => DOCUMENTS[a] ?? a) });
+  const store = serverStore();
+  // The assistant drafts Why, What changes and Done when (CR-0013); without a model they stay to be written.
+  const draft = await draftChange(providerWriter(store), { title: input.data.title, reason: input.data.reason, requirements: [] });
+  const made = await createChange(store, { title: input.data.title, reason: input.data.reason, affects: input.data.affects.map((a) => DOCUMENTS[a] ?? a), draft });
   if (!made.ok) back(undefined, made);
   redirect(page(made.value.id));
 }
@@ -90,4 +96,30 @@ export async function writePackageAction(form: FormData): Promise<void> {
   await guard(cr);
   const written = await writePackage(serverStore(), cr);
   back(cr, written, written.ok ? `Wrote ${written.value.length} files to changes/${cr}/.` : undefined);
+}
+
+/** Plan the change (CR-0013): new tasks, likely files from the code map, scenarios and links. */
+export async function planChangeAction(form: FormData): Promise<void> {
+  const cr = id.parse(form.get('id'));
+  await guard(cr);
+  const share = form.getAll('share').map(String).filter((p) => p.length < 300);
+  const store = serverStore();
+  const planned = await planChange(store, cr, { share }, providerWriter(store));
+  back(cr, planned, planned.ok ? `Planned ${planned.value.tasks.length} task${planned.value.tasks.length === 1 ? '' : 's'} and ${planned.value.scenarios.length} scenario${planned.value.scenarios.length === 1 ? '' : 's'}.` : undefined);
+}
+
+/** Accept or clear a scenario the plan suggested. */
+export async function plannedScenarioAction(form: FormData): Promise<void> {
+  const input = z.strictObject({ id, scenario: z.string().regex(/^S\d+$/), state: z.enum(['accepted', 'cleared']) }).safeParse(formFields(form));
+  if (!input.success) redirect('/changes?error=Invalid+request');
+  await guard(input.data.id);
+  back(input.data.id, await settlePlannedScenario(serverStore(), input.data.id, input.data.scenario, input.data.state));
+}
+
+/** Two requests name the same new requirement ID (CR-0013): the later Keel request takes the next free ID. */
+export async function renumberRequirementAction(form: FormData): Promise<void> {
+  const input = z.strictObject({ id, from: z.string().regex(/^REQ-\d{3,}$/), to: z.string().regex(/^REQ-\d{3,}$/) }).safeParse(formFields(form));
+  if (!input.success) redirect('/changes?error=Invalid+request');
+  await guard(input.data.id);
+  back(input.data.id, await renumberRequirement(serverStore(), input.data.id, input.data.from, input.data.to), `${input.data.from} is now ${input.data.to} in ${input.data.id}.`);
 }

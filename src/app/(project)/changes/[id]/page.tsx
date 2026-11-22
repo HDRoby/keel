@@ -1,11 +1,19 @@
 // One change request (mock source Changes.dc.html, REQ-014, task R18): what changed, size and approval, the impact
 // on later documents by requirement ID with Update / Still valid / Later, and the change package for the agent.
 // A request written by hand is shown as its files say; Keel only approves or rejects it.
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { approveChangeAction, changeSizeAction, impactAction, rejectChangeAction, submitChangeAction, writePackageAction } from '../actions';
+import { approveChangeAction, changeSizeAction, impactAction, planChangeAction, plannedScenarioAction, rejectChangeAction, submitChangeAction, writePackageAction } from '../actions';
+import { ModelUnavailable } from '@/components/ModelUnavailable';
+import { SubmitButton } from '@/components/SubmitButton';
+import { LinkButton } from '@/components/ui/LinkButton';
+import { ScenarioCard } from '@/components/ui/ScenarioCard';
+import { readPlan } from '@/lib/changes/plan';
+import { modelAvailability } from '@/lib/providers/local';
+import { codeMap, scanFolder } from '@/lib/repo/scan';
+import { readProject } from '@/lib/store/workspace';
 import { CopyButton } from '@/components/CopyButton';
 import { Markdown } from '@/components/Markdown';
 import { ChangeStatus } from '@/components/ChangeStatus';
@@ -24,6 +32,9 @@ import { computeStatus, listChanges, progressLabel, type ImpactDecision } from '
 import { serverStore } from '@/lib/store/server-store';
 
 export const dynamic = 'force-dynamic';
+
+const CODE_MAP = { off: 'off', names: 'file and folder names only', files: 'names, plus files you choose' } as const;
+const sizeOf = (root: string, path: string) => { try { return statSync(join(root, path)).size; } catch { return 0; } };
 
 const DECISION: Record<ImpactDecision, { label: string; tone: TagTone }> = {
   pending: { label: 'Out of date', tone: 'warn' },
@@ -55,6 +66,12 @@ export default async function ChangePage({ params, searchParams }: { params: Pro
   const explore = readExplore(store);
   const fromExplore = keel && explore.ok && explore.value.changeRequest === cr.id;
   const allResolved = cr.impact.every((i) => i.decision === 'updated' || i.decision === 'valid');
+  const plan = readPlan(store.root, cr.id);
+  const project = readProject(store.root);
+  const codeMapMode = project.ok ? project.value.codeMap : 'names';
+  const candidates = codeMapMode === 'files' ? scanFolder(store.root).shareable.concat(codeMap(store.root).filter((f) => /\.(ts|tsx|js|py|go|rs|java|rb)$/.test(f)).slice(0, 30).map((path) => ({ path, size: sizeOf(store.root, path), why: 'Code' }))) : [];
+  const model = await modelAvailability(store, 'documents');
+  const unavailable = model.ok ? undefined : model.reason;
 
   return (
     <>
@@ -108,6 +125,57 @@ export default async function ChangePage({ params, searchParams }: { params: Pro
                 })}
               </div>
             </Card>
+
+            {keel && (
+              <Card title="4 · Plan the change" meta={plan ? `Planned ${plan.plannedAt.slice(0, 10)} · code map: ${CODE_MAP[plan.codeMap]}${plan.shared.length ? ` · ${plan.shared.length} file${plan.shared.length === 1 ? '' : 's'} shared` : ''}` : `New tasks with the files likely to change, suggested scenarios, and what is linked. Code map: ${CODE_MAP[codeMapMode]} (Settings).`}>
+                <div className={css.stack}>
+                  {cr.status !== 'approved' ? <p className={css.muted}>Approve the request first; then plan it.</p> : (
+                    <form action={planChangeAction} aria-label="Plan the change" className={css.stack}>
+                      <input type="hidden" name="id" value={cr.id} />
+                      {codeMapMode === 'files' && candidates.length > 0 && (
+                        <fieldset className={css.checks} aria-label="Files to share for this plan">
+                          <legend className={css.legend}>Files the assistant may read for this plan (nothing else is sent)</legend>
+                          {candidates.map((f) => <label key={f.path}><input type="checkbox" name="share" value={f.path} /> <code>{f.path}</code> <span className={css.muted}>{f.size < 1024 ? `${f.size} B` : `${(f.size / 1024).toFixed(1)} KB`}</span></label>)}
+                        </fieldset>
+                      )}
+                      {unavailable && <ModelUnavailable what="Plan the change" reason={unavailable} />}
+                      <div><SubmitButton primary label={plan ? 'Plan again' : 'Plan the change'} busyLabel="Planning…" disabled={Boolean(unavailable)} /></div>
+                    </form>
+                  )}
+                  {plan && (
+                    <>
+                      <ul className={css.list} aria-label="Planned tasks">
+                        {plan.tasks.map((t) => (
+                          <li key={t.id} aria-label={t.id} className={css.impact}>
+                            <strong>{t.id} · {t.title}</strong>
+                            <span className={css.muted}>{t.goal} · {t.requirements.join(', ') || 'no requirement named'}</span>
+                            <span>Files that are likely to change:</span>
+                            <ul className={css.list} aria-label={`Files for ${t.id}`}>{t.files.map((f) => <li key={f}>{f.startsWith('To be decided') ? f : <code>{f}</code>}</li>)}</ul>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className={css.stack} aria-label="Suggested scenarios">
+                        {plan.scenarios.filter((x) => x.state !== 'cleared').map((x) => (
+                          <ScenarioCard key={x.id} suggested={x.state === 'suggested'} label={`${x.state === 'suggested' ? 'Suggested: ' : ''}${x.name}`} name={x.name} steps={x.steps}
+                            tag={<Tag tone={x.state === 'accepted' ? 'ok' : 'accent'}>{x.state === 'accepted' ? 'Accepted' : 'Suggested'} · @{x.req}</Tag>}
+                            actions={x.state === 'suggested' ? <>
+                              <form action={plannedScenarioAction} className={css.inline}><input type="hidden" name="id" value={cr.id} /><input type="hidden" name="scenario" value={x.id} /><input type="hidden" name="state" value="accepted" /><LinkButton type="submit">Accept</LinkButton></form>
+                              <form action={plannedScenarioAction} className={css.inline}><input type="hidden" name="id" value={cr.id} /><input type="hidden" name="scenario" value={x.id} /><input type="hidden" name="state" value="cleared" /><LinkButton type="submit" tone="muted">Clear</LinkButton></form>
+                            </> : undefined} />
+                        ))}
+                      </div>
+                      <ul className={css.list} aria-label="Linked">
+                        {plan.linked.decisions.map((d) => <li key={d}>Decision record: <code>{d}</code></li>)}
+                        {plan.linked.mocks.map((m) => <li key={m}>Mock screen: <code>{m}</code></li>)}
+                        {plan.linked.dependsOn.length > 0 && <li>Suggested depends_on: {plan.linked.dependsOn.join(', ')}</li>}
+                        {plan.linked.clashes.map((c) => <li key={c}>Requirement ID clash: {c}</li>)}
+                        {!plan.linked.decisions.length && !plan.linked.mocks.length && !plan.linked.dependsOn.length && !plan.linked.clashes.length && <li>Nothing linked.</li>}
+                      </ul>
+                    </>
+                  )}
+                </div>
+              </Card>
+            )}
           </div>
 
           <div className={css.side}>
@@ -137,7 +205,7 @@ export default async function ChangePage({ params, searchParams }: { params: Pro
               </div>
             </Card>
 
-            <Card title="4 · Change package for the agent" meta={<>The project is in its own repository, so the change goes to the coding agent as a package in <code>{cr.folder}/</code>.</>}>
+            <Card title="5 · Change package for the agent" meta={<>The project is in its own repository, so the change goes to the coding agent as a package in <code>{cr.folder}/</code>.</>}>
               <div className={css.stack}>
                 <ul aria-label="Package files" className={css.list}>{pkg.map((f) => <li key={f}><code>{f}</code></li>)}</ul>
                 <div className={css.row}>
