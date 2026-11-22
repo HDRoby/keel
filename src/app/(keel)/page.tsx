@@ -12,13 +12,12 @@ import { Card } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
 import { LinkButton } from '@/components/ui/LinkButton';
 import { Notice } from '@/components/ui/Notice';
-import { OptionCard, OptionGrid } from '@/components/ui/OptionCard';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Tag } from '@/components/ui/Tag';
-import css from './initialise.module.css';
+import { StyleCards, TemplateCards, withSections } from '@/components/SetupCards';
+import css from '@/components/SetupCards.module.css';
 import { StandardsPicker } from '@/components/StandardsPicker';
 import { WhatKeelCreates, type CreatesLibrary } from '@/components/WhatKeelCreates';
-import { parseSections } from '@/lib/brainstorm/sections';
 import { listStyles } from '@/lib/brainstorm/styles';
 import { projectState } from '@/lib/gates/approvals';
 import { stageGates } from '@/lib/gates/rules';
@@ -27,7 +26,7 @@ import { defaultAuthor } from '@/lib/settings/settings';
 import { listStandards } from '@/lib/standards/library';
 import { serverStore } from '@/lib/store/server-store';
 import { readProject } from '@/lib/store/workspace';
-import { listTemplates, parseTemplateRef, readTemplate, templateName, templateOptions } from '@/lib/templates/library';
+import { listTemplates, templateName, templateOptions } from '@/lib/templates/library';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,21 +47,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
   }
 
   const library = previewRoot();
-  const withSections = (t: { ref: string; name: string }) => {
-    const ref = parseTemplateRef(t.ref);
-    const content = ref ? readTemplate(library, ref.id, ref.version) : undefined;
-    const sections = content?.ok ? parseSections(content.value.content) : [];
-    return { ...t, sections: sections.map((s) => `${s.heading}${s.required ? '*' : ''}`).join(', ') };
-  };
-  const intents = templateOptions(library, 'intent', 'latest').map(withSections);
-  const specs = templateOptions(library, 'spec', 'latest').map(withSections);
-  const plans = templateOptions(library, 'plan', 'latest').filter((t) => !t.ref.startsWith('task@')).map(withSections);
+  const intents = templateOptions(library, 'intent', 'latest').map((t) => withSections(library, t));
+  const specs = templateOptions(library, 'spec', 'latest').map((t) => withSections(library, t));
+  const plans = templateOptions(library, 'plan', 'latest').filter((t) => !t.ref.startsWith('task@')).map((t) => withSections(library, t));
   const brainstormStyles = listStyles(library);
   const standards = listStandards(library);
   const author = await defaultAuthor(store);
   const isRepo = existsSync(join(store.root, '.git'));
   const found = findKeelDocuments(store.root);
-  const pick = (options: { ref: string }[], wanted: string) => (options.some((o) => o.ref === wanted) ? wanted : options[0]?.ref);
   const creates: CreatesLibrary = {
     templates: mdFiles(join(library, '.keel', 'templates')),
     agentKit: mdFiles(join(library, '.keel', 'agent-kit')),
@@ -71,12 +63,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
     templateNames: Object.fromEntries(listTemplates(library).flatMap((t) => t.versions.map((v) => [`${t.id}@${v}`, templateName(t.id, v)]))),
     styleNames: Object.fromEntries(brainstormStyles.map((s) => [s.ref, s.name])),
   };
-
-  const templateCards = (name: string, options: { ref: string; name: string; sections: string }[], wanted: string) => options.map((t) => (
-    <OptionCard key={t.ref} label={t.name} title={t.name} tag={t.ref === wanted ? 'Default' : undefined}
-      foot={t.sections ? `Sections: ${t.sections} (* required)` : undefined}
-      control={<input type="radio" name={name} value={t.ref} defaultChecked={t.ref === pick(options, wanted)} aria-label={t.name} />} />
-  ));
 
   return (
     <>
@@ -123,19 +109,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
 
           <Card title={<span id="template-heading">Intent template</span>} actions={<LinkButton href="/templates">Manage templates</LinkButton>}>
             <div className={css.stack}>
-              <OptionGrid radio labelledBy="template-heading" columns="two">{templateCards('template', intents, DEFAULTS.intent)}</OptionGrid>
+              <TemplateCards name="template" options={intents} chosen={DEFAULTS.intent} defaultRef={DEFAULTS.intent} labelledBy="template-heading" columns="two" />
               <p className={css.note}>You can change the intent template later in Project setup.</p>
             </div>
           </Card>
 
           <Card title={<span id="style-heading">Brainstorm style</span>} actions={<LinkButton href="/styles">Manage styles</LinkButton>}>
             <div className={css.stack}>
-              <OptionGrid radio labelledBy="style-heading" columns="three">
-                {brainstormStyles.map((s, i) => (
-                  <OptionCard key={s.id} label={s.name} title={s.name} tag={`${i === 0 ? 'Default · ' : ''}v${s.version}`} summary={s.description}
-                    control={<input type="radio" name="style" value={s.ref} defaultChecked={i === 0} aria-label={s.name} />} />
-                ))}
-              </OptionGrid>
+              <StyleCards styles={brainstormStyles} labelledBy="style-heading" />
               <p className={css.note}>The style is fixed once the brainstorm starts.</p>
             </div>
           </Card>
@@ -143,9 +124,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
           <Card title="Document templates" meta="Used when Keel writes the later documents for this project." actions={<LinkButton href="/templates">Manage templates</LinkButton>}>
             <div className={css.stack}>
               <h3 id="spec-heading" className={css.group}>Spec</h3>
-              <OptionGrid radio labelledBy="spec-heading" columns="three">{templateCards('spec', specs, DEFAULTS.spec)}</OptionGrid>
+              <TemplateCards name="spec" options={specs} chosen={DEFAULTS.spec} defaultRef={DEFAULTS.spec} labelledBy="spec-heading" />
               <h3 id="plan-heading" className={css.group}>Plan</h3>
-              <OptionGrid radio labelledBy="plan-heading" columns="three">{templateCards('plan', plans, DEFAULTS.plan)}</OptionGrid>
+              <TemplateCards name="plan" options={plans} chosen={DEFAULTS.plan} defaultRef={DEFAULTS.plan} labelledBy="plan-heading" />
             </div>
           </Card>
 
