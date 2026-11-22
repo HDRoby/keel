@@ -6,7 +6,7 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 9
+version: 10
 template: requirements-and-design-spec@2
 from_intent: INT-0001@4
 standards:
@@ -27,8 +27,8 @@ decision: go (docs/decisions/0001-go.md)
 | REQ-001 | Template-driven brainstorm. Explore shows the intent template's sections for the user to fill in. An LLM reviews all sections whenever the user leaves a section, pauses, or replies to a comment, and writes a comment on each section: challenges, cross-references between sections, suggestions or questions. It only fills empty sections as suggestions and offers rewrites the user applies; it never changes the user's text on its own. Requirements is one of the sections, with one row per requirement. | Intent |
 | REQ-002 | `intent.md` with metadata: ID, project, author, created, updated, status, version, template, brainstorm style. intent.md is assembled from the Explore sections with no model call. Requirement IDs are given when the intent is drafted and never change. Once the intent is approved, edits in Explore are saved as a change request. | Intent |
 | REQ-003 | Versioned, editable templates for intent, spec, plan, roadmap, decision records, agent instructions and the agent kit. A template used by any project cannot be removed. | Intent |
-| REQ-004 | Stable requirement IDs traced from intent to spec, plan tasks and acceptance scenarios. | Intent |
-| REQ-005 | Stage gating: Intent needs the required template sections; Spec needs an approved intent; Plan needs a Go decision; Handoff needs an approved plan and a latest decision of Go. Locked stages say why. An approved document is not reopened by a review; it changes only through a change request, and the later documents it affects are marked out of date until the request is applied. | Intent |
+| REQ-004 | Stable requirement IDs traced from intent to spec, plan tasks and acceptance scenarios. Every requirement has at least one acceptance scenario tagged `@REQ-xxx`; scenarios are edited in the Spec, grouped by requirement. | Intent |
+| REQ-005 | Stage gating: Intent needs the required template sections; Spec needs an approved intent; Plan needs a Go decision and at least one accepted scenario per requirement (the locked message names the requirements without one); Handoff needs an approved plan and a latest decision of Go. Locked stages say why. An approved document is not reopened by a review; it changes only through a change request, and the later documents it affects are marked out of date until the request is applied. | Intent |
 | REQ-006 | Handoff writes the agent files into the project folder (AGENTS.md, CLAUDE.md, REVIEW.md, agent kit, standards as skills, failing acceptance scenarios, CI). It never overwrites a file Keel did not write without asking. Zip download is optional. Push to the folder's existing git remote is optional. | Intent |
 | REQ-007 | Read back the agent's commits and uncommitted edits to `docs/`, `tasks/` and `features/` from the local repository. Keel's own commits are ignored. Accept as a new version or dismiss. An accepted change to an approved document goes back to draft for a new approval. | Spec |
 | REQ-008 | Version history for every document with readable diffs, the reason for each version, and its impact by requirement ID. Each new version records the change request that caused it. | Spec |
@@ -83,6 +83,7 @@ Code generation, multi-user roles and approvals, the Maintain stage, a VS Code e
 
 ## Version history
 
+- v10: acceptance scenarios edited in the Spec, at least one per requirement (CR-0006).
 - v9: change requests across stages (CR-0003).
 - v8: Explore shows the template sections with live comments from the assistant (CR-0005).
 - v7: one project per folder in the code repository, `.keel/` folder, read-back from local git, optional push (CR-0004).
