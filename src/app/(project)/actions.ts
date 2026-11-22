@@ -23,6 +23,7 @@ import { serverStore } from '@/lib/store/server-store';
 import { push } from '@/lib/store/remote';
 import { commitBlocker } from '@/lib/store/git';
 import { setProjectStandards } from '@/lib/store/workspace';
+import { adoptProject } from '@/lib/store/adopt';
 import { VERSIONED_REF } from '@/lib/templates/library';
 
 const ref = z.string().regex(VERSIONED_REF);
@@ -38,6 +39,15 @@ const startForm = z.strictObject({
   style: ref,
   standards,
 });
+
+/** Initialise by adopting the Keel documents already in the folder (task R9). */
+export async function adoptAction(form: FormData): Promise<void> {
+  const input = z.strictObject({ author: z.string().trim().max(120) }).safeParse(formFields(form));
+  if (!input.success) redirect('/?error=Invalid+request');
+  const adopted = await adoptProject(serverStore(), input.data.author);
+  if (!adopted.ok) redirect(`/?error=${encodeURIComponent(adopted.message)}`);
+  redirect(at('intent'));
+}
 
 /** Initialise: writes .keel/ and starts the brainstorm. */
 export async function startAction(form: FormData): Promise<void> {

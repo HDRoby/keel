@@ -4,7 +4,8 @@ import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { startAction } from '@/app/(project)/actions';
+import { adoptAction, startAction } from '@/app/(project)/actions';
+import { findKeelDocuments } from '@/lib/store/adopt';
 import { ErrorAlert, PageHead, Topbar } from '@/components/Shell';
 import { StandardsPicker } from '@/components/StandardsPicker';
 import { WhatKeelCreates, type CreatesLibrary } from '@/components/WhatKeelCreates';
@@ -50,6 +51,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
   const standards = listStandards(library);
   const author = await defaultAuthor(store);
   const isRepo = existsSync(join(store.root, '.git'));
+  const found = findKeelDocuments(store.root);
   const pick = (options: { ref: string }[], wanted: string) => (options.some((o) => o.ref === wanted) ? wanted : options[0]?.ref);
   const creates: CreatesLibrary = {
     templates: mdFiles(join(library, '.keel', 'templates')),
@@ -71,6 +73,21 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
           <p className="tight"><strong>Folder</strong> <code>{store.root}</code></p>
           {!isRepo && <p className="muted">This folder is not a git repository. Keel will run git init.</p>}
         </section>
+
+        {found && (
+          <section className="card" aria-labelledby="found-heading">
+            <h2 id="found-heading">Keel documents found</h2>
+            <p>This folder already has documents with a Keel header, for project <strong>{found.title}</strong> ({found.id}):</p>
+            <ul className="plain-list">
+              {found.documents.map((d) => <li key={d.path}><code>{d.path}</code> · {d.id} v{d.version} · {d.status}</li>)}
+            </ul>
+            <p className="muted">Adopt keeps them as they are and takes the project id, title, templates, style and standards from them. New requirement IDs start after REQ-{String(found.maxReq).padStart(3, '0')}.</p>
+            <form action={adoptAction} className="row">
+              <label>Your name <input name="author" defaultValue={author || found.author} /></label>
+              <button type="submit" className="primary">Adopt</button>
+            </form>
+          </section>
+        )}
 
         <WhatKeelCreates formId={FORM_ID} library={creates} />
 

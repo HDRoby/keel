@@ -6,7 +6,7 @@ import { createBdd } from 'playwright-bdd';
 import { review } from '../../src/lib/gates/approvals';
 import { providerConfig } from '../../src/lib/settings/settings';
 import { createDocument } from '../../src/lib/store/documents';
-import { bddStore, BDD_PROJECT, BDD_USER, git, initialisedFolder, pending, startIdea } from './support';
+import { bddStore, BDD_PROJECT, BDD_USER, git, initialisedFolder, startIdea } from './support';
 
 const { Given, When, Then } = createBdd();
 
@@ -145,19 +145,52 @@ Then('{string} is still staged', async ({}, path: string) => {
   expect(git('diff', '--cached', '--name-only').split('\n')).toContain(path);
 });
 
-// Adopting existing documents: R9.
-Given('a git repository with a docs\\/intent.md that has a Keel header', async ({ $testInfo }) => {
-  pending($testInfo, 'R9');
+// Adopting existing documents (task R9).
+const ADOPTED_INTENT = `---
+id: INT-0001
+project: PRJ-0042
+title: Expense tracker
+author: Grace Hopper
+created: 2026-10-01
+updated: 2026-10-05
+status: approved
+version: 3
+template: standard-intent@3
+brainstorm_style: coach@1
+---
+
+# Intent: Expense tracker
+
+## Problem
+
+Teams lose receipts.
+
+## Requirements
+
+- REQ-001 Record an expense
+`;
+
+Given('a git repository with a docs\\/intent.md that has a Keel header', async () => {
+  git('init', '-q', '--initial-branch=main');
+  mkdirSync(join(BDD_PROJECT, 'docs'), { recursive: true });
+  writeFileSync(join(BDD_PROJECT, 'docs', 'intent.md'), ADOPTED_INTENT);
+  git('add', '.');
+  git('-c', 'user.name=Dev', '-c', 'user.email=dev@example.com', 'commit', '-qm', 'Intent from another machine');
 });
 
-When('I initialise it and choose Adopt', async ({ $testInfo }) => {
-  pending($testInfo, 'R9');
+When('I initialise it and choose Adopt', async ({ page }) => {
+  await page.goto('/');
+  const found = page.getByRole('region', { name: 'Keel documents found' });
+  await expect(found).toContainText('docs/intent.md · INT-0001 v3 · approved');
+  await found.getByRole('button', { name: 'Adopt' }).click();
+  await page.waitForURL(/\/intent$/);
 });
 
-Then('the intent is shown with its existing version', async ({ $testInfo }) => {
-  pending($testInfo, 'R9');
+Then('the intent is shown with its existing version', async ({ page }) => {
+  await expect(page.getByRole('status').filter({ hasText: 'INT-0001 v3' })).toHaveText('INT-0001 v3 · status approved');
+  expect(readFileSync(join(BDD_PROJECT, 'docs', 'intent.md'), 'utf8')).toBe(ADOPTED_INTENT);
 });
 
-Then('.keel\\/config.yml has the intent\'s project id', async ({ $testInfo }) => {
-  pending($testInfo, 'R9');
+Then('.keel\\/config.yml has the intent\'s project id', async () => {
+  expect(readFileSync(join(BDD_PROJECT, '.keel', 'config.yml'), 'utf8')).toMatch(/^id: PRJ-0042$/m);
 });

@@ -106,8 +106,11 @@ export async function buildHandoff(store: Store): Promise<Result<PackageFile[], 
   });
 
   const files: PackageFile[] = [];
+  const copied = new Set<string>();   // documents taken as they are, not generated from a template
   const copy = (path: string) => {
-    if (existsSync(join(dir, path))) files.push({ path, data: new Uint8Array(readFileSync(join(dir, path))) });
+    if (!existsSync(join(dir, path))) return;
+    files.push({ path, data: new Uint8Array(readFileSync(join(dir, path))) });
+    copied.add(path);
   };
 
   // Documents, decisions, mock references, tasks and scenarios, as they are in the project.
@@ -117,7 +120,10 @@ export async function buildHandoff(store: Store): Promise<Result<PackageFile[], 
   filesUnder(dir, 'tasks', (f) => f.endsWith('.md')).forEach(copy);
   const features: FeatureFile[] = filesUnder(dir, 'features', (f) => f.endsWith('.feature'))
     .map((path) => ({ path, content: readFileSync(join(dir, path), 'utf8') }));
-  features.forEach((f) => files.push(text(f.path, f.content)));
+  features.forEach((f) => {
+    files.push(text(f.path, f.content));
+    copied.add(f.path);
+  });
   stepStubs(features).forEach((s) => files.push(text(s.path, s.content)));
 
   // The roadmap: the project's own, or Now from the requirements in the intent.
@@ -179,9 +185,10 @@ export async function buildHandoff(store: Store): Promise<Result<PackageFile[], 
     `Planned with Keel (${project.value.id}). Coding agents start with \`AGENTS.md\`; the intent, spec and plan are in \`docs/\`, the tasks in \`tasks/\`, and the acceptance scenarios in \`features/\`.`,
   ].join('\n')));
 
-  // Every placeholder must be filled: an agent reading "{{verify_command}}" is not helped.
+  // Every placeholder Keel fills must be filled: an agent reading "{{verify_command}}" is not helped.
+  // Documents taken as they are may mention placeholders on purpose (a task about templates, for example).
   const decoderForPlaceholders = new TextDecoder('utf-8', { fatal: false });
-  const unfilled = files.filter((f) => !f.path.endsWith('.feature') && /\{\{\s*[a-z_]+\s*\}\}/.test(decoderForPlaceholders.decode(f.data))).map((f) => f.path);
+  const unfilled = files.filter((f) => !copied.has(f.path) && /\{\{\s*[a-z_]+\s*\}\}/.test(decoderForPlaceholders.decode(f.data))).map((f) => f.path);
   if (unfilled.length > 0) return fail('invalid-input', `Unfilled template placeholders in ${unfilled.join(', ')}; check the templates`);
 
   // Never hand off a key or token (Security baseline v2, rule 1).

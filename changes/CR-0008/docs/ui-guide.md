@@ -124,7 +124,7 @@ For each screen, compare with `docs/mocks/<screen>.png` and the source in `docs/
 | Screen | Route | Mock source | Must have |
 | --- | --- | --- | --- |
 | Open Keel (terminal) | CLI | `Main.dc.html` | CLI output lines as shown |
-| Initialise | `/` | `Start.dc.html` | Folder card, "What Keel creates" with collapsible FileTree, option cards, primary "Initialise and start brainstorm" |
+| Initialise | `/` | `Start.dc.html` | "What Keel found" for the four cases, paths, opt-in file list, agent files and rules, folder card, "What Keel creates" with collapsible FileTree, option cards, primary "Initialise and start brainstorm" |
 | Project setup | `/setup` | `SetupKeel.dc.html` | Same cards as Initialise, saves to `.keel/config.yml` |
 | Explore | `/explore` | `NewIdea.dc.html` (early), `Explore.dc.html` (later) | SectionFields with Comments, StatusLine, ProgressLine, Requirements ListRows, no chat panel |
 | Intent | `/intent` | `Intent.dc.html` | Assembled-from-Explore note, Tabs (Preview, Markdown, Mock references), Approval, Version history |

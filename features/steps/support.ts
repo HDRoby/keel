@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { expect, type Page, type TestInfo } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 import { recordDecision, review } from '../../src/lib/gates/approvals';
 import { generatePlan } from '../../src/lib/generate/plan';
@@ -26,11 +26,6 @@ Before(async () => {
   rmSync(BDD_USER, { recursive: true, force: true });
   mkdirSync(BDD_USER, { recursive: true });
 });
-
-/** Marks a scenario step that a later rework task builds; the scenario is reported as fixme until then. */
-export function pending(testInfo: TestInfo, task: string): void {
-  testInfo.fixme(true, `Built in ${task} (CR-0004)`);
-}
 
 /** git in the project folder. */
 export function git(...args: string[]): string {

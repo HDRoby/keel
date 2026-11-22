@@ -10,10 +10,11 @@ These change requests come from the owner's review of the Keel mockup on 2026-11
 | 4 | [CR-0007](CR-0007/CR-0007.md) | Spec: design as decisions with options proposed by the assistant | R12 |
 | 5 | [CR-0008](CR-0008/CR-0008.md) | Every screen looks like the mockup: UI guide, shared components, guard rails | R13 |
 | 6 | [CR-0009](CR-0009/CR-0009.md) | Clickable mock made elsewhere from the spec (prompt pack), attached back as a versioned mock set; gate setting | R14 |
+| 7 | [CR-0010](CR-0010/CR-0010.md) | Opening a folder: new, already Keel, existing project (baseline), existing project with its own AI setup (merge, rules as standards) | R15 |
 
 Each folder has the change request, task files, scenarios and a `PROMPT.md` to paste into the coding agent.
 
-## Requirement IDs after all six
+## Requirement IDs after all seven
 
 | ID | Requirement | Changed by |
 | --- | --- | --- |
@@ -21,11 +22,11 @@ Each folder has the change request, task files, scenarios and a `PROMPT.md` to p
 | REQ-002 | intent.md assembled from the sections; IDs at draft time; edits after approval become a change request | CR-0005 |
 | REQ-004 | At least one scenario per requirement, edited in the Spec | CR-0006 |
 | REQ-005 | Plan needs Go, a scenario per requirement, every design topic decided, and (if set) a current clickable mock | CR-0006, CR-0007, CR-0009 |
-| REQ-006 | Handoff writes into the folder; push optional | CR-0004 |
+| REQ-006 | Handoff writes into the folder and merges with existing agent files; push optional | CR-0004, CR-0010 |
 | REQ-007 | Read-back from local git, including uncommitted edits | CR-0004 |
 | REQ-009 | Keys in the user config folder | CR-0004 |
 | REQ-010 | Clickable mock prompt and versioned mock sets | CR-0009 |
-| REQ-012 | One project per folder with `.keel/` | CR-0004 (new) |
+| REQ-012 | One project per folder with `.keel/`; four opening cases and baseline for existing projects | CR-0004 (new), CR-0010 |
 | REQ-013 | Design as decisions with options | CR-0007 (new) |
 | REQ-014 | Reserved for CR-0003 (change requests across stages, Next) | — |
 

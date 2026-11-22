@@ -19,6 +19,26 @@ import { appendToSection, fillSections, isCaptured, nextQuestion, parseSections,
 import { readStyle, type Style } from './styles';
 import { readStandard } from '../standards/library';
 
+/**
+ * A brainstorm for documents Keel adopts (task R9): each template section that has text in the intent
+ * counts as answered and already in intent.md, so Explore shows the progress and adds nothing twice.
+ */
+export function sessionFromIntent(input: { title: string; idea: string; template: string; style: string; intentBody: string; templateContent: string }): Session {
+  const sections = parseSections(input.templateContent);
+  const answers: Record<string, string[]> = {};
+  for (const { heading } of sections) {
+    const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const match = new RegExp(`^## ${escaped}\\s*\\n([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm').exec(input.intentBody);
+    const text = (match?.[1] ?? '').replace(/<!--[\s\S]*?-->/g, '').trim();
+    if (text) answers[heading] = [text];
+  }
+  return {
+    title: input.title, idea: input.idea, template: input.template, brainstorm_style: input.style, answers,
+    current: nextQuestion(sections, answers) ?? null, transcript: [], req_ids: {},
+    in_intent: Object.fromEntries(Object.keys(answers).map((h) => [h, 1])),
+  };
+}
+
 /** Repository path of the transcript; the template library reads the same path. */
 export const BRAINSTORM_FILE = '.keel/brainstorm/explore.md';
 
@@ -316,7 +336,8 @@ export function brainstormCommitMessage(session: Session): string {
   return `Brainstorm: ${captured.length ? `captured ${captured.join(', ')}` : 'start'}`;
 }
 
-function sessionFile(session: Session): string {
+/** The transcript file: the session in front matter for Keel, a readable transcript for people. */
+export function sessionFile(session: Session): string {
   return matter.stringify(`\n${readable(session)}`, session);
 }
 
