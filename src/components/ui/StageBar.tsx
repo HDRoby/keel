@@ -6,8 +6,11 @@ import type { Stage } from '@/lib/documents/types';
 import type { StageSummary } from '@/lib/gates/approvals';
 import type { StageGate } from '@/lib/gates/rules';
 import type { Project } from '@/lib/store/workspace';
-import { CheckCircle, Current, Lock, Open, OutOfDate } from '../Icons';
-import { ErrorAlert, PageHead, Topbar } from '../Shell';
+import { CheckCircle, Current, Icon, Lock, Open, OutOfDate } from '../Icons';
+import { ErrorAlert, Topbar } from '../Shell';
+import { Card } from './Card';
+import { Notice } from './Notice';
+import { PageHeader } from './PageHeader';
 import { cx } from './cx';
 import styles from './StageBar.module.css';
 
@@ -51,30 +54,30 @@ export interface StageFrame {
   summaries: Record<Stage, StageSummary>;
 }
 
-/** The frame of a stage page: top bar, heading, stage bar, then "Locked." with the reason, or the stage itself. */
+/** The frame of a stage page: header bar, page header, stage bar, then "Locked." with the reason, or the stage itself. */
 export function StageLayout({ page, error, meta, description, actions, locked, children }: {
   page: StageFrame; error?: string; meta?: ReactNode; description?: ReactNode; actions?: ReactNode;
   locked?: ReactNode;   // still shown while the stage is locked, e.g. read-back changes waiting for review
   children: ReactNode;
 }) {
   const { project, gates, gate, summaries } = page;
+  const stale = summaries[gate.stage]?.outOfDate ?? [];
   return (
     <>
       <Topbar title={gate.label} />
       <main className="content">
-        <PageHead title={project.title} meta={meta ?? project.id} description={description} actions={gate.available ? actions : undefined} />
+        <PageHeader title={project.title} meta={meta ?? project.id} description={description} actions={gate.available ? actions : undefined} />
         <StageBar gates={gates} current={gate.stage} summaries={summaries} />
-        {summaries[gate.stage]?.outOfDate?.length ? (
-          <p role="note" className="notice stale-note">
-            Out of date · {summaries[gate.stage]?.outOfDate?.map((id, i) => <span key={id}>{i ? ', ' : ''}<Link href={`/changes/${id}`}>{id}</Link></span>)}: an approved change request affects this stage and is not applied yet.
-          </p>
-        ) : null}
+        {stale.length > 0 && (
+          <Notice kind="warning" role="note" title={<>Out of date · {stale.map((id, i) => <span key={id}>{i ? ', ' : ''}<Link href={`/changes/${id}`}>{id}</Link></span>)}</>}>
+            An approved change request affects this stage and is not applied yet.
+          </Notice>
+        )}
         {!gate.available ? (
           <>
-            <section aria-label={`${gate.label} stage`} className="card">
-              <h2>{gate.label}</h2>
-              <p role="status"><strong>Locked.</strong> {gate.reason}.</p>
-            </section>
+            <Card label={`${gate.label} stage`} title={gate.label}>
+              <p role="status" className={styles.locked}><Icon name="lock" size={18} tone="muted" /> <span><strong>Locked.</strong> {gate.reason}.</span></p>
+            </Card>
             {locked}
           </>
         ) : (

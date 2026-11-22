@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { serverStore } from '@/lib/store/server-store';
 import { NavGroup } from './NavLink';
+import { Notice } from './ui/Notice';
 import styles from './Shell.module.css';
 
 export interface ShellProject {
@@ -67,7 +68,7 @@ export function PageHead({ title, meta, description, actions }: { title: string;
 
 /** Error text from a form action, shown inside the page. */
 export function ErrorAlert({ error }: { error?: string }) {
-  return error ? <p role="alert" className="alert">{error}</p> : null;
+  return error ? <Notice kind="danger" role="alert">{error}</Notice> : null;
 }
 
 /** Shown on library pages before the folder has .keel/. */

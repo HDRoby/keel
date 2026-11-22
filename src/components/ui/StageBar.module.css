@@ -11,3 +11,4 @@ a.active:hover { background: var(--accent-soft); color: var(--accent); }
 .stale { color: var(--text-strong); }
 .staleNote { color: var(--warn-text); font-weight: 500; }
 .locked { background: var(--bg); border: 1px dashed var(--gray-3); color: var(--text-muted); cursor: not-allowed; }
+.locked { display: flex; gap: 8px; align-items: center; margin: 0; color: var(--text-secondary); }

@@ -1,0 +1,13 @@
+.stack { display: grid; gap: 12px; }
+.muted { margin: 0; font-size: 13px; line-height: 19px; color: var(--text-muted); }
+.list { list-style: none; margin: 0; padding: 0; display: grid; }
+.item { display: grid; gap: 6px; padding: 12px 0; border-bottom: 1px solid var(--border-default); }
+.item:first-child { padding-top: 0; }
+.head { display: flex; gap: 8px; align-items: center; }
+.title { flex: 1; color: var(--text-strong); min-width: 0; }
+.kind { font: var(--text-regular-1); color: var(--text-muted); text-transform: capitalize; }
+.meta { margin: 0; font: var(--text-regular-1); color: var(--text-muted); overflow-wrap: anywhere; }
+.thumb { display: block; max-height: 120px; object-fit: contain; border: 1px solid var(--border-default); border-radius: var(--radius-s); }
+.link { display: flex; gap: 8px 12px; flex-wrap: wrap; align-items: center; }
+.check { display: inline-flex; align-items: center; gap: 4px; font: var(--text-regular-1); }
+.summary { cursor: pointer; font: var(--text-medium-1); color: var(--accent); margin-bottom: 8px; }
