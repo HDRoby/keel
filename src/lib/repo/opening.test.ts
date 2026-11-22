@@ -149,6 +149,6 @@ describe('the fixture folders for the four cases', () => {
       expect(scanFolder(join(base, name)).kase, name).toBe(kase);
       expect(list(join(base, name)), name).toEqual(before);
     }
-    expect(rulesFromAgentFiles(join(base, 'existing-ai')).map((r) => r.rule)).toEqual(['Use pnpm, never npm or yarn', 'Always run the tests before a commit', 'Keep pull requests small']);
+    expect(rulesFromAgentFiles(join(base, 'existing-ai')).map((r) => r.rule)).toEqual(['Use pnpm, never npm or yarn', 'Always run the tests before a commit', 'Keep pull requests small', 'Run `npm install`, then `npm test` before a pull request']);
   });
 });
