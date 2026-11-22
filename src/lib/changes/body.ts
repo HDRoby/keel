@@ -16,6 +16,8 @@ export interface BodyInput {
   requirements: string[];
   impact: { document: string }[];
   draft?: ChangeDraft;
+  requirementChanges?: { id: string; change: string; text: string }[];
+  impactRows?: { area: string; requirements: string[]; what: string }[];
 }
 
 const NOT_YET = '_Not written yet._';
@@ -26,10 +28,15 @@ export function changeBody(store: Pick<Store, 'root'>, input: BodyInput): { body
   const template = chosenTemplate(store.root, 'change', project.ok ? project.value.templates : {});
   if (!template) return undefined;
   const drafted = (text?: string) => (text?.trim() ? `${text.trim()}\n\n_Drafted by the assistant: edit it before approval._` : NOT_YET);
-  const requirementRows = input.requirements.length
+  const cell = (t: string) => t.replace(/\|/g, '\\|').replace(/\n/g, ' ');
+  const requirementRows = input.requirementChanges?.length
+    ? ['| ID | Change |', '| --- | --- |', ...input.requirementChanges.map((r) => `| ${r.id} | ${r.change === 'new' ? 'New' : r.change === 'removed' ? 'Remove' : 'Change'}: "${cell(r.text)}" |`)].join('\n')
+    : input.requirements.length
     ? ['| ID | Change |', '| --- | --- |', ...input.requirements.map((r) => `| ${r} | ${NOT_YET} |`)].join('\n')
     : 'None named yet.';
-  const impactRows = input.impact.length
+  const impactRows = input.impactRows?.length
+    ? ['| Area | Requirements | What happens |', '| --- | --- | --- |', ...input.impactRows.map((i) => `| ${cell(i.area)} | ${i.requirements.join(', ') || '—'} | ${cell(i.what)} |`)].join('\n')
+    : input.impact.length
     ? ['| Area | Requirements | What happens |', '| --- | --- | --- |', ...input.impact.map((i) => `| \`${i.document}\` | ${input.requirements.join(', ') || '—'} | Out of date until resolved: Update, Still valid or Later |`)].join('\n')
     : 'No later document is affected yet.';
   const body = fillSections(renderTemplate(template.content, { cr_id: input.id, title: input.title.trim() }).body, {

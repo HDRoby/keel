@@ -13,9 +13,11 @@ const STARTUP_MARKER = 'Keel startup check: answer briefly.';
 const CHANGE_DRAFT_MARKER = 'Answer with the change request sections as JSON and nothing else.';
 const PLAN_MARKER = 'Answer with the change plan as JSON and nothing else.';
 const READINESS_MARKER = 'Answer with the readiness review for one area as JSON and nothing else.';
+const DISCUSS_MARKER = 'Keel discussion: discuss the change, then propose it as a keel-proposal block.';
+const SUMMARY_MARKER = 'Summarise these messages of a discussion about a software change.';
 
 /** Test control, from a file next to KEEL_FAKE_LOG: how the readiness review behaves in a scenario. */
-export interface FakeControl { readiness?: 'silent' | 'bad-path' }
+export interface FakeControl { readiness?: 'silent' | 'bad-path'; discussion?: 'no-proposal' | 'invalid' | 'unknown-req' }
 
 export function fakeReply(standsFor: RealProviderId, messages: ChatMessage[], control: FakeControl = {}): string {
   const label = PROVIDERS.find((p) => p.id === standsFor)?.label ?? standsFor;
@@ -27,6 +29,8 @@ export function fakeReply(standsFor: RealProviderId, messages: ChatMessage[], co
   if (messages[0]?.role === 'system' && messages[0].content.includes(CHANGE_DRAFT_MARKER)) return JSON.stringify(fakeChangeDraft(last));
   if (messages[0]?.role === 'system' && messages[0].content.includes(PLAN_MARKER)) return JSON.stringify(fakePlan(last));
   if (messages[0]?.role === 'system' && messages[0].content.includes(READINESS_MARKER)) return JSON.stringify(fakeReadiness(messages[0].content, last, control));
+  if (messages[0]?.role === 'system' && messages[0].content.includes(DISCUSS_MARKER)) return fakeDiscussion(messages[0].content, last, control);
+  if (messages[0]?.role === 'system' && messages[0].content.includes(SUMMARY_MARKER)) return 'Summary: the owner wants the change discussed so far.';
   if (messages[0]?.role === 'system' && messages[0].content.includes('Answer with a fit line as JSON and nothing else.')) return JSON.stringify({ kind: 'follows', text: 'Fits the requirements; no standard is broken' });
   return `Reply from ${label}: I read "${last}".`;
 }
@@ -222,6 +226,32 @@ function fakeReadiness(system: string, last: string, control: FakeControl) {
   return { why, findings: [], advice };
 }
 
+/** Discuss a change (CR-0016): proposes on the first reply; "yes" gets plain text; control picks the odd cases. */
+function fakeDiscussion(system: string, last: string, control: FakeControl): string {
+  if (/^\s*(yes|ok|go ahead)\b/i.test(last)) return 'Glad it fits. Press **Agree and create the change request** on the proposal when you are ready.';
+  if (control.discussion === 'no-proposal') return 'Before I propose anything: should a reviewer be able to block the approval, or only comment?';
+  const retry = last.startsWith('Your keel-proposal block could not be read');
+  if (control.discussion === 'invalid') return `${retry ? '' : 'Here is my proposal.\n\n'}\`\`\`keel-proposal\n{"title": "Reviewer comments", "why": \n\`\`\``;
+  const existing = /^- (REQ-\d{3,}) /m.exec(system)?.[1];
+  const changed = control.discussion === 'unknown-req' ? 'REQ-099' : existing;
+  const proposal = {
+    title: 'Reviewer comments before approval',
+    why: 'The owner wants reviewers to comment on the spec before approving it.',
+    what: ['Reviewers can leave comments on a draft spec.', 'The owner sees the comments before Approve.'],
+    requirements: [
+      { id: 'new', change: 'new', text: 'Reviewers can comment on a draft spec before it is approved.' },
+      ...(changed ? [{ id: changed, change: 'changed', text: 'Each stage unlocks only when the previous one is approved, after open comments are resolved.' }] : []),
+    ],
+    impact: [{ area: 'Spec', requirements: ['new'], what: 'Comments next to each section.' }],
+    scenarios: [{ title: 'A reviewer comments on a draft spec', requirement: 'new' }],
+    tasks: [{ title: 'Comments on the draft spec', files: ['src/lib/comments.ts (new)'] }],
+    decision: { title: 'Where comments are kept', alternatives: ['In the spec file', 'In .keel/comments'] },
+    dependsOn: [],
+    screens: ['Spec'],
+  };
+  return `${retry ? '' : 'A small change: comments on the draft spec, resolved before approval.\n\n'}\`\`\`keel-proposal\n${JSON.stringify(proposal, null, 2)}\n\`\`\``;
+}
+
 function readControl(log: string | undefined): FakeControl {
   const file = log ? `${log}.control.json` : undefined;
   try {
@@ -236,8 +266,12 @@ export function createFakeProvider(standsFor: RealProviderId, env: Record<string
     id: 'fake',
     async *stream(messages) {
       const log = env.KEEL_FAKE_LOG?.trim();
-      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : messages[0]?.content.includes(SCENARIO_MARKER) ? 'scenario' : messages[0]?.content.includes(DESIGN_MARKER) ? 'design' : messages[0]?.content.includes(BASELINE_MARKER) ? 'baseline' : messages[0]?.content.includes(STARTUP_MARKER) ? 'health' : messages[0]?.content.includes(CHANGE_DRAFT_MARKER) ? 'change' : messages[0]?.content.includes(PLAN_MARKER) ? 'plan' : messages[0]?.content.includes(READINESS_MARKER) ? 'readiness' : 'chat'}\n`);
+      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : messages[0]?.content.includes(SCENARIO_MARKER) ? 'scenario' : messages[0]?.content.includes(DESIGN_MARKER) ? 'design' : messages[0]?.content.includes(BASELINE_MARKER) ? 'baseline' : messages[0]?.content.includes(STARTUP_MARKER) ? 'health' : messages[0]?.content.includes(CHANGE_DRAFT_MARKER) ? 'change' : messages[0]?.content.includes(PLAN_MARKER) ? 'plan' : messages[0]?.content.includes(READINESS_MARKER) ? 'readiness' : messages[0]?.content.includes(DISCUSS_MARKER) ? 'discuss' : 'chat'}\n`);
       const control = readControl(log);
+      if (messages[0]?.content.includes(DISCUSS_MARKER) && log) {
+        // Scenarios check what a discussion sends (test runs only).
+        appendFileSync(`${log}.discuss`, `${JSON.stringify({ messages })}\n`);
+      }
       if (messages[0]?.content.includes(READINESS_MARKER)) {
         // Scenarios check what a readiness call sends: the request is kept next to the log (test runs only).
         if (log) appendFileSync(`${log}.requests`, `${JSON.stringify({ system: messages[0].content, user: messages.at(-1)?.content ?? '' })}\n`);
