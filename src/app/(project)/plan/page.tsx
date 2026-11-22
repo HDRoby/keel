@@ -6,6 +6,8 @@ import { RegenerateForm } from '@/components/RegenerateForm';
 import Link from 'next/link';
 import { Icon } from '@/components/Icons';
 import { Notice } from '@/components/ui/Notice';
+import { ModelUnavailable } from '@/components/ModelUnavailable';
+import { modelAvailability } from '@/lib/providers/local';
 import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DataTable } from '@/components/ui/DataTable';
@@ -30,6 +32,8 @@ export default async function PlanPage({ searchParams }: StageProps) {
   const plan = readDocument(store, 'docs/plan.md');
   const trace = buildTrace(store.root);
   const mock = mockCheck(projectState(store));
+  const model = await modelAvailability(store, 'documents');
+  const unavailable = model.ok ? undefined : model.reason;
   const tasks = Object.values(trace.tasks).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
 
   return (
@@ -46,7 +50,7 @@ export default async function PlanPage({ searchParams }: StageProps) {
           <DocumentReview home={store.root} document="plan" doc={plan.value} reviewer={reviewer} collapsed
             before={<Conflicts document="plan" conflicts={conflictsOf(plan.value)} />}
             after={plan.value.header.status === 'draft'
-              ? <RegenerateForm document="plan">Regenerating writes the plan and task files again from the current intent, spec and standards.</RegenerateForm>
+              ? <RegenerateForm document="plan" unavailable={unavailable}>Regenerating writes the plan and task files again from the current intent, spec and standards.</RegenerateForm>
               : undefined} />
           <Card title={<span id="tasks">Tasks in plan v{plan.value.header.version}</span>} meta="Each task names the requirements it serves and the scenarios that prove it."
             actions={<LinkButton href="/trace">Traceability</LinkButton>}>
@@ -63,7 +67,8 @@ export default async function PlanPage({ searchParams }: StageProps) {
         <Card title="Generate plan">
           <form action={generatePlanAction} aria-label="Generate plan" className={css.stack}>
             <p className={css.muted}>Keel fills the plan template from the intent and spec, and writes one task file per task in tasks/.</p>
-            <div><SubmitButton primary label="Generate plan" busyLabel="Generating plan…" /></div>
+            {unavailable && <ModelUnavailable what="Generate plan" reason={unavailable} />}
+            <div><SubmitButton primary label="Generate plan" busyLabel="Generating plan…" disabled={Boolean(unavailable)} /></div>
           </form>
         </Card>
       )}

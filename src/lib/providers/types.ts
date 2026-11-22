@@ -1,15 +1,16 @@
 // Provider layer contract (REQ-009, task T3).
 
-export type ProviderId = 'anthropic' | 'openai' | 'azure-openai' | 'openai-compatible' | 'fake';
+export type ProviderId = 'ollama' | 'anthropic' | 'openai' | 'azure-openai' | 'openai-compatible' | 'fake';
 
 /** Providers a user can choose in Settings. */
 export type RealProviderId = Exclude<ProviderId, 'fake'>;
 
 export const PROVIDERS: { id: RealProviderId; label: string }[] = [
+  { id: 'ollama', label: 'Ollama (on this computer)' },
   { id: 'anthropic', label: 'Anthropic' },
   { id: 'openai', label: 'OpenAI' },
   { id: 'azure-openai', label: 'Azure OpenAI' },
-  { id: 'openai-compatible', label: 'OpenAI-compatible (Ollama)' },
+  { id: 'openai-compatible', label: 'Other OpenAI-compatible server' },
 ];
 
 /** The ids of PROVIDERS, as a tuple for z.enum. */
@@ -37,7 +38,7 @@ export interface ChatProvider {
 /** Connection settings for one provider. The key is only ever held decrypted in memory. */
 export interface ProviderConfig {
   apiKey?: string;
-  baseUrl?: string;      // openai-compatible, e.g. http://localhost:11434/v1
+  baseUrl?: string;      // ollama: the server, e.g. http://localhost:11434; openai-compatible: e.g. http://host/v1
   endpoint?: string;     // azure-openai, e.g. https://<resource>.openai.azure.com
   deployment?: string;   // azure-openai
   apiVersion?: string;   // azure-openai
@@ -47,8 +48,8 @@ export interface ProviderConfig {
 export type ModelTask = 'brainstorm' | 'documents' | 'feasibility';
 
 export const MODEL_TASKS: { task: ModelTask; label: string }[] = [
-  { task: 'brainstorm', label: 'Brainstorm' },
-  { task: 'documents', label: 'Documents' },
+  { task: 'brainstorm', label: 'Section comments' },
+  { task: 'documents', label: 'Spec and plan' },
   { task: 'feasibility', label: 'Feasibility review' },
 ];
 

@@ -48,7 +48,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const reply = input.data.op === 'reply' ? { key: input.data.key, text: input.data.text } : undefined;
-  const resolved = providerForTask(store, 'brainstorm');
+  const resolved = await providerForTask(store, 'brainstorm');
   if (!resolved.ok) return json({ error: resolved.message, view: exploreView(context.value) }, 502);
   const reviewed = await reviewAll(context.value, resolved.value.provider, {
     model: resolved.value.choice.model, signal: request.signal, log: (line) => console.log(line),

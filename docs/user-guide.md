@@ -176,7 +176,7 @@ Two parts:
 
 **You, on this computer** (`~/.config/keel`, never committed):
 
-- **Model provider**: Ollama (default, coming: CR-0011, with the models installed on this computer listed), Anthropic, OpenAI, Azure OpenAI, or another OpenAI-compatible server. Keys are stored encrypted. **Test connection** / **Check again**.
+- **Model provider**: Ollama (default, with the models installed on this computer listed), Anthropic, OpenAI, Azure OpenAI, or another OpenAI-compatible server. Keys are stored encrypted. **Test connection** / **Check again**.
 - **Model per task**: section comments, spec and plan, feasibility review.
 - **Author name** (from `git config user.name`).
 - **Explore reviews**: pause before a review and the minimum interval.

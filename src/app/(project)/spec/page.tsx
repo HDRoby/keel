@@ -7,6 +7,8 @@ import { ScenariosPanel } from './scenarios-panel';
 import { DesignPanel } from './design-panel';
 import css from './spec.module.css';
 import { Conflicts } from '@/components/Conflicts';
+import { ModelUnavailable } from '@/components/ModelUnavailable';
+import { modelAvailability } from '@/lib/providers/local';
 import { DocumentReview } from '@/components/DocumentReview';
 import { Icon } from '@/components/Icons';
 import { Markdown } from '@/components/Markdown';
@@ -41,6 +43,8 @@ export default async function SpecPage({ searchParams }: StageProps) {
   const dir = store.root;
   const decisions = decisionsOf(dir);
   const planOpen = gates.find((g) => g.stage === 'plan')?.available;
+  const model = await modelAvailability(store, 'documents');
+  const unavailable = model.ok ? undefined : model.reason;
 
   const decision = (
     <Card title={<span id="decision">Decision</span>} meta="Go, Park or No-go. The plan needs a Go decision.">
@@ -73,7 +77,8 @@ export default async function SpecPage({ searchParams }: StageProps) {
                 <Field label="Spec template"><select name="template">
                   {templateOptions(store.root, 'spec', 'latest').map((t) => <option key={t.ref} value={t.ref}>{t.name}</option>)}
                 </select></Field>
-                <div><SubmitButton primary label="Generate spec" busyLabel="Generating spec…" /></div>
+                {unavailable && <ModelUnavailable what="Generate spec" reason={unavailable} />}
+                <div><SubmitButton primary label="Generate spec" busyLabel="Generating spec…" disabled={Boolean(unavailable)} /></div>
               </form>
             </Card>
           </div>
@@ -109,7 +114,7 @@ export default async function SpecPage({ searchParams }: StageProps) {
           { href: '/spec?tab=markdown', label: 'Markdown', current: current === 'markdown' },
         ]}
         before={<Conflicts document="spec" conflicts={conflictsOf(spec.value)} />}
-        after={!approved ? <RegenerateForm document="spec">Regenerating writes the spec again from the current intent and standards.</RegenerateForm> : undefined}
+        after={!approved ? <RegenerateForm document="spec" unavailable={unavailable}>Regenerating writes the spec again from the current intent and standards.</RegenerateForm> : undefined}
         aside={<>
           <Card title="Feasibility review" meta="Engineering review by the assistant · you make the call">
             {feasibility ? <Markdown text={feasibility} /> : <p className={css.muted}>Not written yet.</p>}

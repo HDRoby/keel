@@ -108,7 +108,7 @@ describe('registry', () => {
   it('resolves the provider and model chosen for a task', async () => {
     const store = tempStore();
     saveModelChoice(store, 'brainstorm', { provider: 'openai', model: 'm1' });
-    const resolved = providerForTask(store, 'brainstorm', { KEEL_PROVIDER: 'fake' });
+    const resolved = await providerForTask(store, 'brainstorm', { KEEL_PROVIDER: 'fake' });
     if (!resolved.ok) throw new Error(resolved.message);
     expect(resolved.value.choice).toEqual({ provider: 'openai', model: 'm1' });
     expect(await collect(resolved.value.provider.stream(messages, { model: 'm1' }))).toMatch(/^Reply from OpenAI/);

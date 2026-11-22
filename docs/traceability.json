@@ -3,8 +3,8 @@
   "generated": "2026-11-20",
   "from": {
     "intent": "INT-0001@4",
-    "spec": "SPC-0001@13",
-    "plan": "PLN-0001@14"
+    "spec": "SPC-0001@14",
+    "plan": "PLN-0001@15"
   },
   "requirements": {
     "REQ-001": {
@@ -148,12 +148,16 @@
     },
     "REQ-009": {
       "tasks": [
+        "R16",
         "R2",
         "T3"
       ],
       "scenarios": [
         "features/project-folder.feature › Keel never writes keys into the project folder",
-        "features/providers.feature › Switching provider keeps the brainstorm working"
+        "features/providers.feature › Switching provider keeps the brainstorm working",
+        "features/providers.feature › Ollama is the default provider",
+        "features/providers.feature › The models on this computer are listed",
+        "features/providers.feature › Keel says when Ollama is not running"
       ]
     },
     "REQ-010": {
@@ -253,6 +257,16 @@
       ],
       "features": [
         "features/opening-a-folder.feature"
+      ]
+    },
+    "R16": {
+      "title": "Ollama as the default provider",
+      "requirements": [
+        "REQ-009"
+      ],
+      "features": [
+        "features/providers.feature",
+        "features/providers-ollama.feature"
       ]
     },
     "R18": {
@@ -676,6 +690,21 @@
     {
       "feature": "features/providers.feature",
       "scenario": "Switching provider keeps the brainstorm working",
+      "requirement": "REQ-009"
+    },
+    {
+      "feature": "features/providers.feature",
+      "scenario": "Ollama is the default provider",
+      "requirement": "REQ-009"
+    },
+    {
+      "feature": "features/providers.feature",
+      "scenario": "The models on this computer are listed",
+      "requirement": "REQ-009"
+    },
+    {
+      "feature": "features/providers.feature",
+      "scenario": "Keel says when Ollama is not running",
       "requirement": "REQ-009"
     },
     {

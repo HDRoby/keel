@@ -11,7 +11,9 @@ import { ErrorAlert, Topbar } from '@/components/Shell';
 import { loadContext, templateLabel } from '@/lib/brainstorm/session';
 import { exploreView } from '@/lib/brainstorm/view';
 import { PROVIDERS } from '@/lib/providers/types';
-import { exploreTiming, modelChoice } from '@/lib/settings/settings';
+import { exploreTiming } from '@/lib/settings/settings';
+import { effectiveChoice, modelAvailability } from '@/lib/providers/local';
+import { ModelUnavailable } from '@/components/ModelUnavailable';
 import { readChange } from '@/lib/changes/store';
 import { readDocument } from '@/lib/store/documents';
 import { loadStage, type StageProps } from '../stage';
@@ -34,7 +36,8 @@ export default async function ExplorePage({ searchParams }: StageProps) {
   const { state, style } = context.value;
   const intent = readDocument(store, 'docs/intent.md');
   const approved = intent.ok && intent.value.header.status === 'approved';
-  const model = modelChoice(store, 'brainstorm');
+  const model = await effectiveChoice(store, 'brainstorm');
+  const available = await modelAvailability(store, 'brainstorm');
   const timing = exploreTiming(store);
   const pending = state.changeRequest ? readChange(store.root, state.changeRequest) : undefined;
 
@@ -59,10 +62,11 @@ export default async function ExplorePage({ searchParams }: StageProps) {
                 <p><Link href="/intent">Open intent.md</Link>{pending && <> · Waiting for approval: <Link href={`/changes/${pending.id}`}>{pending.id}</Link></>}</p>
               </Notice>
             )}
+            {!available.ok && <ModelUnavailable what="The assistant's section comments" reason={available.reason} />}
             <p className={css.meta}>Template: {templateLabel(state.template)} · Style: {style.name} v{style.version}</p>
           </>}
           after={<p className={css.meta}>
-            <Icon name="tune" size={16} /> Using {PROVIDERS.find((p) => p.id === model.provider)?.label ?? model.provider} · {model.model} · reviews when you leave a section or pause for {timing.pauseSeconds} seconds · <Link href="/settings">Change in Settings</Link>
+            <Icon name="tune" size={16} /> Using {PROVIDERS.find((p) => p.id === model.provider)?.label ?? model.provider} · {model.model || 'no model yet'} · reviews when you leave a section or pause for {timing.pauseSeconds} seconds · <Link href="/settings">Change in Settings</Link>
           </p>}>
           <StageBar gates={gates} current="explore" summaries={summaries} />
         </ExploreBoard>
