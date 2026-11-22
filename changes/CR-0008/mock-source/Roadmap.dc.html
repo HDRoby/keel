@@ -243,8 +243,8 @@ class Component extends DCLogic {
           startText: it.extends ? 'This extends the current scope of Keel, so Keel suggests a change request on intent v2. It will appear in Now once approved.' : 'This is separate from the current scope, so it gets its own folder and its own Keel run. Run: npx keel ../' + slug + ' --title "' + it.title + '"',
           startLabel: it.extends ? 'Raise change request' : 'Copy command and mark as moved',
           confirmStart: () => this.setState({ mode: '', target: null,
-            items: setItem(it.id, { inFlow: true, note: 'Already in the flow', links: it.links.concat([[it.extends ? 'CR-0005 · draft' : 'Own folder · ../' + slug, it.extends ? 'warning' : 'primary']]) }),
-            notice: { title: it.extends ? 'Change request CR-0005 drafted' : 'Command copied', text: it.title + (it.extends ? ' goes through the normal approval. Once approved it moves into Now with the spec and plan.' : ': run the command in a terminal. Keel creates the folder and opens Initialise with the title filled in.') } })
+            items: setItem(it.id, { inFlow: true, note: 'Already in the flow', links: it.links.concat([[it.extends ? 'CR-0013 · draft' : 'Own folder · ../' + slug, it.extends ? 'warning' : 'primary']]) }),
+            notice: { title: it.extends ? 'Change request CR-0013 drafted' : 'Command copied', text: it.title + (it.extends ? ' goes through the normal approval. Once approved it moves into Now with the spec and plan.' : ': run the command in a terminal. Keel creates the folder and opens Initialise with the title filled in.') } })
         };
       }) });
     });
@@ -299,7 +299,7 @@ class Component extends DCLogic {
           { id: 'plan', label: 'Plan', href: 'Plan.dc.html' },
           { id: 'handoff', label: 'Handoff', href: 'Handoff.dc.html' },
           { id: 'roadmap', label: 'Roadmap', href: 'Roadmap.dc.html' },
-          { id: 'changes', label: 'Changes', href: 'Changes.dc.html' } ] },
+          { id: 'changes', label: 'Changes', href: 'ChangesList.dc.html' } ] },
         { label: 'Library (.keel)', icon: 'folder', items: [
           { id: 'templates', label: 'Templates', href: 'Templates.dc.html' },
           { id: 'styles', label: 'Brainstorm styles', href: 'Styles.dc.html' },

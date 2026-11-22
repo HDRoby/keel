@@ -230,7 +230,9 @@ export function ExploreBoard({ initial, timing, approved, drafted }: Props) {
           <section key={s.key} aria-label={s.key} className={`section-card${focused ? ' focused' : ''}`}
             // Only typing fields open the section: a button press must not move the layout under the pointer.
             onFocus={(e) => { if (!focused && (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement)) enter(s.key); }}
-            onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) { leave(s.key); setFocus(undefined); } }}>
+            // Leaving reviews, but the section stays open until another one is typed in: collapsing it here would move
+            // the page under the pointer and lose the click that caused the blur.
+            onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) leave(s.key); }}>
             <div className="row spread">
               <h3 className="tight">{counts(s) ? <span className="filled" aria-label="filled">✓</span> : <span className="empty" aria-hidden="true">○</span>} {s.key} <span className="muted small">{s.required ? 'Required' : 'Optional'}</span></h3>
               {fresh && <span className="tag new">New comment</span>}

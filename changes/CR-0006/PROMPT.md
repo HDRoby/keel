@@ -1,6 +1,6 @@
 # Prompt for the coding agent
 
-Paste this into Claude Code from the repository root, after CR-0005 is done.
+Paste this into Claude Code from the repository root, after CR-0003 is done.
 
 ---
 

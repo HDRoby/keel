@@ -134,7 +134,7 @@ For each screen, compare with `docs/mocks/<screen>.png` and the source in `docs/
 | Spec | `/spec` | `Spec.dc.html` | Tabs: Requirements, Design (decision OptionCards), Acceptance scenarios (ScenarioCards by requirement), Flagged concerns, Clickable mock (prompt pack, drop area, mock sets); Feasibility and Decision |
 | Plan | `/plan` | `Plan.dc.html` | Versions, diff, impact, tasks |
 | Handoff | `/handoff` | `Handoff.dc.html` | FileTree with states, "Write to folder", conflict Notice, optional Push, Read-back card |
-| Changes | `/changes` | `Changes.dc.html` | As in the mock (CR-0003, Next) |
+| Changes | `/changes`, `/changes/[id]` | `ChangesList.dc.html`, `Changes.dc.html` | List read from changes/ with computed status and Next to apply; request page with what changed, approval, impact by requirement, change package (CR-0003) |
 | Roadmap | `/roadmap` | `Roadmap.dc.html` | Now (read-only), Next, Later, Not doing collapsed, "Start in its own folder" |
 | Templates, Styles, Standards | `/templates`, `/styles`, `/standards` | same names | Library page pattern |
 | Settings | `/settings` | `Settings.dc.html` | Two sections as above |

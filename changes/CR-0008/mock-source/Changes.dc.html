@@ -24,7 +24,7 @@ a{color:#3366ff}a:hover{color:#2447b3}
         <h1 style="margin: 0; font-size: 24px; line-height: 28.13px; font-weight: 700; color: var(--text-primary, #000);">CR-0003 · Track changes across stages</h1>
         <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="{{crColor}}">{{crStatus}}</x-import>
       </div>
-      <span style="font-size: 12px; line-height: 14.4px; color: var(--text-muted, #6b7180);">Keel · PRJ-0001 · intent v2 → v3 · raised by Roberto Basile on 20/11/2026 16:58</span>
+      <span style="font-size: 12px; line-height: 14.4px; color: var(--text-muted, #6b7180);">Keel · PRJ-0001 · intent v2 → v3 · raised by Roberto Basile on 20/11/2026 16:58 · changes/CR-0003/CR-0003.md · <a href="ChangesList.dc.html" style="font-size: 12px;">All change requests</a></span>
     </div>
     <a href="Intent.dc.html" style="display: inline-flex; align-items: center; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #6b7180; border-radius: 8px; background: #ffffff; color: #25282d; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">Open intent</a>
   </div>
@@ -178,9 +178,9 @@ class Component extends DCLogic {
       };
     };
     const impacts = [
-      mk('spec', 'spec.md v3', 'REQ-012 is new. It needs a requirement entry and a design note for change requests, out-of-date flags and change packages.', ['REQ-012', 'Design'], 'Draft spec v4', 'spec.md v4 (draft, from intent v3)'),
+      mk('spec', 'spec.md v3', 'REQ-014 is new. It needs a requirement entry and a design note for change requests, out-of-date flags and change packages.', ['REQ-014', 'Design'], 'Draft spec v4', 'spec.md v4 (draft, from intent v3)'),
       mk('plan', 'plan.md v4', 'Needs a new task for change requests. Task T7 (impact view) must cover every stage, not only the plan.', ['T7', 'New task T10'], 'Draft plan v5', 'plan.md v5 (draft, from spec v4)'),
-      mk('tests', 'Acceptance scenarios', 'Adds scenarios for REQ-012. The traceability scenario must also cover intent and spec changes.', ['Change requests: 2 new scenarios', 'Traceability: 1 updated'], 'Draft scenarios', 'Acceptance scenarios (3 drafted)')
+      mk('tests', 'Acceptance scenarios', 'Adds scenarios for REQ-014. The traceability scenario must also cover intent and spec changes.', ['Change requests: 2 new scenarios', 'Traceability: 1 updated'], 'Draft scenarios', 'Acceptance scenarios (3 drafted)')
     ];
     const resolved = (k) => st[k] === 'updated' || st[k] === 'valid';
     const allResolved = ['spec', 'plan', 'tests'].every(resolved);
@@ -203,16 +203,16 @@ class Component extends DCLogic {
       sizeNote: sig ? 'Significant: a requirement was added. Once approved, documents built on intent v2 are marked out of date.' : 'Minor: wording only. Later documents stay valid. (Not recommended here: a requirement was added.)',
       diff: [
         { sign: ' ', text: 'REQ-006 Hand off a repository scaffold any coding agent can build from', style: 'padding: 2px 12px; background: #ffffff; color: #434952; white-space: pre-wrap;' },
-        { sign: '+', text: 'REQ-012 Change requests: flag later documents as out of date, show impact, approve, and send a change package to the agent', style: 'padding: 2px 12px; background: #e6f7ef; color: #00512e; white-space: pre-wrap;' },
+        { sign: '+', text: 'REQ-014 Change requests: flag later documents as out of date, show impact, approve, and send a change package to the agent', style: 'padding: 2px 12px; background: #e6f7ef; color: #00512e; white-space: pre-wrap;' },
         { sign: ' ', text: '## Open questions', style: 'padding: 2px 12px; background: #ffffff; color: #434952; white-space: pre-wrap;' },
         { sign: '-', text: 'How should a change upstream affect later documents?', style: 'padding: 2px 12px; background: #fdecee; color: #8a1220; white-space: pre-wrap; text-decoration: line-through;' },
         { sign: ' ', text: 'Public name: "Keel" is already used by other developer tools', style: 'padding: 2px 12px; background: #ffffff; color: #434952; white-space: pre-wrap;' }
       ],
       checks: [
         Object.assign({ label: 'Required sections complete', note: 'Standard intent · v3' }, ok),
-        Object.assign({ label: 'Every requirement has an ID', note: 'REQ-001 to REQ-006, REQ-012' }, ok),
-        Object.assign({ label: 'Open questions answered or carried forward', note: 'The change-propagation question became REQ-012. The name question is carried forward.' }, ok),
-        Object.assign({ label: 'Mock references cover the new requirement', note: 'REQ-012 is not on any reference yet. Optional: the 6b screen of the mockup could be attached.' }, warn)
+        Object.assign({ label: 'Every requirement has an ID', note: 'REQ-001 to REQ-013, REQ-014' }, ok),
+        Object.assign({ label: 'Open questions answered or carried forward', note: 'The change-propagation question became REQ-014. The name question is carried forward.' }, ok),
+        Object.assign({ label: 'Mock references cover the new requirement', note: 'REQ-014 is not on any reference yet. Optional: the 6b screen of the mockup could be attached.' }, warn)
       ],
       apStatus: approved ? 'Approved' : (st.decision === 'changes' ? 'Draft' : (st.decision === 'rejected' ? 'Closed' : 'Pending')),
       apColor: approved ? 'success' : (st.decision ? 'gray' : 'warning'),
@@ -249,7 +249,7 @@ class Component extends DCLogic {
           { id: 'plan', label: 'Plan', href: 'Plan.dc.html' },
           { id: 'handoff', label: 'Handoff', href: 'Handoff.dc.html' },
           { id: 'roadmap', label: 'Roadmap', href: 'Roadmap.dc.html' },
-          { id: 'changes', label: 'Changes', href: 'Changes.dc.html' } ] },
+          { id: 'changes', label: 'Changes', href: 'ChangesList.dc.html' } ] },
         { label: 'Library (.keel)', icon: 'folder', items: [
           { id: 'templates', label: 'Templates', href: 'Templates.dc.html' },
           { id: 'styles', label: 'Brainstorm styles', href: 'Styles.dc.html' },

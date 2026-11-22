@@ -35,7 +35,7 @@ a{color:#3366ff}a:hover{color:#2447b3}
   </div>
   <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.InlineNotification" status="warning" title="Pending change CR-0003" standalone="{{yes}}">
     <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
-      <span>Intent v3 adds REQ-012 (change requests with approval and impact) and is waiting for approval. If you approve it, this spec becomes out of date.</span>
+      <span>Intent v3 adds REQ-014 (change requests with approval and impact) and is waiting for approval. If you approve it, this spec becomes out of date.</span>
       <a href="Changes.dc.html" style="font-weight: 500;">Review change</a>
     </div>
   </x-import>
@@ -141,27 +141,112 @@ a{color:#3366ff}a:hover{color:#2447b3}
 
         <sc-if value="{{isMock}}" hint-placeholder-val="{{ false }}">
           <div style="display: flex; flex-direction: column; gap: 16px;">
-            <p style="margin: 0; font-size: 14px; line-height: 20px; color: #434952;">References attached to the intent, linked to the spec's requirements. Attach a new version if the spec changes a screen. These go to the coding agent under docs/mocks/.</p>
-            <sc-for list="{{specRefs}}" as="rf" hint-placeholder-count="2">
-              <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid #e0e5e8; border-radius: 8px;">
-                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
-                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{rf.icon}}" size="5" color="#3366ff"></x-import>
-                  <span style="flex: 1 1 auto; min-width: 0; font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{rf.name}}</span>
-                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" type="outline" color="gray">{{rf.kind}}</x-import>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; background: {{mkBg}};">
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{mkIcon}}" size="5" color="{{mkColor}}"></x-import>
+              <span style="flex: 1 1 320px; font-size: 14px; line-height: 20px; color: #25282d;">{{mkStatus}}</span>
+              <a href="Settings.dc.html" style="font-size: 12px; line-height: 16px; font-weight: 500;">Recommended · change in Settings</a>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid #e0e5e8; border-radius: 8px;">
+              <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 360px;">
+                  <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">1 · Make a clickable mock elsewhere</span>
+                  <span style="font-size: 13px; line-height: 19px; color: #434952;">Keel does not draw mocks. It writes a prompt from this spec for a model that builds clickable prototypes, for example Claude. Refine the mock there, then export the screens as PNG, and the HTML source if you can.</span>
                 </div>
-                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
-                  <sc-for list="{{rf.reqs}}" as="r" hint-placeholder-count="3">
-                    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" type="outline" color="primary">{{r}}</x-import>
-                  </sc-for>
-                  <sc-for list="{{rf.concerns}}" as="k" hint-placeholder-count="1">
-                    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="warning" icon="warning">{{k}}</x-import>
-                  </sc-for>
+                <div style="display: inline-flex; padding: 2px; border-radius: 8px; background: #f0f2f5;">
+                  <button type="button" onClick="{{showPrompt}}" style="{{promptTab}}">Prompt</button>
+                  <button type="button" onClick="{{showScreens}}" style="{{screensTab}}">Screens it asks for</button>
                 </div>
-                <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{rf.note}}</span>
               </div>
-            </sc-for>
-            <div style="display: flex;">
-              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="outline">Attach a reference</x-import>
+              <sc-if value="{{isPromptView}}" hint-placeholder-val="{{ true }}">
+                <pre style="margin: 0; padding: 16px 20px; border-radius: 8px; background: #1e1f24; color: #e6e8ec; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 19px; white-space: pre-wrap; max-height: 300px; overflow: auto;">{{promptText}}</pre>
+              </sc-if>
+              <sc-if value="{{isScreensView}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; border: 1px solid #e0e5e8; border-radius: 8px; overflow: hidden;">
+                  <sc-for list="{{askScreens}}" as="as" hint-placeholder-count="5">
+                    <div style="display: grid; grid-template-columns: 40px minmax(0, 220px) minmax(0, 1fr) 200px; gap: 12px; align-items: center; padding: 8px 12px; border-top: 1px solid #f0f2f5; font-size: 13px; line-height: 19px;">
+                      <span style="font-family: ui-monospace, Menlo, monospace; color: #6b7180;">{{as.n}}</span>
+                      <span style="font-weight: 500; color: #000;">{{as.name}}</span>
+                      <span style="color: #434952;">{{as.shows}}</span>
+                      <span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #2447b3;">{{as.reqs}}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+                <button type="button" onClick="{{copyPrompt}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 32px; box-sizing: border-box; padding: 5px 14px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font: inherit; font-size: 14px; line-height: 20px; font-weight: 500; cursor: pointer;">{{copyLabel}}</button>
+                <button type="button" style="display: inline-flex; align-items: center; gap: 8px; min-height: 32px; box-sizing: border-box; padding: 5px 14px; border: 1px solid #6b7180; border-radius: 8px; background: #ffffff; color: #25282d; font: inherit; font-size: 14px; line-height: 20px; font-weight: 500; cursor: pointer;">Download keel-mock-prompt-spec-v9.md</button>
+                <span style="flex: 1 1 260px; font-size: 12px; line-height: 16px; color: #6b7180;">Built from the requirements, scenarios, design decisions and your UI standards. It asks for realistic sample data and screen names Keel can read back.</span>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid #e0e5e8; border-radius: 8px;">
+              <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">2 · Attach the result</span>
+              <sc-if value="{{canAttach}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px; border: 2px dashed #b6bcc6; border-radius: 8px; background: #fafbfc; text-align: center;">
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="upload_file" size="6" color="#6b7180"></x-import>
+                  <span style="font-size: 14px; line-height: 20px; color: #25282d;">Drop the exported PNG files here, with their HTML sources if you have them</span>
+                  <span style="font-size: 12px; line-height: 16px; color: #6b7180;">Keel matches each file to a screen and its requirements from the file name. You can also paste a link to the live prototype.</span>
+                  <button type="button" onClick="{{attach}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 32px; box-sizing: border-box; padding: 5px 14px; border: 1px solid #6b7180; border-radius: 8px; background: #ffffff; color: #25282d; font: inherit; font-size: 14px; line-height: 20px; font-weight: 500; cursor: pointer;">Choose files</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{reviewing}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <span style="font-size: 13px; line-height: 19px; color: #434952;">{{reviewNote}}</span>
+                  <div style="display: flex; flex-direction: column; border: 1px solid #e0e5e8; border-radius: 8px; overflow: hidden;">
+                    <div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 150px; gap: 12px; padding: 8px 12px; background: #f6f7f9; font-size: 12px; line-height: 16px; font-weight: 500; color: #6b7180;">
+                      <span>File</span><span>Screen</span><span>Requirements</span><span>Match</span>
+                    </div>
+                    <sc-for list="{{newFiles}}" as="nf" hint-placeholder-count="5">
+                      <div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 150px; gap: 12px; align-items: center; padding: 8px 12px; border-top: 1px solid #f0f2f5; font-size: 13px; line-height: 19px;">
+                        <span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{nf.file}}</span>
+                        <span style="color: #25282d;">{{nf.screen}}</span>
+                        <span style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #2447b3;">{{nf.reqs}}</span>
+                        <span style="{{nf.matchStyle}}">{{nf.match}}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+                    <button type="button" onClick="{{confirm}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 32px; box-sizing: border-box; padding: 5px 14px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font: inherit; font-size: 14px; line-height: 20px; font-weight: 500; cursor: pointer;">Save as mock set 2 (spec v9)</button>
+                    <button type="button" onClick="{{cancelAttach}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer; color: #6b7180;">Cancel</button>
+                    <span style="font-size: 12px; line-height: 16px; color: #6b7180;">Saved to docs/mocks/, with a README listing each screen, its requirements, the spec version and the export date.</span>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Mock sets</span>
+              <sc-for list="{{mockSets}}" as="ms" hint-placeholder-count="2">
+                <div style="{{ms.boxStyle}}">
+                  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="photo_library" size="5" color="#3366ff"></x-import>
+                    <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{ms.title}}</span>
+                    <span style="flex: 1 1 auto;"></span>
+                    <span style="{{ms.tagStyle}}">{{ms.tag}}</span>
+                  </div>
+                  <span style="font-size: 12px; line-height: 16px; color: #6b7180;">{{ms.meta}}</span>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <sc-for list="{{ms.screens}}" as="sn" hint-placeholder-count="4">
+                      <span style="font-size: 12px; line-height: 16px; padding: 2px 8px; border-radius: 6px; background: #f6f7f9; color: #434952;">{{sn}}</span>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Other references</span>
+              <sc-for list="{{specRefs}}" as="rf" hint-placeholder-count="2">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid #e0e5e8; border-radius: 8px;">
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{rf.icon}}" size="4" color="#3366ff"></x-import>
+                  <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{rf.name}}</span>
+                  <span style="font-size: 12px; line-height: 16px; color: #6b7180;">{{rf.kind}} · {{rf.note}}</span>
+                </div>
+              </sc-for>
+              <div style="display: flex;">
+                <button type="button" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer;">+ Attach another reference (link, image, PDF)</button>
+              </div>
             </div>
           </div>
         </sc-if>
@@ -310,7 +395,7 @@ a{color:#3366ff}a:hover{color:#2447b3}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { dec: null, scen: null, editing: '', scenView: 'preview', tab: 'reqs', decision: 'go', reason: 'Clear gap before the spec. Plain markdown in git keeps it simple. Start single user; keep Keel as the codename for now.' };
+    this.state = { mk: 'old', mkView: 'prompt', copied: false, dec: null, scen: null, editing: '', scenView: 'preview', tab: 'reqs', decision: 'go', reason: 'Clear gap before the spec. Plain markdown in git keeps it simple. Start single user; keep Keel as the codename for now.' };
   }
   renderVals() {
     const R = window.React;
@@ -332,6 +417,63 @@ class Component extends DCLogic {
       { name: 'Read-back', scenarios: [
         { name: 'An agent change to the plan shows up for review', req: 'REQ-007', steps: [ ['Given', 'a project pushed to a repository'], ['When', 'the coding agent commits a change to docs/plan.md'], ['Then', 'Keel shows the change as pending'], ['And', 'accepting it creates plan v5'] ] } ] }
     ];
+    const SCREENS = [
+      ['01', 'Open Keel on a folder', 'Terminal: npx keel on a new and an existing folder', 'REQ-012'],
+      ['02', 'Initialise this folder', 'Folder, what Keel creates, templates, style, standards', 'REQ-003, REQ-011, REQ-012'],
+      ['03', 'Explore', 'Template sections with live comments, requirements list', 'REQ-001, REQ-002'],
+      ['04', 'Intent', 'Assembled intent.md, approval, history, mock references', 'REQ-002, REQ-005, REQ-010'],
+      ['05', 'Spec', 'Requirements, design decisions, scenarios, feasibility, decision', 'REQ-004, REQ-005, REQ-013'],
+      ['06', 'Plan', 'Tasks, versions, diff and impact', 'REQ-004, REQ-008'],
+      ['07', 'Handoff', 'Files written to the folder, push, read-back', 'REQ-006, REQ-007'],
+      ['08', 'Settings', 'You on this computer, this project', 'REQ-009, REQ-012'],
+      ['09', 'Templates', 'Library grouped by kind', 'REQ-003']
+    ];
+    const mk = this.state.mk;
+    const promptText = [
+      '# Clickable mock request: Keel (spec v9)',
+      '',
+      'Build a clickable prototype of the screens below, one screen per artboard, linked so I can click through.',
+      'Use realistic sample data from this project, not placeholder text. Keep one visual style across all screens.',
+      '',
+      '## The product',
+      'Problem: ideas wait for someone to write them up; the steps before the build run at human speed.',
+      'First user: a single product-minded engineer. Later: product managers.',
+      'Form: local web app opened with `npx keel` on one folder (ADR-0005).',
+      '',
+      '## Requirements (keep the IDs)',
+      '- REQ-001 Template sections with live assistant comments',
+      '- REQ-002 intent.md assembled from the sections',
+      '- REQ-004 At least one acceptance scenario per requirement',
+      '- REQ-005 Stage gating: Explore, Intent, Spec, Plan, Handoff',
+      '- … (all 13 requirements in the file)',
+      '',
+      '## Screens',
+    ].concat(SCREENS.map((x) => x[0] + ' · ' + x[1] + ': ' + x[2] + ' (' + x[3] + ')')).concat([
+      '',
+      '## Rules',
+      '- Follow the UI standard: docs/ui-guide.md (tokens and components, attached).',
+      '- Show locked and empty states where the scenarios describe them.',
+      '',
+      '## When you export',
+      'Name each file: spec-v9 · <number> · <screen> · <REQ IDs>.png',
+      'Export the HTML source of each screen too, with the same name.'
+    ]).join('\n');
+    const newFiles = SCREENS.slice(0, 7).map((x, i) => ({
+      file: 'spec-v9 · ' + x[0] + ' · ' + x[1] + ' · ' + x[3].split(',')[0] + (i === 2 ? '.png + .html' : '.png + .html'),
+      screen: x[1], reqs: x[3],
+      match: i === 5 ? 'Check: no REQ in name' : 'From the file name',
+      matchStyle: 'font-size: 12px; line-height: 16px; ' + (i === 5 ? 'color: #8a5a00;' : 'color: #1a7f43;')
+    })).concat([{ file: 'image (3).png', screen: 'Not matched', reqs: '—', match: 'Choose a screen', matchStyle: 'font-size: 12px; line-height: 16px; color: #b42318;' }]);
+    const pillS = (bg, fg) => 'font-size: 12px; line-height: 16px; padding: 1px 8px; border-radius: 999px; background: ' + bg + '; color: ' + fg + ';';
+    const set1 = { title: 'Mock set 1 · from spec v8', meta: '9 screens, PNG only · exported 20/11/2026 · docs/mocks/set-1/', screens: SCREENS.map((x) => x[1]), current: mk === 'old' };
+    const set2 = { title: 'Mock set 2 · from spec v9', meta: '7 screens, PNG and HTML · exported 22/11/2026 · docs/mocks/set-2/', screens: SCREENS.slice(0, 7).map((x) => x[1]), current: true };
+    const sets = (mk === 'saved' ? [set2, Object.assign({}, set1, { current: false })] : [set1]).map((x) => ({
+      title: x.title, meta: x.meta, screens: x.screens,
+      tag: x === set2 ? 'Current' : (mk === 'saved' ? 'Replaced by set 2' : 'Out of date · made from spec v8, the spec is v9'),
+      tagStyle: x === set2 ? pillS('#e6f6ec', '#1a7f43') : (mk === 'saved' ? pillS('#f0f2f5', '#6b7180') : pillS('#fff4e0', '#8a5a00')),
+      boxStyle: 'display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 8px; border: 1px solid ' + (x === set2 ? '#e0e5e8' : (mk === 'saved' ? '#e0e5e8' : '#f3d39a')) + ';' + (mk === 'saved' && x !== set2 ? ' opacity: .7;' : '')
+    }));
+    const tabStyle = (on) => 'border: 0; padding: 4px 12px; border-radius: 6px; font: inherit; font-size: 13px; line-height: 18px; cursor: pointer; ' + (on ? 'background: #ffffff; color: #000; font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,.08);' : 'background: transparent; color: #6b7180;');
     const TOPICS = [
       { id: 'form', title: 'Form', origin: 'From the spec template', options: [
         { id: 'local', name: 'Local web app (npx keel)', rec: true, summary: 'A local server on 127.0.0.1 that opens the browser on one folder.', pro: 'No install for the folder, keys stay on the computer', con: 'No sharing between people yet', fit: 'Fits Constraints: single user first', ok: true, reqs: 'REQ-001, REQ-006, REQ-012' },
@@ -495,6 +637,28 @@ class Component extends DCLogic {
       yes: true,
       three: 3,
       reqGroups: reqGroups,
+      mkStatus: mk === 'saved' ? 'Mock set 2 is current: 7 screens made from spec v9. The plan links its tasks to these screens.' : 'The mock set was made from spec v8 and is out of date. This project has a UI (Form: local web app), so a current mock set is recommended before the plan.',
+      mkIcon: mk === 'saved' ? 'check_circle' : 'warning',
+      mkColor: mk === 'saved' ? '#008556' : '#b54708',
+      mkBg: mk === 'saved' ? '#f2faf6' : '#fff8eb',
+      isPromptView: this.state.mkView === 'prompt',
+      isScreensView: this.state.mkView === 'screens',
+      promptTab: tabStyle(this.state.mkView === 'prompt'),
+      screensTab: tabStyle(this.state.mkView === 'screens'),
+      showPrompt: () => this.setState({ mkView: 'prompt' }),
+      showScreens: () => this.setState({ mkView: 'screens' }),
+      promptText: promptText,
+      askScreens: SCREENS.map((x) => ({ n: x[0], name: x[1], shows: x[2], reqs: x[3] })),
+      copyLabel: this.state.copied ? 'Copied' : 'Copy prompt',
+      copyPrompt: () => this.setState({ copied: true }),
+      canAttach: mk !== 'review',
+      reviewing: mk === 'review',
+      reviewNote: '15 files received. 7 screens matched from their names; 1 needs a check and 1 image is not matched yet.',
+      newFiles: newFiles,
+      attach: () => this.setState({ mk: 'review' }),
+      cancelAttach: () => this.setState({ mk: 'old' }),
+      confirm: () => this.setState({ mk: 'saved' }),
+      mockSets: sets,
       two: 2,
       decisions: decisions,
       approach: approach,
@@ -511,7 +675,7 @@ class Component extends DCLogic {
         { value: 'design', label: 'Design' },
         { value: 'scenarios', label: 'Acceptance scenarios', count: scen.filter((x) => !x.suggested && x.steps.length).length },
         { value: 'concerns', label: 'Flagged concerns', count: 3 },
-        { value: 'mock', label: 'Mock references', icon: 'attach_file' }
+        { value: 'mock', label: 'Clickable mock', icon: 'attach_file' }
       ],
       tab: this.state.tab,
       setTab: (v) => this.setState({ tab: v }),
@@ -581,7 +745,7 @@ class Component extends DCLogic {
           { id: 'plan', label: 'Plan', href: 'Plan.dc.html' },
           { id: 'handoff', label: 'Handoff', href: 'Handoff.dc.html' },
           { id: 'roadmap', label: 'Roadmap', href: 'Roadmap.dc.html' },
-          { id: 'changes', label: 'Changes', href: 'Changes.dc.html' } ] },
+          { id: 'changes', label: 'Changes', href: 'ChangesList.dc.html' } ] },
         { label: 'Library (.keel)', icon: 'folder', items: [
           { id: 'templates', label: 'Templates', href: 'Templates.dc.html' },
           { id: 'styles', label: 'Brainstorm styles', href: 'Styles.dc.html' },
