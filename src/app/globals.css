@@ -316,9 +316,6 @@ h2.tight { margin-bottom: 4px; }
 .mono { font-family: var(--mono); font-size: 13px; }
 fieldset.bare { border: 0; padding: 0; }
 
-/* Settings: one row per task */
-.model-choice { align-items: flex-end; margin-bottom: 12px; }
-.model-choice > strong { width: 160px; }
 
 /* Version changes (REQ-008) */
 .changes { list-style: none; padding: 0; margin: 8px 0; font-family: var(--mono); font-size: 13px; border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; }
