@@ -10,7 +10,7 @@ import { fail, ok, type Result } from '../result';
 import { seedDir, readTemplate } from '../templates/library';
 import { renderTemplate } from '../templates/render';
 import { writeFileAtomic } from '../store/atomic';
-import { commitFiles } from '../store/git';
+import { commitFiles, commitSquashing } from '../store/git';
 import type { Store } from '../store/store';
 import { looksLikeKey } from './keys';
 
@@ -165,6 +165,11 @@ export function appendEntries(root: string, d: Discussion, entries: Entry[], pat
 /** Commits the discussion file as it is (one Keel commit). */
 export async function commitDiscussion(store: Pick<Store, 'root'>, d: Discussion, message = `Discussion ${d.id}: ${d.title}`): Promise<void> {
   await commitFiles(store.root, [d.path], message);
+}
+
+/** After a finished turn: one Keel commit per run of messages (later turns fold into it until something else is committed). */
+export async function commitTurn(store: Pick<Store, 'root'>, d: Discussion): Promise<void> {
+  await commitSquashing(store.root, [d.path], `Discussion ${d.id}: ${d.title}`, `Discussion ${d.id}`);
 }
 
 /** Parks a discussion without a change request: it stays in .keel/discussions, listed as Parked. */

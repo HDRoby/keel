@@ -78,7 +78,7 @@ export default async function ChangePage({ params, searchParams }: { params: Pro
       <Topbar title={cr.id} />
       <main className="content">
         <PageHeader title={`${cr.id} · ${cr.title}`} meta={<ChangeStatus status={status} />}
-          description={<>{keel ? 'Keel' : 'Written by hand'}{cr.affects.length ? ` · ${cr.affects.join(', ')}` : ''}{cr.created ? ` · raised ${cr.created}` : ''}{cr.author ? ` by ${cr.author}` : ''} · <code>{cr.file}</code> · <Link href="/changes">All change requests</Link></>} />
+          description={<>{keel ? 'Keel' : 'Written by hand'}{cr.affects.length ? ` · ${cr.affects.join(', ')}` : ''}{cr.created ? ` · raised ${cr.created}` : ''}{cr.author ? ` by ${cr.author}` : ''} · <code>{cr.file}</code>{cr.discussion ? <> · <Link href={`/discuss/${cr.discussion}`}>Discussion {cr.discussion}</Link></> : null} · <Link href="/changes">All change requests</Link></>} />
         <ErrorAlert error={error} />
         {notice && <Notice kind="success" role="status">{notice}</Notice>}
         {cr.error && <ErrorAlert error={cr.error} />}

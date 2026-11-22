@@ -107,7 +107,7 @@ export async function DocumentReview({ home, document, doc, reviewer, view, note
                 ))}
               </ul>
             )}
-            {header.status === 'approved' && <p className={styles.muted}>Approved. Changes to it go through a change request.</p>}
+            {header.status === 'approved' && <p className={styles.muted}>Approved. Changes to it go through a change request: <Link href={`/discuss?start=${encodeURIComponent(`I want to change the approved ${header.id}: `)}`}>discuss a change</Link>.</p>}
             {header.status !== 'closed' && header.status !== 'approved' && (
               <form action={reviewAction} aria-label="Review" className={styles.stack}>
                 <input type="hidden" name="document" value={document} />

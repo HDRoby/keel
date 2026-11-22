@@ -48,6 +48,7 @@ export interface ChangeRequest {
   author?: string;
   origin: 'keel' | 'hand';
   source?: string;          // the document a Keel request changes, e.g. docs/intent.md
+  discussion?: string;      // the discussion it came from, e.g. DSC-0001 (CR-0016)
   impact: ImpactRecord[];   // Keel requests: the decision for each affected document
   tasks: ChangeTask[];
   hasPrompt: boolean;
@@ -68,6 +69,7 @@ const headerSchema = z.looseObject({
   author: z.string().optional(),
   origin: z.enum(['keel', 'hand']).optional(),
   source: z.string().optional(),
+  discussion: z.string().regex(/^DSC-\d{4,}$/).optional(),
   impact: z.array(z.object({ document: z.string(), decision: z.enum(['pending', 'updated', 'valid', 'later']) })).default([]),
 });
 
@@ -119,7 +121,7 @@ export function readChange(root: string, folderName: string): ChangeRequest | un
     requirements: [...new Set(h.requirements.join(' ').match(/REQ-\d{3,}/g) ?? [])],
     dependsOn: h.depends_on.flatMap((d) => d.match(/CR-\d{4,}/g) ?? []),
     ...(h.created ? { created: h.created } : {}), ...(h.author ? { author: h.author } : {}),
-    origin: h.origin ?? 'hand', ...(h.source ? { source: h.source } : {}), impact: h.impact, body: parsed.content,
+    origin: h.origin ?? 'hand', ...(h.source ? { source: h.source } : {}), ...(h.discussion ? { discussion: h.discussion } : {}), impact: h.impact, body: parsed.content,
   };
 }
 
