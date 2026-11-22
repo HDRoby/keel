@@ -37,9 +37,9 @@ Before(async () => {
   writeFileSync(FAKE_LOG, '');
 });
 
-/** How many model calls the fake provider has made so far in this scenario. */
+/** How many model calls the fake provider has made so far in this scenario, not counting the startup check's health probe (CR-0012), which sends no project content. */
 export function modelCalls(): number {
-  return existsSync(FAKE_LOG) ? readFileSync(FAKE_LOG, 'utf8').split('\n').filter(Boolean).length : 0;
+  return existsSync(FAKE_LOG) ? readFileSync(FAKE_LOG, 'utf8').split('\n').filter((l) => l && !l.endsWith(' health')).length : 0;
 }
 
 /** git in the project folder. */

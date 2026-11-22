@@ -7,6 +7,7 @@ import { applyAction, applyEdits, loadContext, writeExplore, type SectionAction 
 import { exploreView } from '@/lib/brainstorm/view';
 import { describeProviderError } from '@/lib/providers/errors';
 import { providerForTask } from '@/lib/providers/registry';
+import { runStartupCheck } from '@/lib/startup/check';
 import { serverStore } from '@/lib/store/server-store';
 
 const key = z.string().min(1).max(200);
@@ -48,6 +49,12 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const reply = input.data.op === 'reply' ? { key: input.data.key, text: input.data.text } : undefined;
+  // Setup mode (CR-0012): no model call while a startup check fails; the same message as the Startup check.
+  const startup = await runStartupCheck(store);
+  if (!startup.ok) {
+    const bad = startup.checks.find((c) => c.state === 'bad');
+    return json({ error: `${bad ? bad.message : 'The startup check did not pass.'} See the Startup check (/check).`, view: exploreView(context.value) }, 503);
+  }
   const resolved = await providerForTask(store, 'brainstorm');
   if (!resolved.ok) return json({ error: resolved.message, view: exploreView(context.value) }, 502);
   const reviewed = await reviewAll(context.value, resolved.value.provider, {

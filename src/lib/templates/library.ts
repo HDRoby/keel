@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import matter from 'gray-matter';
 import { fail, ok, type Result } from '../result';
 import { listDocumentPaths, parseDocument } from '../store/documents';
+import { VERSIONED_REF } from '../refs';
 
 export type TemplateGroup = 'intent' | 'spec' | 'plan' | 'roadmap' | 'decision' | 'agent-instructions' | 'agent-kit';
 
@@ -44,8 +45,8 @@ export type TemplateError = 'invalid-template' | 'not-found' | 'in-use' | 'kind-
 
 /** Allowed template ids; the form actions validate against the same pattern. */
 export const TEMPLATE_ID = /^[a-z0-9][a-z0-9-]{0,63}$/;
-/** A versioned reference such as "standard-intent@3" or "challenger@1". */
-export const VERSIONED_REF = /^([a-z0-9][a-z0-9-]*)@(\d+)$/;
+/** A versioned reference such as "standard-intent@3" or "challenger@1" (src/lib/refs.ts). */
+export { VERSIONED_REF };
 
 /** Splits "standard-intent@3" into id and version. */
 export function parseTemplateRef(ref: string): { id: string; version: number } | undefined {

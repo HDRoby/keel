@@ -215,8 +215,24 @@ async function main(argv) {
     stop();
     process.exit(code ?? 0);
   });
-  if (options.open && (await waitUntilUp(`http://127.0.0.1:${port}/`))) openBrowser(url);
+  if (await waitUntilUp(`http://127.0.0.1:${port}/api/startup`)) {
+    // The startup check (CR-0012), printed before the browser opens; in setup mode the browser opens on it.
+    const lines = await startupCheck(port);
+    lines.forEach((line) => console.log(line));
+    if (options.open) openBrowser(lines.includes('Keel opens in setup mode') ? `http://127.0.0.1:${port}/check` : url);
+  }
   return undefined;
+}
+
+/** The startup check from the running server, as terminal lines. */
+export async function startupCheck(port) {
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/api/startup`);
+    const data = await response.json();
+    return Array.isArray(data.lines) ? data.lines.map(String) : ['Startup check: no answer from Keel'];
+  } catch {
+    return ['Startup check: no answer from Keel'];
+  }
 }
 
 // Run only when started as a command, so tests can import the helpers.

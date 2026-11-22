@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { serverStore } from '@/lib/store/server-store';
+import { Icon } from './Icons';
 import { NavGroup } from './NavLink';
 import { Notice } from './ui/Notice';
 import styles from './Shell.module.css';
@@ -20,7 +21,7 @@ const PROJECT_LINKS: [string, string][] = [
 const LIBRARY_LINKS: [string, string][] = [['/templates', 'Templates'], ['/styles', 'Brainstorm styles'], ['/standards', 'Standards']];
 
 /** The side menu (docs/ui-guide.md › Shell) and the page. Before initialisation the project group has only Initialise. */
-export function Shell({ project, children }: { project?: ShellProject; children: ReactNode }) {
+export function Shell({ project, setup, children }: { project?: ShellProject; setup?: { project: boolean }; children: ReactNode }) {
   return (
     <div className={styles.shell}>
       <aside className={styles.side}>
@@ -30,11 +31,21 @@ export function Shell({ project, children }: { project?: ShellProject; children:
           <Image src="/keel-logo.png" alt="" width={266} height={296} priority className={styles.logo} />
           <span>Keel</span>
         </Link>
-        {project
-          ? <NavGroup label={`Project · ${project.title}`} name="Project" icon="lightbulb" links={PROJECT_LINKS} />
-          : <NavGroup label="This folder" name="Project" icon="lightbulb" links={[['/', 'Initialise']]} exact />}
-        <NavGroup label="Library (.keel)" name="Library" icon="folder" links={LIBRARY_LINKS} />
-        <NavGroup label="Settings" name="Settings" icon="settings" links={[['/settings', 'Settings']]} />
+        {setup ? (
+          <>
+            {/* Setup mode (CR-0012): only these open until every startup check passes. */}
+            <NavGroup label="Setup" name="Setup" icon="build" links={[['/check', 'Startup check'], ['/settings', 'Settings'], ...(setup.project ? [['/setup', 'Project setup'] as [string, string]] : [])]} />
+            <div className={styles.locked} aria-label="Locked until the startup check passes"><Icon name="lock" /> <span>{project ? `Project · ${project.title}` : 'This folder'} (locked)</span></div>
+          </>
+        ) : (
+          <>
+            {project
+              ? <NavGroup label={`Project · ${project.title}`} name="Project" icon="lightbulb" links={PROJECT_LINKS} />
+              : <NavGroup label="This folder" name="Project" icon="lightbulb" links={[['/', 'Initialise']]} exact />}
+            <NavGroup label="Library (.keel)" name="Library" icon="folder" links={LIBRARY_LINKS} />
+            <NavGroup label="Settings" name="Settings" icon="settings" links={[['/check', 'Startup check'], ['/settings', 'Settings']]} />
+          </>
+        )}
         </div>
       </aside>
       <div className={styles.main}>{children}</div>
