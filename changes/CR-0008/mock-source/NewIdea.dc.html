@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keel · Explore (early stage)</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/softwareone/tokens.css">
+<link rel="stylesheet" href="ds/softwareone/components/bundle.css">
+<script src="ds/softwareone/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#3366ff}a:hover{color:#2447b3}
+@keyframes keelFade{from{opacity:0;transform:translateY(-2px)}to{opacity:1;transform:none}}
+@keyframes keelPulse{0%,100%{opacity:.35}50%{opacity:1}}
+</style>
+</helmet>
+<x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Navigation" groups="{{groups}}" active-id="explore" brand="{{brand}}" header-bar="{{headerBar}}">
+<div style="box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 24px; font-family: var(--font-body, Arial); color: var(--text-body, #25282d); max-width: 1400px;">
+  <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 480px; min-width: 0;">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+        <h1 style="margin: 0; font-size: 24px; line-height: 28.13px; font-weight: 700; color: var(--text-primary, #000);">Keel</h1>
+        <span style="font-size: 12px; line-height: 14.4px; color: var(--text-muted, #6b7180);">PRJ-0001 · created 20/11/2026 · early in the brainstorm</span>
+        <a href="SetupKeel.dc.html" style="display: inline-flex; align-items: center; gap: 4px; font-size: 14px; line-height: 20px; text-decoration: none;">
+          <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="edit" size="4"></x-import>
+          Project setup
+        </a>
+      </div>
+      <p style="margin: 0; max-width: 820px; font-size: 14px; line-height: 20px; color: var(--text-muted, #6b7180);">A simple environment where anyone with an idea brainstorms with an LLM, checks feasibility from an engineering point of view, and decides whether to build it. Based on the AI-native SDLC playbook.</p>
+    </div>
+    <sc-if value="{{ready}}" hint-placeholder-val="{{ false }}">
+      <a href="Intent.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 36px; box-sizing: border-box; padding: 7px 15px; border: 1px solid #3366ff; border-radius: 8px; background: #3366ff; color: #ffffff; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="description" size="5"></x-import>
+        Draft intent.md
+      </a>
+    </sc-if>
+    <sc-if value="{{notReady}}" hint-placeholder-val="{{ true }}">
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="primary" is-disabled="{{yes}}">Draft intent.md</x-import>
+    </sc-if>
+  </div>
+  <dc-import name="StageBar" current="explore" reached="{{reached}}" project="PRJ-0002" hint-size="100%,72px"></dc-import>
+
+  <div style="width: 100%; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px;">
+    
+    <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Template: Standard intent · v3   ·   Style: Challenger · v1</span>
+    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 420px; min-width: 0;">
+            <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">Your idea, section by section</h2>
+            <span style="font-size: 14px; line-height: 20px; color: #434952;">Write in any order. When you leave a section or pause for a few seconds, the assistant reads the whole list and comments on each section, linking sections where they affect each other. Reply under a comment and press Enter.</span>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 200px;">
+            <span style="font-size: 14px; line-height: 20px; font-weight: 500; color: #000;">{{progressLabel}}</span>
+            <div style="width: 200px; height: 6px; border-radius: 3px; background: #e0e5e8; overflow: hidden;"><div style="{{progressBar}}"></div></div>
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{progressNote}}</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border-radius: 8px; background: #f6f7f9;">
+          <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 12px; line-height: 16px; color: #434952;">
+            <span style="{{statusDot}}"></span>
+            {{statusText}}
+          </span>
+          <span style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; line-height: 16px; color: #434952;">
+            <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #e5a000;"></span>Challenge</span>
+            <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #7b4fd6;"></span>Links sections</span>
+            <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #3366ff;"></span>Suggestion</span>
+            <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #008556;"></span>Looks good</span>
+          </span>
+        </div>
+
+        <sc-for list="{{fields}}" as="fd" hint-placeholder-count="6">
+          <div style="{{fd.boxStyle}}">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="{{fd.icon}}" size="5" color="{{fd.iconColor}}"></x-import>
+              <span style="font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">{{fd.label}}</span>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{fd.rule}}</span>
+              <span style="{{fd.reviewingStyle}}">Reviewing…</span>
+              <span style="flex: 1 1 auto;"></span>
+              <span style="{{fd.unreadStyle}}">New comment</span>
+            </div>
+
+            <sc-if value="{{fd.collapsed}}" hint-placeholder-val="{{ false }}">
+              <button type="button" onClick="{{fd.open}}" style="{{fd.peekStyle}}">
+                <span style="{{fd.kindStyle}}">{{fd.kindLabel}}</span>
+                <span style="flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #434952;">{{fd.peek}}</span>
+                <span style="flex: none; color: #3366ff; font-weight: 500;">Show</span>
+              </button>
+            </sc-if>
+
+            <sc-if value="{{fd.expanded}}" hint-placeholder-val="{{ true }}">
+              <div style="{{fd.commentStyle}}">
+                <sc-for list="{{fd.items}}" as="it" hint-placeholder-count="1">
+                  <div style="{{it.wrapStyle}}">
+                    <sc-if value="{{it.theirs}}" hint-placeholder-val="{{ true }}">
+                      <span style="{{it.kindStyle}}">{{it.kindLabel}}</span>
+                    </sc-if>
+                    <div style="{{it.textStyle}}"><sc-for list="{{it.parts}}" as="pt" hint-placeholder-count="1"><span style="{{pt.style}}">{{pt.t}}</span></sc-for></div>
+                    <sc-if value="{{it.hasRewrite}}" hint-placeholder-val="{{ false }}">
+                      <div style="display: flex; flex-direction: column; gap: 6px; padding: 8px 12px; border-radius: 6px; background: #ffffff; border: 1px dashed #b6bcc6;">
+                        <span style="font-size: 13px; line-height: 19px; color: #25282d;">{{it.rewrite}}</span>
+                        <div style="display: flex; flex-wrap: wrap; gap: 16px;">
+                          <button type="button" onClick="{{it.apply}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer;">{{it.applyLabel}}</button>
+                          <button type="button" onClick="{{it.dismiss}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer; color: #6b7180;">Dismiss</button>
+                        </div>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{it.wasApplied}}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size: 12px; line-height: 16px; color: #008556;">{{it.appliedLabel}}</span>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <input type="text" placeholder="Reply to the assistant and press Enter" onKeyDown="{{fd.onReplyKey}}" style="width: 100%; box-sizing: border-box; min-height: 32px; padding: 6px 10px; border: 1px solid #e0e5e8; border-radius: 6px; background: #ffffff; font: inherit; font-size: 13px; line-height: 18px; color: #000; outline: none;">
+              </div>
+            </sc-if>
+
+            <sc-if value="{{fd.isText}}" hint-placeholder-val="{{ true }}">
+              <div onFocus="{{fd.onFocus}}" onBlur="{{fd.onBlur}}" style="{{fd.inputWrap}}">
+                <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" multiline="{{yes}}" rows="{{three}}" placeholder="{{fd.q}}" value="{{fd.value}}" on-change="{{fd.set}}"></x-import>
+              </div>
+            </sc-if>
+            <sc-if value="{{fd.isList}}" hint-placeholder-val="{{ false }}">
+              <div onFocus="{{fd.onFocus}}" onBlur="{{fd.onBlur}}" style="display: flex; flex-direction: column; gap: 8px;">
+                <sc-for list="{{fd.rows}}" as="rw" hint-placeholder-count="3">
+                  <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span style="{{rw.idStyle}}">{{rw.idLabel}}</span>
+                      <div style="{{rw.inputStyle}}">
+                        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Input" placeholder="One must-have, testable, in one line" value="{{rw.text}}" on-change="{{rw.set}}"></x-import>
+                      </div>
+                      <button type="button" onClick="{{rw.up}}" title="Move up" style="{{rw.upStyle}}">↑</button>
+                      <button type="button" onClick="{{rw.remove}}" title="Remove" style="flex: none; width: 28px; height: 28px; border: 0; border-radius: 6px; background: none; color: #6b7180; font-size: 16px; cursor: pointer;">×</button>
+                    </div>
+                    <sc-if value="{{rw.suggested}}" hint-placeholder-val="{{ false }}">
+                      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding-left: 88px;">
+                        <span style="font-size: 12px; line-height: 16px; color: #2447b3;">{{rw.source}}</span>
+                        <button type="button" onClick="{{rw.accept}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer;">Accept</button>
+                        <button type="button" onClick="{{rw.remove}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer; color: #6b7180;">Clear</button>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+                  <button type="button" onClick="{{fd.addRow}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer; font-size: 13px;">+ Add requirement</button>
+                  <span style="font-size: 12px; line-height: 16px; color: #6b7180;">{{fd.listNote}}</span>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{fd.suggested}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: -4px;">
+                <span style="font-size: 12px; line-height: 16px; color: #2447b3;">Suggested by the assistant from your other sections. It does not count until you accept it.</span>
+                <button type="button" onClick="{{fd.accept}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer;">Accept</button>
+                <button type="button" onClick="{{fd.clear}}" style="border: 0; background: none; padding: 0; font: inherit; font-size: 12px; line-height: 16px; font-weight: 500; color: #3366ff; cursor: pointer; color: #6b7180;">Clear</button>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+        <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">The assistant never rewrites your text on its own. It fills only empty sections, as suggestions you accept or clear, and offers rewrites you can apply. Draft intent.md puts these sections into the template as they are, with no model call. Nothing is committed until then.</span>
+      </div>
+    </x-import>
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; line-height: 14.4px; color: var(--text-muted, #6b7180);">
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="tune" size="3"></x-import>
+      <span>Using Anthropic · Claude · reviews when you leave a section or pause for 5 seconds</span>
+      <a href="Settings.dc.html" style="font-size: 12px; line-height: 14.4px;">Change in Settings</a>
+    </div>
+  </div>
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1750}}'>
+class Component extends DCLogic {
+  static defs() {
+    return [
+      ['problem', 'Problem', true, 'What is the problem, and where does it hurt today?'],
+      ['who', 'Who it is for', true, 'Who has the problem? Who is the first user?'],
+      ['outcome', 'Desired outcome', true, 'What does better look like when this exists?'],
+      ['scope', 'Scope', false, 'What is in, and what is clearly out?'],
+      ['reqs', 'Requirements', true, 'The must-haves, one per row'],
+      ['constraints', 'Constraints', false, 'Limits on platform, models, users, budget or time'],
+      ['questions', 'Open questions', false, 'Anything still undecided']
+    ];
+  }
+  // Stand-in for the model: one call sees every section and returns a comment per section.
+  static review(F) {
+    const v = (k) => String((F[k] && !F[k].suggested && F[k].value) || '');
+    const has = (k, re) => re.test(v(k));
+    const SUG = {"outcome": "A versioned intent, spec and plan with traceable requirements, and a scaffold any coding agent can build from. Keel stops at the plan and reads the agent's changes back.", "scope": "Plan, Design and the start of Build. No code generation.", "constraints": "Any LLM (Anthropic, OpenAI, Azure OpenAI, local). Any coding agent. Single user first."};
+    const RW = {"problem": "Ideas wait for someone to write them up, and requirements pass through meetings before an engineer can plan. Coding agents build in hours, but the steps before the build still run at human speed.", "who": "First: a single product-minded engineer. Later: product managers and anyone with an idea.", "outcome": "A versioned intent, spec and plan with traceable requirements, and a scaffold any coding agent can build from. Keel stops at the plan and reads the agent's changes back."};
+    const out = {};
+    out.problem = !v('problem').trim()
+      ? { kind: 'ask', text: 'Start here. What is the problem, and **who feels it today**?' }
+      : (!has('problem', /before the spec|meeting|human speed|write.*up/i)
+        ? { kind: 'challenge', text: 'Ideas stall, but **where**? Before the spec, or between spec and code? Your **Desired outcome** ends at the plan, so the problem should be about the steps before it.', rewrite: RW.problem }
+        : { kind: 'ok', text: 'Specific, and it lines up with **Desired outcome**.' });
+    out.who = !v('who').trim()
+      ? { kind: 'ask', text: 'Who has this problem first? One clear user is easier to design for.' }
+      : (has('who', /anyone/i) && !has('who', /first/i)
+        ? { kind: has('constraints', /single user/i) ? 'link' : 'challenge', linkTo: has('constraints', /single user/i) ? 'Constraints' : '', text: '"Anyone" is hard to design for. Who is the **first** user?' + (has('constraints', /single user/i) ? ' **Constraints** says single user first, which points to one person.' : ''), rewrite: RW.who }
+        : { kind: 'ok', text: 'Clear first user, with a path to a wider audience.' });
+    out.outcome = (F.outcome && F.outcome.suggested)
+      ? { kind: 'suggest', text: 'I drafted this from **Problem** and **Who it is for**. Accept it or write your own.' }
+      : (!v('outcome').trim()
+        ? { kind: 'ask', text: 'What does better look like? For example: where does the idea end up, and who takes it from there?' }
+        : (has('outcome', /code/i) && !has('outcome', /no code|not write|stops at the plan|does not write/i)
+          ? { kind: 'link', linkTo: 'Scope', text: 'Does Keel write the code? **Scope** says no code generation, but this outcome mentions code.', rewrite: RW.outcome }
+          : { kind: 'ok', text: 'Specific and testable: a plan, a scaffold and read-back.' }));
+    out.scope = (F.scope && F.scope.suggested)
+      ? { kind: 'suggest', text: 'Drafted from **Desired outcome**: it stops at the plan, so code generation is out.' }
+      : (!v('scope').trim() ? { kind: 'ask', text: 'Say what is clearly out. It saves arguments in the spec.' } : { kind: 'ok', text: 'Clear in and out.' });
+    out.constraints = (F.constraints && F.constraints.suggested)
+      ? { kind: 'suggest', text: 'Drafted from what you said about models and agents in other sections.' }
+      : (!v('constraints').trim()
+        ? { kind: 'ask', text: 'Any limits on models, coding agents, users or budget?' }
+        : (has('who', /product manager/i) && !has('constraints', /web/i)
+          ? { kind: 'link', linkTo: 'Who it is for', text: '**Who it is for** includes product managers, who will not install developer tools. Add a web UI as a constraint?', rewrite: v('constraints').replace(/\.?\s*$/, '. ') + 'Web UI, nothing to install.' }
+          : { kind: 'ok', text: 'Clear limits.' }));
+    const rows = (F.reqs && F.reqs.rows) || [];
+    const mine = rows.filter((r) => !r.suggested && String(r.text || '').trim());
+    const anyRow = (re) => mine.some((r) => re.test(r.text));
+    out.reqs = rows.some((r) => r.suggested)
+      ? { kind: 'suggest', text: 'I turned **Desired outcome** and **Scope** into must-haves. Accept the ones you agree with, edit them, or clear them.' }
+      : (!mine.length
+        ? { kind: 'ask', text: 'List the must-haves, one per row. Each one becomes a requirement with an ID when you draft the intent.' }
+        : (has('outcome', /read.*back/i) && !anyRow(/read.?back|reads? .*changes/i)
+          ? { kind: 'link', linkTo: 'Desired outcome', text: '**Desired outcome** says Keel reads the agent\'s changes back, but no requirement covers it.', addRow: 'Read back the changes the coding agent makes to the documents, and accept or dismiss them.' }
+          : (anyRow(/generat\w* code|write\w* (the )?code|code generation/i) && has('scope', /no code/i)
+            ? { kind: 'link', linkTo: 'Scope', text: 'A requirement mentions code generation, but **Scope** rules it out. Which one is right?' }
+            : (mine.length < 3
+              ? { kind: 'challenge', text: 'Only ' + mine.length + ' requirement' + (mine.length > 1 ? 's' : '') + '. Does this cover everything in **Desired outcome**?' }
+              : { kind: 'ok', text: mine.length + ' requirements, each testable. New rows get an ID when you draft; existing IDs never change.' }))));
+    out.questions = has('who', /anyone/i) && !has('who', /first/i)
+      ? { kind: 'link', linkTo: 'Who it is for', text: 'Until **Who it is for** names a first user, keep it here as an open question.', rewrite: (v('questions') ? v('questions').replace(/\.?\s*$/, '. ') : '') + 'Who is the first user?' }
+      : ((F.questions && F.questions.suggested)
+        ? { kind: 'suggest', text: 'Things you have not decided yet, from the rest of the list.' }
+        : (!v('questions').trim() ? { kind: 'ask', text: 'Anything still undecided? It goes to the spec as an open question.' } : { kind: 'ok', text: 'These go to the spec as open questions.' }));
+    return { comments: out, suggest: SUG };
+  }
+  static applyReview(F, active) {
+    const REQ_SUG = ["Fill in the sections of an intent template chosen at the start, with an assistant that comments on them.", "Save intent.md with metadata: ID, author, dates, status, version.", "Give every requirement a stable ID, traced to the spec, plan and tests.", "Unlock each stage only when the previous one is approved.", "Hand off a scaffold any coding agent can build from."];
+    const r = Component.review(F);
+    const next = {};
+    Component.defs().forEach((d) => {
+      const k = d[0];
+      const f = Object.assign({ value: '', thread: [] }, F[k]);
+      if (k === 'reqs') {
+        f.rows = (f.rows || []).slice();
+        if (!f.rows.length && !f.cleared && String((F.outcome && !F.outcome.suggested && F.outcome.value) || '').trim()) f.rows = REQ_SUG.map((t) => ({ text: t, suggested: true }));
+        f.value = f.rows.map((x) => (x.suggested ? '~' : '') + x.text).join('\n');
+      } else if (!String(f.value || '').trim() && !f.cleared && r.suggest[k]) { f.value = r.suggest[k]; f.suggested = true; }
+      next[k] = f;
+    });
+    const r2 = Component.review(next);
+    Component.defs().forEach((d) => {
+      const k = d[0];
+      const c = r2.comments[k];
+      const prev = next[k].comment;
+      const changed = !prev || prev.text !== c.text;
+      next[k] = Object.assign({}, next[k], { comment: Object.assign({}, c, { dismissed: changed ? false : prev.dismissed, applied: changed ? false : prev.applied }), reviewed: next[k].value, unread: changed && k !== active && c.kind !== 'ok' ? true : (k === active ? false : next[k].unread) });
+    });
+    return next;
+  }
+  constructor(props) {
+    super(props);
+    const init = {"active": "who", "fields": {"problem": {"value": "Ideas stall before anyone can build them. Coding agents build fast, but the idea still has to be turned into something they can use.", "thread": []}, "who": {"value": "Anyone with an idea.", "thread": []}}};
+    this.timer = null;
+    this.state = { fields: Component.applyReview(init.fields, init.active), active: init.active, reviewing: '', lastReview: 'just now' };
+    if (init.unread) init.unread.forEach((k) => { this.state.fields[k].unread = true; });
+    if (init.threads) Object.keys(init.threads).forEach((k) => { this.state.fields[k].thread = init.threads[k]; });
+  }
+  review(origin) {
+    clearTimeout(this.timer);
+    this.setState({ reviewing: origin });
+    this.timer = setTimeout(() => {
+      this.setState({ fields: Component.applyReview(this.state.fields, this.state.active), reviewing: '', lastReview: 'just now' });
+    }, 1400);
+  }
+  renderVals() {
+    const R = window.React;
+    const DS = window.SoftwareOneDesignSystem_52b182;
+    const st = this.state;
+    const DEFS = Component.defs();
+    const kinds = {
+      challenge: ['Challenge', '#e5a000', '#8a5a00', '#fffaf0'],
+      link: ['Links sections', '#7b4fd6', '#5b34b0', '#f7f3ff'],
+      suggest: ['Suggestion', '#3366ff', '#2447b3', '#f3f6ff'],
+      ask: ['Question', '#3366ff', '#2447b3', '#f3f6ff'],
+      ok: ['Looks good', '#008556', '#006b45', '#f2faf6']
+    };
+    const real = (k) => k === 'reqs' ? ((st.fields.reqs && st.fields.reqs.rows) || []).some((r) => !r.suggested && String(r.text || '').trim()) : !!(st.fields[k] && !st.fields[k].suggested && String(st.fields[k].value || '').trim());
+    const setRows = (rows, cleared) => { const cur = this.state.fields.reqs || {}; this.setState({ fields: Object.assign({}, this.state.fields, { reqs: Object.assign({}, cur, { rows: rows, cleared: cleared === undefined ? cur.cleared : cleared, value: rows.map((x) => (x.suggested ? '~' : '') + x.text).join('\n') }) }) }); };
+    const req = DEFS.filter((d) => d[2]);
+    const reqDone = req.filter((d) => real(d[0])).length;
+    const allDone = DEFS.filter((d) => real(d[0])).length;
+    const ready = reqDone === req.length;
+    const setField = (k, patch) => this.setState({ fields: Object.assign({}, this.state.fields, { [k]: Object.assign({}, this.state.fields[k], patch) }) });
+    const meaningful = (a, b) => Math.abs(String(a || '').length - String(b || '').length) >= 20 || (/[.!?]\s*$/.test(String(a || '')) && a !== b);
+    const parts = (t) => String(t).split('**').map((x, i) => ({ t: x, style: i % 2 ? 'font-weight: 600; color: #000;' : '' }));
+    const fields = DEFS.map((d) => {
+      const k = d[0];
+      const f = st.fields[k] || { value: '', thread: [] };
+      const c = f.comment || { kind: 'ask', text: '' };
+      const kd = kinds[c.kind];
+      const isActive = st.active === k;
+      const target = c.linkTo === 'Who it is for' && k === 'constraints' ? 'constraints' : k;
+      const items = [];
+      if (c.text && !c.dismissed) items.push({ theirs: true, kind: c.kind, text: c.text, rewrite: c.applied ? '' : (c.rewrite || ''), addRow: c.applied ? '' : (c.addRow || ''), applied: c.applied, auto: true });
+      (f.thread || []).forEach((m, idx) => items.push(Object.assign({ idx: idx }, m)));
+      const itemVals = items.map((m) => {
+        const mk = kinds[m.kind || 'ask'];
+        return {
+          theirs: !m.mine,
+          kindLabel: m.auto ? (mk[0] + (c.linkTo ? ' · ' + c.linkTo : '')) : 'Reply · ' + mk[0],
+          kindStyle: 'font-size: 11px; line-height: 14px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: ' + mk[2] + ';',
+          wrapStyle: m.mine ? 'display: flex; flex-direction: column; align-items: flex-end;' : 'display: flex; flex-direction: column; gap: 6px;',
+          textStyle: m.mine ? 'max-width: 80%; padding: 6px 12px; border-radius: 12px; background: #ffffff; border: 1px solid #e0e5e8; font-size: 13px; line-height: 19px; color: #000;' : 'font-size: 14px; line-height: 21px; color: #25282d;',
+          parts: parts(m.text),
+          hasRewrite: !m.mine && !!(m.rewrite || m.addRow) && !m.applied,
+          rewrite: m.rewrite || m.addRow || '',
+          applyLabel: m.addRow ? 'Add as requirement' : (m.auto && c.linkTo && target !== k ? 'Apply to ' + c.linkTo : 'Apply'),
+          wasApplied: !!m.applied,
+          appliedLabel: 'Applied. You can still edit it below.',
+          apply: () => {
+            const F = Object.assign({}, this.state.fields);
+            if (m.addRow) { const rows = (F.reqs.rows || []).concat([{ text: m.addRow }]); F.reqs = Object.assign({}, F.reqs, { rows: rows, value: rows.map((x) => (x.suggested ? '~' : '') + x.text).join('\n') }); }
+            else F[k] = Object.assign({}, F[k], { value: m.rewrite, suggested: false });
+            if (m.auto) F[k].comment = Object.assign({}, F[k].comment, { applied: true });
+            else F[k].thread = F[k].thread.map((x, j) => j === m.idx ? Object.assign({}, x, { applied: true }) : x);
+            this.setState({ fields: F });
+            this.review(k);
+          },
+          dismiss: () => {
+            if (m.auto) setField(k, { comment: Object.assign({}, c, { dismissed: true }) });
+            else setField(k, { thread: f.thread.map((x, j) => j === m.idx ? Object.assign({}, x, { rewrite: '' }) : x) });
+          }
+        };
+      });
+      const hasValue = !!String(f.value || '').trim();
+      const isList = k === 'reqs';
+      const rowsArr = (f.rows || []);
+      let nextNum = 1 + rowsArr.reduce((mx, r) => Math.max(mx, r.id ? parseInt(r.id.slice(4), 10) : 0), (f.maxId || 0));
+      const rowVals = rowsArr.map((r, i) => ({
+        text: r.text, suggested: !!r.suggested,
+        idLabel: r.id ? r.id : (r.suggested ? 'suggested' : 'new'),
+        idStyle: 'flex: none; width: 80px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 16px; color: ' + (r.id ? '#000' : (r.suggested ? '#2447b3' : '#6b7180')) + ';' + (r.id ? ' font-weight: 600;' : ' font-style: italic;'),
+        inputStyle: 'flex: 1 1 auto; min-width: 0;' + (r.suggested ? ' font-style: italic; opacity: .85;' : ''),
+        source: 'Suggested from Desired outcome and Scope',
+        upStyle: 'flex: none; width: 28px; height: 28px; border: 0; border-radius: 6px; background: none; color: #6b7180; font-size: 14px; cursor: pointer;' + (i === 0 ? ' visibility: hidden;' : ''),
+        set: (e) => { const val = e && e.target ? e.target.value : e; const rows = this.state.fields.reqs.rows.map((x, j) => j === i ? Object.assign({}, x, { text: val, suggested: false }) : x); setRows(rows); clearTimeout(this.timer); this.timer = setTimeout(() => { const cur = this.state.fields.reqs; if (meaningful(cur.value, cur.reviewed)) this.review('reqs'); }, 5000); },
+        accept: () => { setRows(this.state.fields.reqs.rows.map((x, j) => j === i ? Object.assign({}, x, { suggested: false }) : x)); this.review('reqs'); },
+        remove: () => { const rows = this.state.fields.reqs.rows.filter((x, j) => j !== i); setRows(rows, rows.length === 0 ? true : undefined); this.review('reqs'); },
+        up: () => { if (!i) return; const rows = this.state.fields.reqs.rows.slice(); const t = rows[i - 1]; rows[i - 1] = rows[i]; rows[i] = t; setRows(rows); }
+      }));
+      const withId = rowsArr.filter((r) => r.id).length;
+      return {
+        label: d[1], rule: d[2] ? 'Required' : 'Optional', q: d[3], value: f.value || '',
+        icon: real(k) ? 'check_circle' : 'radio_button_unchecked', iconColor: real(k) ? 'var(--alerts-success-3, #008556)' : '#6b7180',
+        reviewingStyle: st.reviewing === k ? 'font-size: 12px; line-height: 14.4px; color: #3366ff; animation: keelPulse 1.2s infinite;' : 'display: none;',
+        unreadStyle: f.unread && !isActive ? 'display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; padding: 1px 8px; border-radius: 999px; background: ' + kd[3] + '; color: ' + kd[2] + '; border: 1px solid ' + kd[1] + ';' : 'display: none;',
+        expanded: isActive && itemVals.length > 0,
+        collapsed: !isActive && itemVals.length > 0,
+        peek: (c.dismissed ? '' : String(c.text).replace(/\*\*/g, '')) || ((f.thread || []).length ? 'Conversation on this section' : ''),
+        kindLabel: c.dismissed ? 'Comment' : kd[0],
+        kindStyle: 'flex: none; font-size: 11px; line-height: 14px; font-weight: 600; text-transform: uppercase; color: ' + kd[2] + ';',
+        peekStyle: 'display: flex; align-items: center; gap: 10px; width: 100%; box-sizing: border-box; padding: 6px 12px; border: 0; border-left: 3px solid ' + kd[1] + '; border-radius: 4px; background: ' + kd[3] + '; font: inherit; font-size: 12px; line-height: 16px; text-align: left; cursor: pointer;',
+        open: () => setField(k, { unread: false }) || this.setState({ active: k }),
+        commentStyle: 'display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-left: 3px solid ' + kd[1] + '; border-radius: 6px; background: ' + kd[3] + '; animation: keelFade .3s ease;',
+        items: itemVals,
+        onReplyKey: (e) => {
+          if (!e || e.key !== 'Enter') return;
+          const text = String(e.target.value || '').trim();
+          if (!text) return;
+          e.target.value = '';
+          const base = String((this.state.fields[k] || {}).value || '');
+          const sentence = text.charAt(0).toUpperCase() + text.slice(1).replace(/\.?$/, '.');
+          const thread = (this.state.fields[k].thread || []).concat([{ mine: true, text: text }]);
+          setField(k, { thread: thread });
+          this.setState({ reviewing: k });
+          setTimeout(() => {
+            const cur = this.state.fields[k];
+            const reply = k === 'reqs' ? { kind: 'suggest', text: 'Here it is as a requirement. I also re-checked the other sections.', addRow: sentence } : { kind: 'suggest', text: 'Thanks. Here is **' + d[1] + '** with that in it. I also re-checked the other sections.', rewrite: (base ? base.replace(/\.?\s*$/, '. ') : '') + sentence };
+            const F = Object.assign({}, this.state.fields, { [k]: Object.assign({}, cur, { thread: cur.thread.concat([reply]) }) });
+            this.setState({ fields: Component.applyReview(F, k), reviewing: '' });
+          }, 1200);
+        },
+        inputWrap: f.suggested ? 'font-style: italic; opacity: .85;' : '',
+        isText: !isList, isList: isList, rows: rowVals,
+        addRow: () => setRows(((this.state.fields.reqs || {}).rows || []).concat([{ text: '' }])),
+        listNote: withId ? withId + ' with IDs from the last draft. New rows get REQ-' + String(nextNum).padStart(3, '0') + ' onwards when you draft. IDs are never reused.' : 'IDs (REQ-001…) are given when you draft the intent, and never change after that.',
+        set: (e) => {
+          const val = e && e.target ? e.target.value : e;
+          clearTimeout(this.timer);
+          setField(k, { value: val, suggested: false, cleared: !String(val || '').trim() ? true : f.cleared });
+          if (st.reviewing) this.setState({ reviewing: '' });
+          this.timer = setTimeout(() => { const cur = this.state.fields[k]; if (meaningful(cur.value, cur.reviewed)) this.review(k); }, 5000);
+        },
+        onFocus: () => { if (this.state.active !== k) { this.setState({ active: k }); setField(k, { unread: false }); } },
+        onBlur: () => { const cur = this.state.fields[k]; if (cur && cur.value !== cur.reviewed) this.review(k); },
+        suggested: !isList && !!f.suggested && hasValue,
+        accept: () => { setField(k, { suggested: false }); this.review(k); },
+        clear: () => setField(k, { value: '', suggested: false, cleared: true }),
+        boxStyle: 'display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 10px; border: 1px solid ' + (isActive ? '#3366ff' : '#e0e5e8') + ';' + (isActive ? ' box-shadow: 0 0 0 3px #ebf0ff;' : '')
+      };
+    });
+    const unread = DEFS.filter((d) => st.fields[d[0]] && st.fields[d[0]].unread && st.active !== d[0]).length;
+    return {
+      yes: true,
+      three: 3,
+      ready: ready,
+      notReady: !ready,
+      reached: ready ? 'intent' : 'explore',
+      fields: fields,
+      progressLabel: reqDone + ' of ' + req.length + ' required filled',
+      progressBar: 'height: 6px; border-radius: 3px; background: ' + (ready ? '#008556' : '#3366ff') + '; width: ' + Math.round(100 * allDone / DEFS.length) + '%;',
+      progressNote: ready ? 'You can draft the intent now' : 'Suggestions count once you accept them',
+      statusDot: 'width: 8px; height: 8px; border-radius: 50%; background: ' + (st.reviewing ? '#3366ff' : '#008556') + ';' + (st.reviewing ? ' animation: keelPulse 1.2s infinite;' : ''),
+      statusText: st.reviewing ? 'Reviewing all sections…' : ('Assistant reviewed all sections ' + st.lastReview + (unread ? ' · ' + unread + ' new comment' + (unread > 1 ? 's' : '') + ' on other sections' : '')),
+      groups: [
+        { label: 'Project · Keel', icon: 'lightbulb', items: [
+          { id: 'setup', label: 'Project setup', href: 'SetupKeel.dc.html' },
+          { id: 'explore', label: 'Explore', href: 'NewIdea.dc.html' } ] },
+        { label: 'Library (.keel)', icon: 'folder', items: [
+          { id: 'templates', label: 'Templates', href: 'Templates.dc.html' },
+          { id: 'styles', label: 'Brainstorm styles', href: 'Styles.dc.html' },
+          { id: 'standards', label: 'Standards', href: 'Standards.dc.html' } ] },
+        { label: 'Settings', icon: 'settings', items: [
+          { id: 'settings', label: 'Settings', href: 'Settings.dc.html' } ] }
+      ],
+      brand: R.createElement('span', { style: { fontSize: 18, lineHeight: '26px', fontWeight: 700, color: '#000' } }, 'Keel'),
+      headerBar: R.createElement(DS.NavigationHeaderBar, { title: 'Explore', subtitle: 'Keel · ~/keel · early stage' })
+    };
+  }
+}
+</script>
+</body>
+</html>

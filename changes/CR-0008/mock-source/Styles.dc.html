@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keel · Brainstorm styles</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/softwareone/tokens.css">
+<link rel="stylesheet" href="ds/softwareone/components/bundle.css">
+<script src="ds/softwareone/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#3366ff}a:hover{color:#2447b3}
+</style>
+</helmet>
+<x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Navigation" groups="{{groups}}" active-id="styles" brand="{{brand}}" header-bar="{{headerBar}}">
+<div style="box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 24px; font-family: var(--font-body, Arial); color: var(--text-body, #25282d); max-width: 1400px;">
+  <sc-if value="{{hasBack}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 8px; background: #ebf0ff;">
+      <a href="{{backHref}}" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none;">
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Icon" name="arrow_back" size="5"></x-import>
+        Back to {{backLabel}}
+      </a>
+      <span style="font-size: 12px; line-height: 14.4px; color: #434952;">You came here from {{backLabel}}. Your choices there are kept. This bar does not appear when you open this page from the side menu or from Settings.</span>
+    </div>
+  </sc-if>
+  <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <h1 style="margin: 0; font-size: 24px; line-height: 28.13px; font-weight: 700; color: var(--text-primary, #000);">Brainstorm styles</h1>
+      <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--text-muted, #6b7180);">The template decides what the brainstorm captures. The style decides how the assistant asks. Each style is a versioned skill file in .keel/styles that works with any model.</p>
+    </div>
+    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="primary" icon="{{addIcon}}">Create style</x-import>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+    <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card" style="flex: 1 1 340px; min-width: 0;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <sc-for list="{{list}}" as="t" hint-placeholder-count="5">
+          <button type="button" onClick="{{t.pick}}" style="{{t.style}}">
+            <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="font-size: 14px; line-height: 20px; font-weight: 500; text-align: left;">{{t.name}}</span>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{t.version}}</span>
+            </span>
+            <span style="font-size: 12px; line-height: 14.4px; color: #434952; text-align: left;">{{t.short}}</span>
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180; text-align: left;">{{t.usage}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </x-import>
+
+    <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; color: #000;">{{cur.name}} · {{cur.version}}</h2>
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">styles/{{cur.id}}/SKILL.md · last changed {{cur.changed}}</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="outline">Edit</x-import>
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="text">Duplicate</x-import>
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Button" type="secondary">Save as new version</x-import>
+            </div>
+          </div>
+          <p style="margin: 0; font-size: 14px; line-height: 20px; color: #434952;">{{cur.desc}}</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 24px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Tools it may use</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <sc-for list="{{cur.tools}}" as="x" hint-placeholder-count="1">
+                  <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" color="{{x.color}}" icon="{{x.icon}}">{{x.label}}</x-import>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Kind</span>
+              <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Chip" type="outline" color="{{cur.kindColor}}">{{cur.kind}}</x-import>
+            </div>
+          </div>
+        </div>
+      </x-import>
+
+      <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Card">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <h3 style="margin: 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">Skill file</h3>
+            <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Plain markdown with a short header. Loaded into the brainstorm alongside the intent template.</span>
+          </div>
+          <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Tabs" variant="inline" items="{{mdTabs}}" value="{{mdTab}}" on-change="{{setMdTab}}"></x-import>
+          <sc-if value="{{showPreview}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px; line-height: 20px; color: #25282d;">
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; padding: 16px; border-radius: 8px; background: #f4f6f8;">
+                <sc-for list="{{front}}" as="f" hint-placeholder-count="4">
+                  <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+                    <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">{{f.k}}</span>
+                    <span style="font-size: 14px; line-height: 20px; color: #000;">{{f.v}}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-for list="{{blocks}}" as="b" hint-placeholder-count="8">
+                <sc-if value="{{b.h1}}" hint-placeholder-val="{{ false }}"><h2 style="margin: 4px 0 0; font-size: 20px; line-height: 24px; font-weight: 700; color: #000;">{{b.text}}</h2></sc-if>
+                <sc-if value="{{b.h2}}" hint-placeholder-val="{{ false }}"><h3 style="margin: 8px 0 0; font-size: 16px; line-height: 19.2px; font-weight: 500; color: #000;">{{b.text}}</h3></sc-if>
+                <sc-if value="{{b.li}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; padding-left: 8px;"><span style="color: #6b7180;">•</span><span>{{b.text}}</span></div></sc-if>
+                <sc-if value="{{b.p}}" hint-placeholder-val="{{ true }}"><p style="margin: 0;">{{b.text}}</p></sc-if>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{showSource}}" hint-placeholder-val="{{ false }}">
+            <pre style="margin: 0; padding: 16px; border-radius: 8px; background: #f4f6f8; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 18px; color: #25282d; white-space: pre-wrap;">{{cur.source}}</pre>
+          </sc-if>
+        </div>
+      </x-import>
+    </div>
+  </div>
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"from":{"editor":"enum","options":["none","start","setup","setupkeel"],"default":"setupkeel"},"$preview":{"width":1440,"height":1250}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sel: 'challenger', mdTab: 'preview' };
+  }
+  renderVals() {
+    const R = window.React;
+    const DS = window.SoftwareOneDesignSystem_52b182;
+    const none = [ { label: 'None: questions only', color: 'gray', icon: 'chat' } ];
+    const skill = (id, name, desc, tools, body) => ['---', 'name: ' + id, 'description: ' + desc, 'version: 1', tools ? 'tools: [' + tools + ']' : 'tools: []', '---', '', '# ' + name, ''].concat(body).join('\n');
+    const S = {
+      challenger: { id: 'challenger', name: 'Challenger', version: 'v1', changed: '15/11/2026', usage: 'Used by 3 documents', kind: 'Skill', kindColor: 'primary',
+        short: 'Assertive. Tests assumptions and looks for reasons the idea could fail.',
+        desc: 'Pushes back on every claim, asks for evidence and looks for the users, risks and edge cases the proposer has not considered. Best for ideas that will compete for budget.',
+        tools: none,
+        source: skill('challenger', 'Challenger', 'Assertive brainstorm that tests assumptions. Use when an idea needs stress-testing.', '', [
+          'You help the proposer fill the sections of the selected intent template.',
+          'Your job is to make the idea stronger by challenging it.', '',
+          '## How to ask', '- One question at a time. Short and direct.', '- After each answer, name the assumption behind it and ask how we know it is true.', '- Ask who would not want this, and why.', '- Ask what happens if the idea is not built.', '',
+          '## Probe these angles', '- Evidence for the problem (data, tickets, complaints)', '- Smallest version that would prove the value', '- What could make this fail after launch', '',
+          '## Stop when', '- Every required template section has an answer the proposer can defend.', '- Record unresolved challenges under Open questions.' ]) },
+      coach: { id: 'coach', name: 'Coach', version: 'v1', changed: '10/11/2026', usage: 'Used by 2 documents', kind: 'Skill', kindColor: 'primary',
+        short: 'Supportive. Helps people new to writing specs put the idea into words.',
+        desc: 'Patient and encouraging. Rephrases answers back to confirm them and gives examples when the proposer is stuck. Best for first-time proposers.',
+        tools: none,
+        source: skill('coach', 'Coach', 'Supportive brainstorm that helps put an idea into words.', '', [
+          'You help the proposer fill the sections of the selected intent template.', '',
+          '## How to ask', '- Start broad, then narrow down.', '- Repeat each answer back in one sentence and ask if it is right.', '- When the proposer is stuck, offer two or three example answers.', '',
+          '## Stop when', '- Every required section has an answer the proposer agrees with.' ]) },
+      cost: { id: 'cost-value', name: 'Cost and value', version: 'v2', changed: '18/11/2026', usage: 'Used by 1 document', kind: 'Skill + tool', kindColor: 'warning',
+        short: 'Cost-focused. Effort, running cost, return and build vs buy.',
+        desc: 'Keeps asking what the idea costs to build and run, what it saves or earns, and whether something can be bought instead. Shows every estimate with its assumptions.',
+        tools: [ { label: 'Cost estimator', color: 'warning', icon: 'calculate' } ],
+        source: skill('cost-value', 'Cost and value', 'Brainstorm focused on cost, value and build vs buy.', 'cost_estimator', [
+          'You help the proposer fill the sections of the selected intent template, with a focus on cost and value.', '',
+          '## How to ask', '- Ask what the problem costs today (time, money, risk).', '- Ask for the cheapest version that would still be worth it.', '- Ask whether a product already does this.', '',
+          '## Using the cost estimator', '- Use it for rough build and run costs only.', '- Always show the assumptions next to the number.', '- Never present an estimate as a quote.', '',
+          '## Stop when', '- Required sections are answered and the cost and value case is written under Constraints or Open questions.' ]) },
+      market: { id: 'market', name: 'Market', version: 'v1', changed: '12/11/2026', usage: 'Not used yet', kind: 'Agent: skill + tools', kindColor: 'success',
+        short: 'Market-focused. Users, competitors and what sets the idea apart.',
+        desc: 'Researches similar products and asks how the idea differs. Uses web search and cites every source in the chat.',
+        tools: [ { label: 'Web search', color: 'success', icon: 'travel_explore' }, { label: 'Web fetch', color: 'success', icon: 'link' } ],
+        source: skill('market', 'Market', 'Brainstorm focused on users, competitors and differentiation. Searches the web.', 'web_search, web_fetch', [
+          'You help the proposer fill the sections of the selected intent template, with a focus on the market.', '',
+          '## How to ask', '- Ask who the users are and how they solve the problem today.', '- Search for similar products and summarise the closest three.', '- Ask what would make a user switch.', '',
+          '## Using tools', '- Cite a link for every claim about a product or market.', '- Say when you could not find evidence.', '',
+          '## Stop when', '- Required sections are answered and the closest alternatives are listed under Open questions.' ]) },
+      eng: { id: 'engineering-first', name: 'Engineering-first', version: 'v1', changed: '08/11/2026', usage: 'Used by 1 document', kind: 'Skill', kindColor: 'primary',
+        short: 'Brings feasibility, integration and security questions in early.',
+        desc: 'Asks which systems are touched, what data moves where and what could be hard to build, so the feasibility review has fewer surprises.',
+        tools: none,
+        source: skill('engineering-first', 'Engineering-first', 'Brainstorm that raises feasibility and integration questions early.', '', [
+          'You help the proposer fill the sections of the selected intent template.', '',
+          '## Probe these angles', '- Systems and APIs involved', '- Data that is read, stored or sent', '- Security and access', '- Parts that look hard or unknown', '',
+          '## Stop when', '- Required sections are answered and technical unknowns are listed under Open questions.' ]) }
+    };
+    const order = ['challenger', 'coach', 'cost', 'market', 'eng'];
+    const base = 'display: flex; flex-direction: column; gap: 4px; width: 100%; box-sizing: border-box; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-family: inherit; color: #25282d; ';
+    const fromMap = { none: null, start: ['Initialise this folder', 'Start.dc.html'], setupkeel: ['Project setup', 'SetupKeel.dc.html'] };
+    const back = fromMap[this.props.from ?? 'setupkeel'];
+    return {
+      hasBack: !!back,
+      backLabel: back ? back[0] : '',
+      backHref: back ? back[1] : 'SetupKeel.dc.html',
+      addIcon: R.createElement(DS.Icon, { name: 'add', size: 5 }),
+      list: order.map((k) => ({ name: S[k].name, version: S[k].version, short: S[k].short, usage: S[k].usage + (k === 'challenger' ? ' · default' : ''),
+        pick: () => this.setState({ sel: k }),
+        style: base + (k === this.state.sel ? 'background: #ebf0ff; border: 1px solid #3366ff;' : 'background: #ffffff; border: 1px solid #e0e5e8;') })),
+      cur: S[this.state.sel],
+      mdTabs: [ { value: 'preview', label: 'Preview' }, { value: 'source', label: 'Markdown' } ],
+      mdTab: this.state.mdTab,
+      setMdTab: (v) => this.setState({ mdTab: v }),
+      showPreview: this.state.mdTab === 'preview',
+      showSource: this.state.mdTab === 'source',
+      front: (() => { const src = S[this.state.sel].source.split('\n'); const end = src.indexOf('---', 1); return src.slice(1, end).map((l) => { const i = l.indexOf(':'); return { k: l.slice(0, i), v: l.slice(i + 1).trim() || 'none' }; }); })(),
+      blocks: (() => { const src = S[this.state.sel].source.split('\n'); const end = src.indexOf('---', 1); return src.slice(end + 1).filter((l) => l.trim()).map((l) => ({
+        h1: l.indexOf('# ') === 0, h2: l.indexOf('## ') === 0, li: l.indexOf('- ') === 0,
+        p: !(l.indexOf('# ') === 0 || l.indexOf('## ') === 0 || l.indexOf('- ') === 0),
+        text: l.replace(/^#+ /, '').replace(/^- /, '') })); })(),
+      groups: [
+        { label: 'Project · Keel', icon: 'lightbulb', items: [
+          { id: 'setup', label: 'Project setup', href: 'SetupKeel.dc.html' },
+          { id: 'explore', label: 'Explore', href: 'Explore.dc.html' },
+          { id: 'intent', label: 'Intent', href: 'Intent.dc.html' },
+          { id: 'spec', label: 'Spec', href: 'Spec.dc.html' },
+          { id: 'plan', label: 'Plan', href: 'Plan.dc.html' },
+          { id: 'handoff', label: 'Handoff', href: 'Handoff.dc.html' },
+          { id: 'roadmap', label: 'Roadmap', href: 'Roadmap.dc.html' },
+          { id: 'changes', label: 'Changes', href: 'Changes.dc.html' } ] },
+        { label: 'Library (.keel)', icon: 'folder', items: [
+          { id: 'templates', label: 'Templates', href: 'Templates.dc.html' },
+          { id: 'styles', label: 'Brainstorm styles', href: 'Styles.dc.html' },
+          { id: 'standards', label: 'Standards', href: 'Standards.dc.html' } ] },
+        { label: 'Settings', icon: 'settings', items: [
+          { id: 'settings', label: 'Settings', href: 'Settings.dc.html' } ] }
+      ],
+      brand: R.createElement('span', { style: { fontSize: 18, lineHeight: '26px', fontWeight: 700, color: '#000' } }, 'Keel'),
+      headerBar: R.createElement(DS.NavigationHeaderBar, { title: 'Brainstorm styles', subtitle: 'Keel · ~/keel' })
+    };
+  }
+}
+</script>
+</body>
+</html>
