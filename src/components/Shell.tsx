@@ -1,5 +1,6 @@
 // App shell (mockups in docs/mocks/): the project and its folder at the top of the sidebar, then the
 // Project, Library and Settings groups. One project per folder (CR-0004): no project list.
+import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Book, Bulb, Gear } from './Icons';
@@ -19,7 +20,11 @@ export function Shell({ project, folder, children }: { project?: ShellProject; f
   return (
     <div className="shell">
       <aside className="sidebar">
-        <Link href="/" className="brand">Keel</Link>
+        <Link href="/" className="brand">
+          {/* As wide as the word below it: the image takes no width of its own (globals.css). */}
+          <Image src="/keel-logo.png" alt="" width={266} height={296} priority className="brand-logo" />
+          <span>Keel</span>
+        </Link>
         <div className="project-head" aria-label="This folder">
           <strong>{project ? project.title : 'Not initialised'}</strong>
           <span className="folder-path" title={folder}>{folder}</span>

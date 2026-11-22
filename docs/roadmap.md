@@ -16,10 +16,10 @@ updated: 2026-11-20
 - Handoff and read-back (REQ-006, REQ-007)
 - Standards chosen per project at Start and in Project setup, applied to the spec and plan (owner decision, 2026-11-20)
 - One project per folder with .keel (CR-0004)
+- Change requests and approvals across stages (CR-0003, adds REQ-014)
 
 ## Next
 
-- Change requests and approvals across stages (CR-0003, adds REQ-013)
 - OS keychain for API keys
 - Personal and company libraries: save a template, style or standard to my library and use it in new folders
 - Standards library screen (editing standards) and Agent kit selection in Project setup

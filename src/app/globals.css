@@ -70,7 +70,10 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align:
 /* App shell: sidebar, top bar, content */
 .shell { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
 .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 24px 0; }
-.brand { font-size: 20px; font-weight: 700; padding: 0 24px 24px; display: block; color: var(--text); }
+.brand { font-size: 20px; font-weight: 700; margin: 0 24px 24px; display: inline-flex; flex-direction: column; gap: 6px; color: var(--text); }
+.brand:hover { text-decoration: none; }
+/* width 0 with min-width 100%: the logo adds no width of its own, so it is exactly as wide as "Keel". */
+.brand-logo { width: 0; min-width: 100%; height: auto; }
 .nav-group { margin-bottom: 24px; }
 .nav-heading { display: flex; align-items: center; gap: 8px; padding: 6px 24px; font-weight: 500; color: var(--text); }
 .nav-link { display: block; padding: 6px 24px 6px 46px; color: var(--text); border-left: 3px solid transparent; }
@@ -245,3 +248,18 @@ textarea.suggested, input.suggested { font-style: italic; color: var(--muted); }
 .req-row { display: grid; grid-template-columns: 90px 1fr auto auto; gap: 8px; align-items: center; margin-top: 6px; }
 .req-id { font-weight: 600; font-size: 13px; }
 .notice-card { border-left: 4px solid var(--accent); }
+
+/* Change requests (CR-0003) */
+.stagebar .stale { display: block; font-size: 12px; color: var(--warn); font-weight: 600; }
+.stale-note { border-left: 4px solid var(--warn); }
+.pill { display: inline-block; font-size: 12px; line-height: 16px; padding: 2px 10px; border-radius: 999px; background: var(--surface-muted); color: var(--muted); white-space: nowrap; }
+.pill.waiting { background: var(--warn-soft); color: var(--warn); }
+.pill.progress { background: var(--accent-soft); color: var(--accent); }
+.pill.ready, .pill.applied { background: var(--ok-soft); color: var(--ok); }
+.pill.rejected, .pill.unreadable { background: var(--danger-soft); color: var(--danger); }
+.diff-line { padding: 2px 12px; white-space: pre-wrap; font-family: var(--mono); font-size: 13px; }
+.diff-line.added { background: var(--ok-soft); }
+.diff-line.removed { background: var(--danger-soft); text-decoration: line-through; }
+.filters { display: flex; gap: 8px; margin: 12px 0; }
+.filters a[aria-current='page'] { font-weight: 600; text-decoration: underline; }
+.impact-item { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-top: 10px; }

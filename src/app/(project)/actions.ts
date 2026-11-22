@@ -90,7 +90,7 @@ export async function draftIntentAction(): Promise<void> {
 export async function saveChangeRequestAction(): Promise<void> {
   await guard('explore');
   const saved = await saveChangeRequest(serverStore());
-  redirect(`${at('explore')}?${saved.ok ? `saved=${encodeURIComponent(saved.value.header.id)}` : `error=${encodeURIComponent(saved.message)}`}`);
+  redirect(`${at('explore')}?${saved.ok ? `saved=${encodeURIComponent(saved.value.id)}` : `error=${encodeURIComponent(saved.message)}`}`);
 }
 
 const reviewForm = z.strictObject({

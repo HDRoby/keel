@@ -6,9 +6,9 @@ author: Roberto Basile
 created: 2026-11-20
 updated: 2026-11-22
 status: approved
-version: 8
+version: 9
 template: requirements-and-design-spec@2
-from_intent: INT-0001@3
+from_intent: INT-0001@4
 standards:
   - security-baseline@2
   - typescript-conventions@3
@@ -28,14 +28,15 @@ decision: go (docs/decisions/0001-go.md)
 | REQ-002 | `intent.md` with metadata: ID, project, author, created, updated, status, version, template, brainstorm style. intent.md is assembled from the Explore sections with no model call. Requirement IDs are given when the intent is drafted and never change. Once the intent is approved, edits in Explore are saved as a change request. | Intent |
 | REQ-003 | Versioned, editable templates for intent, spec, plan, roadmap, decision records, agent instructions and the agent kit. A template used by any project cannot be removed. | Intent |
 | REQ-004 | Stable requirement IDs traced from intent to spec, plan tasks and acceptance scenarios. | Intent |
-| REQ-005 | Stage gating: Intent needs the required template sections; Spec needs an approved intent; Plan needs a Go decision; Handoff needs an approved plan and a latest decision of Go. Locked stages say why. An approved document is not reopened by a review; it changes through a change request. | Intent |
+| REQ-005 | Stage gating: Intent needs the required template sections; Spec needs an approved intent; Plan needs a Go decision; Handoff needs an approved plan and a latest decision of Go. Locked stages say why. An approved document is not reopened by a review; it changes only through a change request, and the later documents it affects are marked out of date until the request is applied. | Intent |
 | REQ-006 | Handoff writes the agent files into the project folder (AGENTS.md, CLAUDE.md, REVIEW.md, agent kit, standards as skills, failing acceptance scenarios, CI). It never overwrites a file Keel did not write without asking. Zip download is optional. Push to the folder's existing git remote is optional. | Intent |
 | REQ-007 | Read back the agent's commits and uncommitted edits to `docs/`, `tasks/` and `features/` from the local repository. Keel's own commits are ignored. Accept as a new version or dismiss. An accepted change to an approved document goes back to draft for a new approval. | Spec |
-| REQ-008 | Version history for every document with readable diffs, the reason for each version, and its impact by requirement ID. | Spec |
+| REQ-008 | Version history for every document with readable diffs, the reason for each version, and its impact by requirement ID. Each new version records the change request that caused it. | Spec |
 | REQ-009 | Model provider layer: Anthropic, OpenAI, Azure OpenAI and local OpenAI-compatible endpoints (Ollama). A model can be chosen per task. API keys and provider connections are stored in the user config folder, never in the project folder. | Spec |
 | REQ-010 | Attach mock references (links, images, PDF, HTML) to the intent and spec and link them to requirements. No mock generation. | Spec |
 | REQ-011 | Brainstorm styles as versioned skill files (Challenger, Coach, Cost and value, Market, Engineering-first), chosen at the start. | Spec |
 | REQ-012 | Keel works on one project per folder. `npx keel [path]` opens the folder; a folder without `.keel/` opens on the Initialise screen, where the user sets title, description, templates, brainstorm style and standards. All project config and libraries are in `.keel/`, committed with the project. | Intent |
+| REQ-014 | Change requests across stages. A change to an approved document becomes a change request in `changes/CR-NNNN/`: diff, size, approval for significant changes, impact on later documents by requirement ID with Update / Still valid / Later, and a change package for the coding agent. The Changes page lists every request in `changes/`, including ones written by hand, with a status computed from its header, its dependencies and its tasks. | CR-0003 |
 
 ## Approach
 
@@ -78,10 +79,11 @@ Written in Gherkin in `features/`, one or more per requirement, tagged `@REQ-xxx
 
 ## Out of scope for v0.1
 
-Code generation, multi-user roles and approvals, change requests across stages (CR-0003, Next), the Maintain stage, a VS Code extension, built-in mock generation, git providers other than GitHub, several projects in one Keel run.
+Code generation, multi-user roles and approvals, the Maintain stage, a VS Code extension, built-in mock generation, git providers other than GitHub, several projects in one Keel run.
 
 ## Version history
 
+- v9: change requests across stages (CR-0003).
 - v8: Explore shows the template sections with live comments from the assistant (CR-0005).
 - v7: one project per folder in the code repository, `.keel/` folder, read-back from local git, optional push (CR-0004).
 - v6: REQ-007 refined: an accepted read-back change to an approved document goes back to draft for a new approval (owner decision, task T9).
