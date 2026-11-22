@@ -46,7 +46,22 @@ describe('reviewMessages and parseAnswer', () => {
   it('reads the first JSON object and refuses anything else', () => {
     expect(parseAnswer('Here you go: {"comments": {"Problem": {"kind": "ok", "text": "Fine."}}} thanks')).toMatchObject({ ok: true, value: { comments: { Problem: { kind: 'ok' } }, suggestions: {} } });
     expect(parseAnswer('no json')).toMatchObject({ error: 'invalid-answer' });
-    expect(parseAnswer('{"comments": {"Problem": {"kind": "rant", "text": "x"}}}')).toMatchObject({ error: 'invalid-answer' });
+    expect(parseAnswer('{"comments": {"Problem": {"kind": "rant", "text": "x"}}}')).toMatchObject({ error: 'invalid-answer', message: 'The assistant\'s review had no usable comment' });
+  });
+
+  it('puts right what small local models get loose, and keeps the rest of the review', () => {
+    // As gemma4 answered: "ok" comments with null or empty text, next to a real challenge.
+    expect(parseAnswer('{"comments": {"Problem": {"kind": "ok", "text": null}, "Constraints": {"kind": "ok", "text": ""}, "Scope": {"kind": "challenge", "text": "Too wide.", "linkTo": null}}}')).toMatchObject({
+      ok: true, value: { comments: { Problem: { kind: 'ok', text: 'Looks good.' }, Constraints: { kind: 'ok', text: 'Looks good.' }, Scope: { kind: 'challenge', text: 'Too wide.' } } },
+    });
+    // As mistral:7b answered: no text at all for "ok", extra fields, a suggestion list.
+    const mistral = parseAnswer('{"comments": {"Problem": {"kind": "ok"}, "Requirements": {"kind": "suggest", "rows": ["x"]}, "Desired outcome": {"kind": "Challenge", "text": "Measurable?"}}, "suggestions": {"Desired outcome": ["Cut the time to plan in half"], "Scope": null}}');
+    expect(mistral).toMatchObject({ ok: true, value: { comments: { Problem: { kind: 'ok' }, 'Desired outcome': { kind: 'challenge' } }, suggestions: { 'Desired outcome': ['Cut the time to plan in half'] } } });
+    expect(mistral.ok && Object.keys(mistral.value.comments)).not.toContain('Requirements');   // a suggest with nothing to say is dropped
+    // Other spellings, comments as a list, and a reasoning model's <think> block.
+    expect(parseAnswer('<think>{maybe}</think>{"comments": [{"section": "Scope", "kind": "question", "text": "Who?"}, {"section": "Problem", "kind": "suggestion", "text": "Add numbers."}]}')).toMatchObject({
+      ok: true, value: { comments: { Scope: { kind: 'ask' }, Problem: { kind: 'suggest' } } },
+    });
   });
 });
 
