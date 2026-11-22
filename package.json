@@ -1,12 +1,40 @@
 {
-  "name": "keel",
+  "name": "keel-sdlc",
   "version": "0.1.0",
-  "private": true,
-  "type": "module",
   "description": "From idea to agent-ready project: brainstorm, intent, spec, plan and handoff for any coding agent.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HDRoby/keel.git"
+  },
+  "homepage": "https://github.com/HDRoby/keel#readme",
+  "bugs": {
+    "url": "https://github.com/HDRoby/keel/issues"
+  },
+  "keywords": [
+    "sdlc",
+    "ai",
+    "coding-agent",
+    "spec",
+    "requirements",
+    "bdd",
+    "planning",
+    "nextjs"
+  ],
   "bin": {
     "keel": "bin/keel.mjs"
   },
+  "files": [
+    "bin/",
+    "dist/",
+    ".next/standalone/",
+    ".next/static/",
+    "seed/",
+    "public/",
+    "README.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": ">=20"
   },
@@ -21,34 +49,34 @@
     "verify": "npm run lint && npm run typecheck && npm test && npm run test:bdd",
     "build:cli": "node scripts/build-cli.mjs",
     "keel": "tsx src/cli.ts",
-    "ui:shots": "tsx scripts/ui-shots.ts"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^1.12.0",
-    "diff": "^9.0.0",
-    "gray-matter": "^4.0.3",
-    "js-yaml": "^4.3.2",
-    "material-symbols": "0.48.3",
-    "next": "^16.4.6",
-    "openai": "^7.62.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "simple-git": "^4.1.0",
-    "zod": "^4.6.7"
+    "ui:shots": "tsx scripts/ui-shots.ts",
+    "prepack": "npm run build && npm run build:cli",
+    "smoke": "node scripts/smoke.mjs"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^1.12.0",
     "@playwright/test": "^1.65.1",
     "@types/diff": "^6.0.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.3.0",
+    "diff": "^9.0.0",
     "esbuild": "^0.28.2",
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.4.6",
+    "gray-matter": "^4.0.3",
+    "js-yaml": "^4.3.2",
+    "material-symbols": "0.48.3",
+    "next": "^16.4.6",
+    "openai": "^7.62.0",
     "playwright-bdd": "^9.2.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "simple-git": "^4.1.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
-    "vitest": "^5.1.1"
+    "vitest": "^5.1.1",
+    "zod": "^4.6.7"
   }
 }
