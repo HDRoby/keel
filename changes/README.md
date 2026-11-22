@@ -2,7 +2,7 @@
 
 These change requests come from the owner's review of the Keel mockup on 2026-11-22. Apply them **in the order below** (CR-0003 runs third, after CR-0005, which was built first); each one builds on the one before. Once CR-0003 is in, Keel's Changes page shows this list with each request's status.
 
-**Status on 2026-11-22:** CR-0004 to CR-0015 done (in the order below). Next: CR-0016.
+**Status on 2026-11-22:** CR-0004 to CR-0016 done (in the order below).
 
 | Order | Change request | What it does | Tasks |
 | --- | --- | --- | --- |
