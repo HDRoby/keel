@@ -23,6 +23,7 @@ import { writeHandoff } from '../src/lib/handoff/write';
 import { fakeReply } from '../src/lib/providers/fake';
 import { acceptAllSuggestions } from '../src/lib/scenarios/store';
 import { openIndex, type Store } from '../src/lib/store/db';
+import { createDocument, readDocument } from '../src/lib/store/documents';
 
 const PORT = 3200;
 const OUT = join(process.cwd(), 'test-results', 'ui');
@@ -67,6 +68,17 @@ async function sampleProject(): Promise<void> {
   must('plan', await generatePlan(store, async () => undefined));
   must('approve plan', await review(store, 'plan', { action: 'approve', by: 'Ada Lovelace', comment: '' }));
   must('handoff', await writeHandoff(store));
+  // The handoff's roadmap has no id or version, so the Roadmap page cannot read it (reported in tasks/R13.md);
+  // the sample uses a full document instead.
+  if (!readDocument(store, 'docs/roadmap.md').ok) {
+    rmSync(join(SAMPLE, 'docs', 'roadmap.md'), { force: true });
+    must('roadmap', await createDocument(store, { kind: 'roadmap', title: 'Keel', template: 'roadmap@1', body: [
+      '# Roadmap: Keel', '', '## Now (v0.1)', '', '- Brainstorm, intent, spec and plan — REQ-001 to REQ-003', '- Handoff and read-back — the agent files and its changes', '',
+      '## Next', '', '- Change requests and approvals — already in the flow', '- Standards and agent kit', '- BDD acceptance scenarios', '',
+      '## Later', '', '- Multi-user roles and approvals — out of scope in spec v1', '- Built-in mock generation — mock references come first', '',
+      '## Not doing', '', '- A hosted service — Keel runs on your computer', '',
+    ].join('\n') }));
+  }
   must('change', await createChange(store, { title: 'Export the log as CSV', reason: 'Finance asked for it.', status: 'waiting', size: 'significant', source: 'docs/intent.md', affects: ['INT-0001@2'], requirements: ['REQ-002'], impact: [{ document: 'docs/spec.md', decision: 'pending' }, { document: 'docs/plan.md', decision: 'pending' }] }));
   store.index.close();
 }
