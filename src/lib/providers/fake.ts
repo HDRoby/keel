@@ -1,16 +1,84 @@
 // Scripted provider for tests (KEEL_PROVIDER=fake). Says which provider it stands in for.
+// For an Explore review (a system prompt asking for JSON) it answers with a scripted review keyed on the
+// sections' content, so the scenarios are deterministic. KEEL_FAKE_LOG names a file that gets one line per
+// call, so a scenario can check that no model call was made.
+import { appendFileSync } from 'node:fs';
 import { PROVIDERS, type ChatMessage, type ChatProvider, type RealProviderId } from './types';
+
+const REVIEW_MARKER = 'Answer with one JSON object and nothing else.';
 
 export function fakeReply(standsFor: RealProviderId, messages: ChatMessage[]): string {
   const label = PROVIDERS.find((p) => p.id === standsFor)?.label ?? standsFor;
   const last = [...messages].reverse().find((m) => m.role === 'user')?.content ?? '';
+  if (messages[0]?.role === 'system' && messages[0].content.includes(REVIEW_MARKER)) return JSON.stringify(fakeReview(label, last));
   return `Reply from ${label}: I read "${last}".`;
 }
 
-export function createFakeProvider(standsFor: RealProviderId): ChatProvider {
+interface SectionView {
+  section: string;
+  text?: string;
+  rows?: { text: string; by: string }[];
+  by?: string;
+  cleared?: boolean;
+}
+
+/** A review that depends only on the sections: who wrote what, and how many words the list has. */
+export function fakeReview(label: string, userMessage: string): Record<string, unknown> {
+  let input: { sections?: SectionView[]; replyTo?: { key: string; text: string } } = {};
+  try {
+    input = JSON.parse(userMessage) as typeof input;
+  } catch {
+    return { comments: {} };
+  }
+  const sections = input.sections ?? [];
+  const byUser = (s: SectionView | undefined) => (s?.by === 'user' ? (s.text ?? '').trim() : '');
+  const find = (name: string) => sections.find((s) => s.section === name);
+  const words = sections.flatMap((s) => (s.rows ? s.rows.filter((r) => r.by === 'user').map((r) => r.text) : [byUser(s)])).join(' ').split(/\s+/).filter(Boolean).length;
+  const audience = byUser(find('Who it is for')).toLowerCase();
+  const outcome = byUser(find('Desired outcome'));
+  const comments: Record<string, unknown> = {};
+  const suggestions: Record<string, unknown> = {};
+  for (const s of sections) {
+    const text = byUser(s);
+    if (s.rows) {
+      const rows = s.rows;
+      if (rows.length === 0 && outcome && !s.cleared) {
+        suggestions[s.section] = ['Record an expense in under a minute', 'See the team\'s expenses by month', 'Export the expenses to CSV'];
+        comments[s.section] = { kind: 'suggest', text: `Suggestion from ${label}: three rows drawn from Desired outcome. Accept the ones you want.` };
+      } else if (rows.length === 0) {
+        comments[s.section] = { kind: 'ask', text: 'What must the first version do? One short, testable row each.' };
+      } else {
+        comments[s.section] = { kind: 'ok', text: `Looks good (${label}). The list has ${words} words so far.`, addRow: 'Keep a history of changes to each expense' };
+      }
+    } else if (s.section === 'Constraints' && audience.includes('product manager') && !text.toLowerCase().includes('web ui')) {
+      comments[s.section] = {
+        kind: 'link', linkTo: 'Who it is for',
+        text: 'Who it is for includes product managers, who will not install developer tools. Add a web UI as a constraint?',
+        rewrite: `${text ? `${text} ` : ''}A web UI, so product managers can use it without installing anything.`,
+      };
+    } else if (s.section === 'Problem' && text && text.length < 60) {
+      comments[s.section] = { kind: 'challenge', text: 'Who is affected, and how often? A number would make this testable.', rewrite: `${text} It happens every week and costs the team hours.` };
+    } else if (!text && s.by !== 'user' && (s.text ?? '').trim()) {
+      comments[s.section] = { kind: 'suggest', text: 'This is a suggestion. Accept it if it fits, or clear it.' };
+    } else if (!text && s.section === 'Desired outcome' && !s.cleared) {
+      suggestions[s.section] = 'Every expense is recorded within a day of spending it.';
+      comments[s.section] = { kind: 'suggest', text: 'A suggestion to start from. Accept it if it fits, or clear it.' };
+    } else if (!text) {
+      comments[s.section] = { kind: 'ask', text: `What would you write under ${s.section}?` };
+    } else {
+      comments[s.section] = { kind: 'ok', text: `Looks good (${label}). The list has ${words} words so far.` };
+    }
+  }
+  const reply = input.replyTo ? { text: `Reply from ${label}: I read "${input.replyTo.text}".` } : undefined;
+  return { comments, suggestions, ...(reply ? { reply } : {}) };
+}
+
+export function createFakeProvider(standsFor: RealProviderId, env: Record<string, string | undefined> = process.env): ChatProvider {
   return {
     id: 'fake',
     async *stream(messages) {
+      const log = env.KEEL_FAKE_LOG?.trim();
+      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : 'chat'}\n`);
       for (const word of fakeReply(standsFor, messages).split(/(?<= )/)) yield word;
     },
   };

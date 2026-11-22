@@ -72,7 +72,8 @@ describe('adoptProject', () => {
     expect(store.index.documents().map((d) => d.path)).toEqual(['docs/intent.md']);
     // The brainstorm comes from the intent's sections, so the stages open as they should.
     const context = loadContext(store);
-    expect(context.ok && Object.keys(context.value.session.answers)).toEqual(['Problem', 'Desired outcome', 'Requirements', 'Affected users and systems']);
+    expect(context.ok && context.value.state.sections.filter((x) => x.value || x.rows?.length).map((x) => x.key)).toEqual(['Problem', 'Desired outcome', 'Requirements', 'Affected users and systems']);
+    expect(context.ok && context.value.state.sections.find((x) => x.key === 'Requirements')?.rows?.map((r) => r.id)).toEqual(['REQ-001', 'REQ-007']);
     expect(stageGates(projectState(store)).filter((g) => g.available).map((g) => g.stage)).toEqual(['explore', 'intent', 'spec']);
     expect(await reserveRequirementIds(store, 1)).toEqual({ ok: true, value: ['REQ-008'] });
     expect(await adoptProject(store)).toMatchObject({ error: 'already-initialised' });

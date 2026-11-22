@@ -91,3 +91,25 @@ export function saveModelChoice(store: Store, task: ModelTask, choice: ModelChoi
   setUserSetting(store.user, `model.${task}`, parsed.data);
   return ok(parsed.data);
 }
+
+/** When Explore asks for a review (task R10): after this many seconds without typing, and at most this often. */
+export interface ExploreTiming {
+  pauseSeconds: number;
+  intervalSeconds: number;
+}
+
+export const DEFAULT_EXPLORE_TIMING: ExploreTiming = { pauseSeconds: 5, intervalSeconds: 10 };
+
+const timingSchema = z.strictObject({ pauseSeconds: z.number().min(0.5).max(60), intervalSeconds: z.number().min(0).max(300) });
+
+export function exploreTiming(store: Pick<Store, 'user'>): ExploreTiming {
+  const parsed = timingSchema.safeParse(userSetting(store.user, 'explore.timing'));
+  return parsed.success ? parsed.data : DEFAULT_EXPLORE_TIMING;
+}
+
+export function saveExploreTiming(store: Pick<Store, 'user'>, timing: ExploreTiming): Result<ExploreTiming, 'invalid-timing'> {
+  const parsed = timingSchema.safeParse(timing);
+  if (!parsed.success) return fail('invalid-timing', 'The pause is 0.5 to 60 seconds and the interval 0 to 300 seconds');
+  setUserSetting(store.user, 'explore.timing', parsed.data);
+  return ok(parsed.data);
+}

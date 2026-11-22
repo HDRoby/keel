@@ -1,0 +1,1256 @@
+/*
+  Keel component styles, measured from the clickable mockup (2026-11-22).
+
+  How this file was made: every design-system component the mock screens use was rendered
+  with the mockup's own component library, and the computed styles of each element were
+  recorded. Class names follow the element tree: .k-<sample> is the component root,
+  .k-<sample>-0 its first child, .k-<sample>-0-1 that child's second child, and so on.
+  docs/ui/components.html shows the markup for each sample with these classes.
+
+  Use it as the reference for src/components/ui/: copy the values into each component's
+  CSS module (rename the classes), do not import this file as is.
+
+  Inherited properties (colour, font size, weight, line height) are listed only where they change
+  from the parent; the base is the body: 14px/20px, weight 400, colour #25282d (--gray-6).
+
+  Not captured: hover, focus and pressed states (the library sets them in JavaScript);
+  see docs/ui/states.md. The brand font is replaced by var(--font-body) (system font).
+  Icons use the "Material Symbols Outlined" font.
+*/
+
+/* ---- navigation ---- */
+.k-navigation {
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  grid-template-rows: 60px 1fr;
+  grid-template-areas: "side-nav header-bar" "side-nav main";
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #f4f6f8;
+  transition: grid-template-columns 0.3s;
+}
+.k-navigation-0 {
+  padding: 24px 8px;
+  border-right: 1px solid #e0e5e8;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+  background-color: #ffffff;
+  grid-area: side-nav;
+}
+.k-navigation-0-0 {
+  padding: 0px 16px;
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+}
+.k-navigation-0-0-0 {
+  display: block;
+  color: #000000;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 26px;
+}
+.k-navigation-0-1-0 {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  color: #3366ff;
+  font-weight: 500;
+}
+.k-navigation-0-1-0-0 {
+  display: block;
+  font-family: "Material Symbols Outlined";
+  font-size: 20px;
+}
+.k-navigation-0-1-0-1 {
+  display: block;
+}
+.k-navigation-0-1-1 {
+  padding: 0px;
+  margin: 0px;
+}
+.k-navigation-0-1-1-0 {
+  border-radius: 8px;
+}
+.k-navigation-0-1-1-0-0 {
+  padding: 8px 16px 8px 38px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  color: #000000;
+}
+.k-navigation-0-1-1-1 {
+  border-radius: 8px;
+}
+.k-navigation-0-1-1-1-0 {
+  padding: 8px 16px 8px 38px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  color: #3366ff;
+  font-weight: 500;
+}
+.k-navigation-0-1-1-1-0-0 {
+  border-radius: 8px;
+  display: block;
+  position: absolute;
+  top: 6px;
+  right: 211px;
+  bottom: 6px;
+  left: 14px;
+  width: 8px;
+  height: 24px;
+  background-color: #3366ff;
+}
+.k-navigation-0-1-1-2 {
+  border-radius: 8px;
+}
+.k-navigation-0-1-1-2-0 {
+  padding: 8px 16px 8px 38px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  color: #000000;
+}
+.k-navigation-0-2-0 {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  font-weight: 500;
+}
+.k-navigation-0-2-0-0 {
+  display: block;
+  font-family: "Material Symbols Outlined";
+  font-size: 20px;
+}
+.k-navigation-0-2-0-1 {
+  display: block;
+}
+.k-navigation-0-2-1 {
+  padding: 0px;
+  margin: 0px;
+}
+.k-navigation-0-2-1-0 {
+  border-radius: 8px;
+}
+.k-navigation-0-2-1-0-0 {
+  padding: 8px 16px 8px 38px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  color: #000000;
+}
+.k-navigation-0-3-0 {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  font-weight: 500;
+}
+.k-navigation-0-3-0-0 {
+  display: block;
+  font-family: "Material Symbols Outlined";
+  font-size: 20px;
+}
+.k-navigation-0-3-0-1 {
+  display: block;
+}
+.k-navigation-0-3-1 {
+  padding: 0px;
+  margin: 0px;
+}
+.k-navigation-0-3-1-0 {
+  border-radius: 8px;
+}
+.k-navigation-0-3-1-0-0 {
+  padding: 8px 16px 8px 38px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  color: #000000;
+}
+.k-navigation-1 {
+  padding: 8px 24px;
+  border-bottom: 1px solid #e0e5e8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 60px;
+  background-color: #ffffff;
+  grid-area: header-bar;
+}
+.k-navigation-1-0 {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.k-navigation-1-0-0 {
+  display: block;
+  color: #6b7180;
+  font-size: 12px;
+  line-height: 14.4px;
+}
+.k-navigation-1-0-1 {
+  overflow: hidden;
+  display: block;
+  color: #000000;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 26px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.k-navigation-2 {
+  padding: 24px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  grid-area: main;
+}
+.k-navigation-2-0 {
+  padding: 24px;
+}
+
+/* ---- header-bar ---- */
+.k-header-bar {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.k-header-bar-0 {
+  display: block;
+  color: #6b7180;
+  font-size: 12px;
+  line-height: 14.4px;
+}
+.k-header-bar-1 {
+  overflow: hidden;
+  display: block;
+  color: #000000;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 26px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---- card ---- */
+.k-card {
+  padding: 24px;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: rgba(107, 113, 128, 0.2) 0px 1px 3px 0px, rgba(107, 113, 128, 0.1) 0px 1px 16px 0px;
+  transition: 0.1s linear;
+}
+
+/* ---- button-primary ---- */
+.k-button-primary {
+  padding: 7px 15px;
+  border: 1px solid #3366ff;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 100%;
+  height: fit-content;
+  min-height: 36px;
+  background-color: #3366ff;
+  cursor: pointer;
+  color: #ffffff;
+  text-align: center;
+  transition: 0.1s linear;
+}
+.k-button-primary-0 {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---- button-secondary ---- */
+.k-button-secondary {
+  padding: 7px 15px;
+  border: 1px solid #ebf0ff;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 100%;
+  height: fit-content;
+  min-height: 36px;
+  background-color: #ebf0ff;
+  cursor: pointer;
+  color: #3366ff;
+  text-align: center;
+  transition: 0.1s linear;
+}
+.k-button-secondary-0 {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---- button-outline ---- */
+.k-button-outline {
+  padding: 7px 15px;
+  border: 1px solid #3366ff;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 100%;
+  height: fit-content;
+  min-height: 36px;
+  background-color: #ffffff;
+  cursor: pointer;
+  color: #3366ff;
+  text-align: center;
+  transition: 0.1s linear;
+}
+.k-button-outline-0 {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---- button-text ---- */
+.k-button-text {
+  padding: 7px 8px;
+  border: 1px solid rgba(0, 0, 0, 0);
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 100%;
+  height: fit-content;
+  min-height: 36px;
+  background-color: rgba(0, 0, 0, 0);
+  cursor: pointer;
+  color: #3366ff;
+  text-align: center;
+  transition: 0.1s linear;
+}
+.k-button-text-0 {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---- button-primary-disabled ---- */
+.k-button-primary-disabled {
+  padding: 7px 15px;
+  border: 1px solid rgba(0, 0, 0, 0);
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 100%;
+  height: fit-content;
+  min-height: 36px;
+  background-color: #e0e5e8;
+  cursor: not-allowed;
+  color: #6b7180;
+  text-align: center;
+  transition: 0.1s linear;
+}
+.k-button-primary-disabled-0 {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---- button-outline-danger ---- */
+.k-button-outline-danger {
+  padding: 7px 15px;
+  border: 1px solid #dc182c;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 100%;
+  height: fit-content;
+  min-height: 36px;
+  background-color: #ffffff;
+  cursor: pointer;
+  color: #dc182c;
+  text-align: center;
+  transition: 0.1s linear;
+}
+.k-button-outline-danger-0 {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---- button-primary-icon ---- */
+.k-button-primary-icon {
+  padding: 7px 15px;
+  border: 1px solid #3366ff;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 100%;
+  height: fit-content;
+  min-height: 36px;
+  background-color: #3366ff;
+  cursor: pointer;
+  color: #ffffff;
+  text-align: center;
+  transition: 0.1s linear;
+}
+.k-button-primary-icon-0 {
+  margin: 0px 8px 0px 0px;
+  display: flex;
+  align-items: center;
+  height: 20px;
+}
+.k-button-primary-icon-0-0 {
+  display: block;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  font-family: "Material Symbols Outlined";
+  font-size: 20px;
+  font-variation-settings: "FILL" 0;
+}
+.k-button-primary-icon-1 {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---- chip-success ---- */
+.k-chip-success {
+  padding: 2px 8px;
+  border: 1px solid rgba(0, 0, 0, 0);
+  border-radius: 4px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  height: 24px;
+  background-color: #e6f9f2;
+  color: #00784d;
+}
+.k-chip-success-0 {
+  overflow: hidden;
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---- chip-danger ---- */
+.k-chip-danger {
+  padding: 2px 8px;
+  border: 1px solid rgba(0, 0, 0, 0);
+  border-radius: 4px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  height: 24px;
+  background-color: #fce8ea;
+  color: #bb1425;
+}
+.k-chip-danger-0 {
+  overflow: hidden;
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---- chip-primary ---- */
+.k-chip-primary {
+  padding: 2px 8px;
+  border: 1px solid rgba(0, 0, 0, 0);
+  border-radius: 4px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  height: 24px;
+  background-color: #ebf0ff;
+  color: #2447b3;
+}
+.k-chip-primary-0 {
+  overflow: hidden;
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---- chip-gray ---- */
+.k-chip-gray {
+  padding: 2px 8px;
+  border: 1px solid rgba(0, 0, 0, 0);
+  border-radius: 4px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  height: 24px;
+  background-color: #f4f6f8;
+  color: #434952;
+}
+.k-chip-gray-0 {
+  overflow: hidden;
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---- chip-warning ---- */
+.k-chip-warning {
+  padding: 2px 8px;
+  border: 1px solid rgba(0, 0, 0, 0);
+  border-radius: 4px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  height: 24px;
+  background-color: #fdf2e9;
+  color: #a15d26;
+}
+.k-chip-warning-0 {
+  overflow: hidden;
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---- chip-outline-primary ---- */
+.k-chip-outline-primary {
+  padding: 2px 8px;
+  border: 1px solid #3366ff;
+  border-radius: 4px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  height: 24px;
+  background-color: #ffffff;
+  color: #3366ff;
+}
+.k-chip-outline-primary-0 {
+  overflow: hidden;
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---- chip-success-icon ---- */
+.k-chip-success-icon {
+  padding: 2px 8px;
+  border: 1px solid rgba(0, 0, 0, 0);
+  border-radius: 4px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  height: 24px;
+  background-color: #e6f9f2;
+  color: #00784d;
+}
+.k-chip-success-icon-0 {
+  display: block;
+  font-family: "Material Symbols Outlined";
+  line-height: 14px;
+}
+.k-chip-success-icon-1 {
+  overflow: hidden;
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---- notice-info ---- */
+.k-notice-info-0 {
+  padding: 16px;
+  border: 1px solid #f0eeed;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  background-color: #ffffff;
+}
+.k-notice-info-0-0 {
+  display: flex;
+}
+.k-notice-info-0-0-0 {
+  margin: 0px 16px 0px 0px;
+  border-radius: 4px;
+  display: block;
+  flex-shrink: 0;
+  min-width: 8px;
+  min-height: 36px;
+  background-color: #3366ff;
+}
+.k-notice-info-0-0-1 {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  gap: 8px;
+}
+.k-notice-info-0-0-1-0 {
+  display: block;
+  font-weight: 500;
+}
+
+/* ---- notice-success ---- */
+.k-notice-success-0 {
+  padding: 16px;
+  border: 1px solid #f0eeed;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  background-color: #ffffff;
+}
+.k-notice-success-0-0 {
+  display: flex;
+}
+.k-notice-success-0-0-0 {
+  margin: 0px 16px 0px 0px;
+  border-radius: 4px;
+  display: block;
+  flex-shrink: 0;
+  min-width: 8px;
+  min-height: 36px;
+  background-color: #008556;
+}
+.k-notice-success-0-0-1 {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  gap: 8px;
+}
+.k-notice-success-0-0-1-0 {
+  display: block;
+  font-weight: 500;
+}
+
+/* ---- notice-warning ---- */
+.k-notice-warning-0 {
+  padding: 16px;
+  border: 1px solid #f0eeed;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  background-color: #ffffff;
+}
+.k-notice-warning-0-0 {
+  display: flex;
+}
+.k-notice-warning-0-0-0 {
+  margin: 0px 16px 0px 0px;
+  border-radius: 4px;
+  display: block;
+  flex-shrink: 0;
+  min-width: 8px;
+  min-height: 36px;
+  background-color: #e87d1e;
+}
+.k-notice-warning-0-0-1 {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  gap: 8px;
+}
+.k-notice-warning-0-0-1-0 {
+  display: block;
+  font-weight: 500;
+}
+
+/* ---- notice-error ---- */
+.k-notice-error-0 {
+  padding: 16px;
+  border: 1px solid #f0eeed;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  background-color: #ffffff;
+}
+.k-notice-error-0-0 {
+  display: flex;
+}
+.k-notice-error-0-0-0 {
+  margin: 0px 16px 0px 0px;
+  border-radius: 4px;
+  display: block;
+  flex-shrink: 0;
+  min-width: 8px;
+  min-height: 36px;
+  background-color: #dc182c;
+}
+.k-notice-error-0-0-1 {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  gap: 8px;
+}
+.k-notice-error-0-0-1-0 {
+  display: block;
+  font-weight: 500;
+}
+
+/* ---- input ---- */
+.k-input-0 {
+  margin: 0px 0px 8px 0px;
+  display: flex;
+  align-items: center;
+  cursor: default;
+  font-weight: 500;
+}
+.k-input-0-0 {
+  margin: 0px 8px 0px 0px;
+  display: block;
+}
+.k-input-1 {
+  display: flex;
+  position: relative;
+}
+.k-input-1-0 {
+  padding: 8px 16px;
+  border: 1px solid #6b7180;
+  border-radius: 8px;
+  display: block;
+  width: 100%;
+  cursor: text;
+  color: #000000;
+  transition: 0.1s linear;
+}
+.k-input-2 {
+  margin: 8px 0px 0px 0px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #434952;
+  font-size: 12px;
+  line-height: 14.4px;
+}
+.k-input-2-0 {
+  display: block;
+}
+
+/* ---- input-placeholder ---- */
+.k-input-placeholder-0 {
+  display: flex;
+  position: relative;
+}
+.k-input-placeholder-0-0 {
+  padding: 8px 16px;
+  border: 1px solid #6b7180;
+  border-radius: 8px;
+  display: block;
+  width: 100%;
+  cursor: text;
+  color: #000000;
+  transition: 0.1s linear;
+}
+
+/* ---- input-optional ---- */
+.k-input-optional-0 {
+  margin: 0px 0px 8px 0px;
+  display: flex;
+  align-items: center;
+  cursor: default;
+  font-weight: 500;
+}
+.k-input-optional-0-0 {
+  margin: 0px 8px 0px 0px;
+  display: block;
+}
+.k-input-optional-0-1 {
+  display: block;
+  color: #6b7180;
+  font-weight: 400;
+}
+.k-input-optional-1 {
+  display: flex;
+  position: relative;
+}
+.k-input-optional-1-0 {
+  padding: 8px 16px;
+  border: 1px solid #6b7180;
+  border-radius: 8px;
+  display: block;
+  width: 100%;
+  cursor: text;
+  color: #000000;
+  transition: 0.1s linear;
+}
+
+/* ---- textarea ---- */
+.k-textarea-0 {
+  display: flex;
+  position: relative;
+}
+.k-textarea-0-0 {
+  padding: 8px 16px;
+  border-radius: 8px;
+  display: block;
+  width: 100%;
+  cursor: text;
+  color: #000000;
+  white-space: pre-wrap;
+  transition: 0.1s linear;
+}
+
+/* ---- select ---- */
+.k-select {
+  position: relative;
+}
+.k-select-0 {
+  margin: 0px 0px 8px 0px;
+  display: flex;
+  align-items: center;
+  cursor: default;
+  font-weight: 500;
+}
+.k-select-0-0 {
+  margin: 0px 8px 0px 0px;
+  display: block;
+}
+.k-select-1 {
+  padding: 8px 16px;
+  border: 1px solid #6b7180;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  background-color: #ffffff;
+  cursor: pointer;
+  color: #000000;
+  text-align: left;
+  transition: 0.1s linear;
+}
+.k-select-1-0 {
+  overflow: hidden;
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.k-select-1-1 {
+  display: block;
+  color: #434952;
+  font-family: "Material Symbols Outlined";
+  font-size: 16px;
+  line-height: 16px;
+  transition: 0.1s linear;
+}
+
+/* ---- toggle ---- */
+.k-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.k-toggle-0 {
+  padding: 0px;
+  margin: 3px 3px 3px 4px;
+  border: none;
+  overflow: visible;
+  display: none;
+  background-color: rgba(0, 0, 0, 0);
+  cursor: default;
+  color: #000000;
+  font-family: var(--font-body);
+  font-size: 13.3333px;
+  line-height: normal;
+}
+.k-toggle-1 {
+  padding: 2px;
+  border: 2px solid #3366ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 40px;
+  min-width: 40px;
+  height: 24px;
+  background-color: #3366ff;
+  transition: 0.1s linear;
+}
+.k-toggle-1-0 {
+  border-radius: 50%;
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: #ffffff;
+  transition: 0.1s linear;
+}
+.k-toggle-2 {
+  display: block;
+}
+
+/* ---- tabs-inline ---- */
+.k-tabs-inline {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-basis: 0%;
+}
+.k-tabs-inline-0 {
+  border-bottom: 1px solid #e0e5e8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+}
+.k-tabs-inline-0-0 {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.k-tabs-inline-0-0-0 {
+  padding: 21px 16px 20px 16px;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  background-color: rgba(0, 0, 0, 0);
+  cursor: pointer;
+  color: #3366ff;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 19.2px;
+  text-align: center;
+  white-space: nowrap;
+}
+.k-tabs-inline-0-0-0-0 {
+  padding: 0px 3px;
+  border-radius: 4px;
+  display: block;
+  background-color: #1a3380;
+  color: #85a3ff;
+  font-size: 12px;
+  line-height: 14.4px;
+}
+.k-tabs-inline-0-0-0-1 {
+  display: block;
+  position: absolute;
+  top: 57px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  height: 4px;
+  background-color: #3366ff;
+}
+.k-tabs-inline-0-0-1 {
+  padding: 21px 16px 20px 16px;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  background-color: rgba(0, 0, 0, 0);
+  cursor: pointer;
+  color: #000000;
+  font-size: 16px;
+  line-height: 19.2px;
+  text-align: center;
+  white-space: nowrap;
+}
+.k-tabs-inline-0-0-2 {
+  padding: 21px 16px 20px 16px;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  background-color: rgba(0, 0, 0, 0);
+  cursor: pointer;
+  color: #000000;
+  font-size: 16px;
+  line-height: 19.2px;
+  text-align: center;
+  white-space: nowrap;
+}
+.k-tabs-inline-0-0-2-0 {
+  display: block;
+  font-family: "Material Symbols Outlined";
+  font-size: 20px;
+  line-height: 20px;
+}
+
+/* ---- switcher-small ---- */
+.k-switcher-small {
+  padding: 4px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 32px;
+  background-color: #ffffff;
+  box-shadow: #aeb1b9 0px 0px 0px 1px inset;
+}
+.k-switcher-small-0 {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+  height: 24px;
+  background-color: #3366ff;
+  cursor: pointer;
+  color: #ffffff;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  transition: 0.1s linear;
+}
+.k-switcher-small-1 {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+  height: 24px;
+  background-color: #ffffff;
+  cursor: pointer;
+  color: #6b7180;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  transition: 0.1s linear;
+}
+
+/* ---- icon ---- */
+.k-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: #008556;
+  font-family: "Material Symbols Outlined";
+  font-size: 20px;
+  font-variation-settings: "FILL" 0;
+}
+
+/* ---- grid ---- */
+.k-grid {
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 100%;
+  background-color: #ffffff;
+}
+.k-grid-0 {
+  overflow: auto;
+  position: relative;
+}
+.k-grid-0-0 {
+  width: 100%;
+}
+.k-grid-0-0-0-0 {
+  height: 37px;
+  vertical-align: middle;
+}
+.k-grid-0-0-0-0-0 {
+  padding: 0px;
+  border-right: 1px solid #e0e5e8;
+  border-bottom: 1px solid currentcolor;
+  width: 100px;
+  cursor: pointer;
+  font-weight: 700;
+  text-align: left;
+  vertical-align: middle;
+}
+.k-grid-0-0-0-0-0-0 {
+  padding: 8px 16px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  color: #000000;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.k-grid-0-0-0-0-1 {
+  padding: 0px;
+  border-right: 1px solid #e0e5e8;
+  border-bottom: 1px solid currentcolor;
+  cursor: pointer;
+  font-weight: 700;
+  text-align: left;
+  vertical-align: middle;
+}
+.k-grid-0-0-0-0-1-0 {
+  padding: 8px 16px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  color: #000000;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.k-grid-0-0-1-0 {
+  height: 55px;
+  background-color: #ffffff;
+  cursor: default;
+  vertical-align: middle;
+}
+.k-grid-0-0-1-0-0 {
+  padding: 0px;
+  border-bottom: 1px solid #e0e5e8;
+  height: 100%;
+  vertical-align: middle;
+}
+.k-grid-0-0-1-0-0-0 {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  color: #000000;
+}
+.k-grid-0-0-1-0-0-0-0 {
+  overflow: hidden;
+  width: 100%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.k-grid-0-0-1-0-1 {
+  padding: 0px;
+  border-bottom: 1px solid #e0e5e8;
+  height: 100%;
+  vertical-align: middle;
+}
+.k-grid-0-0-1-0-1-0 {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  color: #000000;
+}
+.k-grid-0-0-1-0-1-0-0 {
+  overflow: hidden;
+  width: 100%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.k-grid-0-0-1-1 {
+  height: 55px;
+  background-color: #ffffff;
+  cursor: default;
+  vertical-align: middle;
+}
+.k-grid-0-0-1-1-0 {
+  padding: 0px;
+  border-bottom: 1px solid #e0e5e8;
+  height: 100%;
+  vertical-align: middle;
+}
+.k-grid-0-0-1-1-0-0 {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  color: #000000;
+}
+.k-grid-0-0-1-1-0-0-0 {
+  overflow: hidden;
+  width: 100%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.k-grid-0-0-1-1-1 {
+  padding: 0px;
+  border-bottom: 1px solid #e0e5e8;
+  height: 100%;
+  vertical-align: middle;
+}
+.k-grid-0-0-1-1-1-0 {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  color: #000000;
+}
+.k-grid-0-0-1-1-1-0-0 {
+  overflow: hidden;
+  width: 100%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---- chat-composer ---- */
+.k-chat-composer {
+  padding: 16px;
+  border-top: 1px solid #e0e5e8;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.k-chat-composer-0 {
+  padding: 8px 16px;
+  border-radius: 8px;
+  display: block;
+  flex-grow: 1;
+  flex-basis: 0%;
+  max-height: 120px;
+  cursor: text;
+  color: #000000;
+  white-space: pre-wrap;
+}
+.k-chat-composer-1 {
+  padding: 0px;
+  border: none;
+  border-radius: 8px;
+  display: grid;
+  align-items: center;
+  grid-template-columns: 36.6719px;
+  grid-template-rows: 36px;
+  width: 36px;
+  height: 36px;
+  background-color: #e0e5e8;
+  cursor: not-allowed;
+  color: #6b7180;
+  font-family: "Material Symbols Outlined";
+  font-size: 20px;
+  text-align: center;
+}

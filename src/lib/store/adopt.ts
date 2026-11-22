@@ -6,7 +6,7 @@ import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync 
 import { basename, join } from 'node:path';
 import matter from 'gray-matter';
 import { z } from 'zod';
-import { sessionFile, sessionFromIntent, BRAINSTORM_FILE } from '../brainstorm/session';
+import { EXPLORE_FILE, exploreFromIntent, LEGACY_FILE } from '../brainstorm/session';
 import { fail, ok, type Result } from '../result';
 import { previewRoot } from '../seed';
 import { parseTemplateRef, readTemplate, templateIdentity } from '../templates/library';
@@ -87,7 +87,7 @@ export async function adoptProject(store: Store, author?: string): Promise<Resul
   const template = ref ? readTemplate(library, ref.id, ref.version) : undefined;
   const intent = existsSync(join(store.root, 'docs/intent.md')) ? parseDocument(readFileSync(join(store.root, 'docs/intent.md'), 'utf8')) : undefined;
   const files = template?.ok && intent?.ok
-    ? [{ path: BRAINSTORM_FILE, content: sessionFile(sessionFromIntent({ title: found.title, idea: '', template: intentTemplate, style, intentBody: intent.value.body, templateContent: template.value.content })) }]
+    ? [{ path: EXPLORE_FILE, content: `${JSON.stringify(exploreFromIntent({ title: found.title, idea: '', template: intentTemplate, style, intentBody: intent.value.body, templateContent: template.value.content }), null, 2)}\n` }]
     : [];
   const made = await initialiseProject(store, {
     id: found.id, title: found.title, author: author?.trim() || found.author,
@@ -144,7 +144,8 @@ export async function importProject(source: string, store: Store, legacyHome?: s
   mkdirSync(join(root, KEEL_DIR), { recursive: true });
   if (existsSync(join(source, 'brainstorm.md'))) {
     mkdirSync(join(root, '.keel', 'brainstorm'), { recursive: true });
-    copyFileSync(join(source, 'brainstorm.md'), join(root, BRAINSTORM_FILE));
+    // Kept in CR-0004's form; Explore converts it the first time it opens (owner decision 2, CR-0005).
+    copyFileSync(join(source, 'brainstorm.md'), join(root, LEGACY_FILE));
   }
   const mocks = join(source, 'docs', 'mocks');
   if (existsSync(mocks)) {
@@ -154,7 +155,7 @@ export async function importProject(source: string, store: Store, legacyHome?: s
   copyLibraries(legacyHome, root);
 
   const intent = existsSync(join(root, 'docs/intent.md')) ? parseDocument(readFileSync(join(root, 'docs/intent.md'), 'utf8')) : undefined;
-  const brainstorm = existsSync(join(root, BRAINSTORM_FILE)) ? matter(readFileSync(join(root, BRAINSTORM_FILE), 'utf8'), {}).data : {};
+  const brainstorm = existsSync(join(root, LEGACY_FILE)) ? matter(readFileSync(join(root, LEGACY_FILE), 'utf8'), {}).data : {};
   const text = (value: unknown) => (typeof value === 'string' ? value : undefined);
   const { id, title, author, created, standards, next_req: nextReq, handoff } = meta.data;
   writeConfig(root, {

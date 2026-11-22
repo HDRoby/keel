@@ -161,7 +161,8 @@ export function saveTemplateVersion(root: string, id: string, content: string): 
 }
 
 /** Repository path of the brainstorm transcript; brainstorm/session.ts uses the same path. */
-const BRAINSTORM = '.keel/brainstorm/explore.md';
+const BRAINSTORM = '.keel/brainstorm/INT-0001.json';
+const LEGACY_BRAINSTORM = '.keel/brainstorm/explore.md';
 
 /** Documents in this folder made from any version of a template. */
 export function templateUsage(root: string, id: string, version?: number): TemplateUse[] {
@@ -174,15 +175,20 @@ export function templateUsage(root: string, id: string, version?: number): Templ
     return { path, template: doc.ok ? doc.value.header.template : undefined };
   });
   // A brainstorm in progress uses its intent template before intent.md exists.
-  refs.push({ path: BRAINSTORM, template: brainstormTemplate(root) });
+  refs.push(brainstormTemplate(root));
   return refs.filter((r) => matches(r.template)).map((r) => `${r.path} (${r.template as string})`);
 }
 
-function brainstormTemplate(root: string): unknown {
+/** The intent template the brainstorm uses, and the file it was read from (CR-0004's explore.md until converted). */
+function brainstormTemplate(root: string): { path: string; template: unknown } {
   try {
-    return matter(readFileSync(join(root, BRAINSTORM), 'utf8'), {}).data.template;
+    return { path: BRAINSTORM, template: (JSON.parse(readFileSync(join(root, BRAINSTORM), 'utf8')) as { template?: unknown }).template };
   } catch {
-    return undefined;   // no brainstorm yet, or its front matter is not valid YAML
+    try {
+      return { path: LEGACY_BRAINSTORM, template: matter(readFileSync(join(root, LEGACY_BRAINSTORM), 'utf8'), {}).data.template };
+    } catch {
+      return { path: BRAINSTORM, template: undefined };   // no brainstorm yet, or it cannot be read
+    }
   }
 }
 

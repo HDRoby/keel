@@ -7,7 +7,7 @@ import { saveGithubToken } from '@/lib/github/auth';
 import { MODEL_TASK_IDS, PROVIDER_IDS, type ModelChoice } from '@/lib/providers/types';
 import { checkApiKey } from '@/lib/providers/errors';
 import { testConnection } from '@/lib/providers/test-connection';
-import { saveAuthor, saveModelChoice, saveProvider } from '@/lib/settings/settings';
+import { saveAuthor, saveExploreTiming, saveModelChoice, saveProvider } from '@/lib/settings/settings';
 import { serverStore } from '@/lib/store/server-store';
 
 const optionalText = z.string().trim().max(500).optional();
@@ -69,5 +69,13 @@ export async function saveAuthorAction(form: FormData): Promise<void> {
   const input = z.strictObject({ author: z.string().max(200) }).safeParse(formFields(form));
   if (!input.success) redirect('/settings?error=Invalid+request');
   const saved = saveAuthor(serverStore(), input.data.author);
+  redirect(saved.ok ? '/settings?saved=1' : `/settings?error=${encodeURIComponent(saved.message)}`);
+}
+
+/** When Explore asks for a review: the pause after typing and the minimum interval (task R10). */
+export async function saveExploreTimingAction(form: FormData): Promise<void> {
+  const input = z.strictObject({ pauseSeconds: z.coerce.number(), intervalSeconds: z.coerce.number() }).safeParse(formFields(form));
+  if (!input.success) redirect('/settings?error=Invalid+request');
+  const saved = saveExploreTiming(serverStore(), input.data);
   redirect(saved.ok ? '/settings?saved=1' : `/settings?error=${encodeURIComponent(saved.message)}`);
 }

@@ -3,8 +3,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import matter from 'gray-matter';
 import { z } from 'zod';
-import { isCaptured, requiredCaptured } from '../brainstorm/sections';
-import { loadContext } from '../brainstorm/session';
+import { loadContext, requiredFilled } from '../brainstorm/session';
+import { progress } from '../brainstorm/review';
 import type { DocumentStatus, Stage } from '../documents/types';
 import { fail, type Result } from '../result';
 import type { Store } from '../store/db';
@@ -123,7 +123,7 @@ export function projectState(store: Store): ProjectState {
   };
   const context = loadContext(store);
   return {
-    requiredCaptured: context.ok && requiredCaptured(context.value.sections, context.value.session.answers),
+    requiredCaptured: context.ok && requiredFilled(context.value),
     intent: status(APPROVABLE.intent),
     spec: status(APPROVABLE.spec),
     plan: status(APPROVABLE.plan),
@@ -147,7 +147,7 @@ export function stageSummaries(store: Store): Record<Stage, StageSummary> {
   };
   const context = loadContext(store);
   const required = context.ok ? context.value.sections.filter((s) => s.required) : [];
-  const captured = context.ok ? required.filter((s) => isCaptured(context.value.session.answers, s.heading)).length : 0;
+  const captured = context.ok ? progress(context.value).filled : 0;
   const intent = doc(APPROVABLE.intent);
   const spec = doc(APPROVABLE.spec);
   const plan = doc(APPROVABLE.plan);

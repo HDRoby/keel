@@ -1,11 +1,11 @@
 // Settings (mockup 8): two cards. This project: what .keel/config.yml says (paths, commit mode, read-back).
 // You, on this computer: name, models, providers and keys, kept in the user config folder (REQ-009, ADR-0011).
-import { saveAuthorAction, saveGithubAction, saveModelAction, saveProviderAction, testProviderAction } from './actions';
+import { saveAuthorAction, saveExploreTimingAction, saveGithubAction, saveModelAction, saveProviderAction, testProviderAction } from './actions';
 import { SubmitButton } from '@/components/SubmitButton';
 import { hasGithubToken } from '@/lib/github/auth';
 import { ErrorAlert, PageHead, Topbar } from '@/components/Shell';
 import { MODEL_TASKS, PROVIDERS } from '@/lib/providers/types';
-import { modelChoice, providerView } from '@/lib/settings/settings';
+import { exploreTiming, modelChoice, providerView } from '@/lib/settings/settings';
 import { userSetting } from '@/lib/settings/user-dir';
 import { serverStore } from '@/lib/store/server-store';
 import { readProject } from '@/lib/store/workspace';
@@ -49,6 +49,16 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <h2 style={{ margin: 0 }}>You</h2>
           <label>Your name <input name="author" defaultValue={typeof userSetting(store.user, 'author') === 'string' ? String(userSetting(store.user, 'author')) : ''} placeholder="Used when git config has no user.name" /></label>
           <div><button type="submit">Save name</button></div>
+        </form>
+
+        <form action={saveExploreTimingAction} aria-label="Explore reviews" className="card stack">
+          <h2 style={{ margin: 0 }}>Explore reviews</h2>
+          <p className="muted">The assistant reviews all sections when you leave a changed section, and after a pause in typing. At most one review runs at a time.</p>
+          <div className="row">
+            <label>Pause before a review (seconds) <input name="pauseSeconds" type="number" min={0.5} max={60} step={0.5} defaultValue={exploreTiming(store).pauseSeconds} /></label>
+            <label>At most one review every (seconds) <input name="intervalSeconds" type="number" min={0} max={300} step={1} defaultValue={exploreTiming(store).intervalSeconds} /></label>
+          </div>
+          <div><button type="submit">Save</button></div>
         </form>
 
         <section className="card">

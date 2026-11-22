@@ -97,6 +97,7 @@ a{color:#3366ff}a:hover{color:#2447b3}
       <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
         <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Select" label="Commits" options="{{commitModes}}" value="auto"></x-import>
         <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Select" label="Check this folder for agent changes" options="{{intervals}}" value="60"></x-import>
+        <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Select" label="Clickable mock before the plan" options="{{mockGates}}" value="recommended" description="Applies when the Form decision has a UI"></x-import>
       </div>
       <span style="font-size: 12px; line-height: 14.4px; color: #6b7180;">Keel commits only its own files (.keel/, its documents and the handoff files) as "Keel: …" commits. Remote: origin · github.com/roberto/keel. Push stays manual.</span>
       <x-import component-from-global-scope="SoftwareOneDesignSystem_52b182.Toggle" label="Notify me when an agent changes a document" checked="{{notify}}" on-change="{{setNotify}}"></x-import>
@@ -149,6 +150,7 @@ class Component extends DCLogic {
       systems: [ { value: 'swo', label: 'Company design system' }, { value: 'none', label: 'None (neutral style)' } ],
       autoMock: st.autoMock,
       setAutoMock: (e) => this.setState({ autoMock: chk(e), saved: false }),
+      mockGates: [ { value: 'recommended', label: 'Recommended: warn if missing or out of date' }, { value: 'required', label: 'Required: Generate plan stays locked' }, { value: 'off', label: 'Off' } ],
       commitModes: [ { value: 'auto', label: 'Commit Keel\'s files automatically' }, { value: 'off', label: 'Write files, I commit myself' } ],
       intervals: [ { value: '60', label: 'Every minute and when I switch back to Keel' }, { value: 'focus', label: 'Only when I switch back to Keel' }, { value: 'manual', label: 'Only when I ask' } ],
       notify: st.notify,

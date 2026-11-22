@@ -1,13 +1,13 @@
 import { expect, type Page } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
-import { answerRequiredSections, stagePath, startIdea } from './support';
+import { fillRequiredSections, stagePath, startIdea } from './support';
 
 const { Given, When, Then } = createBdd();
 
 async function projectWithDraftIntent(page: Page): Promise<void> {
   await startIdea(page);
-  await answerRequiredSections(page);
-  await page.getByRole('button', { name: 'Draft intent.md' }).click();
+  await fillRequiredSections(page);
+  await page.getByRole('button', { name: /^Draft intent\.md/ }).click();
   await expect(page.getByRole('status').filter({ hasText: 'intent.md drafted' })).toContainText('status draft');
 }
 

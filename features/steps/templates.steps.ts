@@ -17,8 +17,9 @@ Given('the template "Standard intent v3" is used by 1 project', async () => {
 
 When('I open it in the template library', async ({ page }) => {
   await page.goto('/templates');
-  await page.getByRole('link', { name: 'Standard intent v3' }).click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Standard intent v3' })).toBeVisible();
+  // The library lists a template under its latest version (v4 since CR-0005); the intent uses v3.
+  await page.getByRole('link', { name: /^Standard intent v\d+$/ }).click();
+  await expect(page.getByRole('heading', { level: 1, name: /^Standard intent v\d+$/ })).toBeVisible();
 });
 
 Then('I cannot remove it', async ({ page }) => {

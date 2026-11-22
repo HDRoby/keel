@@ -79,11 +79,14 @@ class Component extends DCLogic {
       L('~ $ npx keel ./keel', cmd),
       L('Folder ./keel does not exist. Create it? (Y/n) y', out),
       L('Created /Users/roberto/keel', out),
+      L('Startup check: settings OK · Ollama running, 4 models · test message answered', out),
       L('No .keel/ here yet: the browser opens on Initialise.', out),
       L('Keel for /Users/roberto/keel: http://127.0.0.1:3000', ok)
     ] : [
       L('~/keel $ npx keel', cmd),
       L('Found .keel/ (Keel · PRJ-0001, plan v4 approved)', out),
+      L('Startup check: Ollama not reachable at http://localhost:11434', { color: '#f5b971' }),
+      L('Keel opens in setup mode: fix the model provider in Settings first.', { color: '#f5b971' }),
       L('Agent changes since the last check: 2 to review', out),
       L('Keel for /Users/roberto/keel: http://127.0.0.1:3000', ok)
     ];
@@ -93,9 +96,9 @@ class Component extends DCLogic {
       oldType: isNew ? 'outline' : 'primary',
       showNew: () => this.setState({ mode: 'new' }),
       showOld: () => this.setState({ mode: 'old' }),
-      nextHref: isNew ? 'Start.dc.html' : 'Handoff.dc.html',
-      nextLabel: isNew ? 'Browser opens: Initialise this folder' : 'Browser opens: current stage (Handoff)',
-      nextNote: isNew ? 'Nothing is written until you initialise.' : 'Keel opens where the project is.'
+      nextHref: isNew ? 'Start.dc.html' : 'Startup.dc.html',
+      nextLabel: isNew ? 'Browser opens: Initialise this folder' : 'Browser opens: Startup check (setup mode)',
+      nextNote: isNew ? 'Nothing is written until you initialise.' : 'When every check passes, Keel opens at the current stage instead.'
     };
   }
 }

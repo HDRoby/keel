@@ -21,9 +21,17 @@ kind: intent
 describe('sections', () => {
   it('reads headings, required markers and guidance', () => {
     expect(parseSections(template)).toEqual([
-      { heading: 'Problem', required: true, guidance: 'Who is affected.' },
-      { heading: 'Outcome', required: true, guidance: '' },
-      { heading: 'Notes', required: false, guidance: 'Anything else.' },
+      { heading: 'Problem', required: true, guidance: 'Who is affected.', list: false },
+      { heading: 'Outcome', required: true, guidance: '', list: false },
+      { heading: 'Notes', required: false, guidance: 'Anything else.', list: false },
+    ]);
+  });
+
+  it('marks list sections, and treats Requirements as a list', () => {
+    const listed = parseSections('## Requirements\n<!-- required -->\n\n## Items\n<!-- optional · list · One per row. -->\n');
+    expect(listed).toEqual([
+      { heading: 'Requirements', required: true, guidance: '', list: true },
+      { heading: 'Items', required: false, guidance: 'One per row.', list: true },
     ]);
   });
 
