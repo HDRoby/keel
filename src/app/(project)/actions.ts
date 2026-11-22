@@ -142,8 +142,11 @@ async function guard(page: string): Promise<void> {
 }
 
 function withError(path: string, result: Result<unknown>): string {
-  return result.ok ? path : `${path}?error=${encodeURIComponent(result.message)}`;
+  return result.ok ? path : `${path}${path.includes('?') ? '&' : '?'}error=${encodeURIComponent(result.message)}`;
 }
+
+/** Where a mock reference form returns to: the intent page, or the Spec's Clickable mock tab (CR-0009). */
+const mockPage = (document: string) => (document === 'spec' ? '/spec?tab=mock' : at(document));
 
 const generateForm = z.strictObject({ template: ref.optional() });
 
@@ -209,7 +212,7 @@ async function mockForm(form: FormData, withId: boolean) {
   if (!base.success) redirect('/?error=Invalid+request');
   const { document, url } = base.data;
   const store = serverStore();
-  const page = at(document);
+  const page = mockPage(document);
   if (!gateFor(projectState(store), document).available) redirect(page);
   const file = form.get('file');
   const hasFile = file instanceof File && file.size > 0;
@@ -242,7 +245,7 @@ export async function removeMockAction(form: FormData): Promise<void> {
   const input = z.strictObject({ document: mockDocument, id: z.string().regex(MOCK_ID) }).safeParse(formFields(form));
   if (!input.success) redirect('/?error=Invalid+request');
   const store = serverStore();
-  const page = at(input.data.document);
+  const page = mockPage(input.data.document);
   if (!gateFor(projectState(store), input.data.document).available) redirect(page);
   redirect(withError(page, await removeMock(store, input.data.id)));
 }
@@ -256,7 +259,7 @@ export async function linkMockAction(form: FormData): Promise<void> {
   const { document, requirements } = input.data;
   const store = serverStore();
   const linked = await linkMock(store, input.data.id, requirements, requirementIds(store.root));
-  redirect(withError(at(document), linked));
+  redirect(withError(mockPage(document), linked));
 }
 
 /** Handoff: write the agent files into the folder. Conflicts: choice:<path> = mine | keel | beside. */

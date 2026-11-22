@@ -2,6 +2,7 @@
 // Markdown), and on the side the feasibility review, the Go, Park or No-go decision, mock references, approval and
 // history (REQ-004, REQ-005, REQ-013).
 import { decisionAction, generateSpecAction } from '../actions';
+import { MockPanel } from './mock-panel';
 import { ScenariosPanel } from './scenarios-panel';
 import { DesignPanel } from './design-panel';
 import css from './spec.module.css';
@@ -9,7 +10,6 @@ import { Conflicts } from '@/components/Conflicts';
 import { DocumentReview } from '@/components/DocumentReview';
 import { Icon } from '@/components/Icons';
 import { Markdown } from '@/components/Markdown';
-import { MockReferences } from '@/components/MockReferences';
 import { RegenerateForm } from '@/components/RegenerateForm';
 import { SubmitButton } from '@/components/SubmitButton';
 import { ButtonLink } from '@/components/ui/Button';
@@ -21,7 +21,6 @@ import { StageLayout } from '@/components/ui/StageBar';
 import { chosenOption, readDesign } from '@/lib/decisions/design';
 import { DECISION_TITLE, decisionsOf } from '@/lib/gates/approvals';
 import { conflictsOf } from '@/lib/generate/resolve';
-import { listMocks } from '@/lib/mocks/references';
 import { coverage } from '@/lib/scenarios/store';
 import { readDocument } from '@/lib/store/documents';
 import { templateOptions } from '@/lib/templates/library';
@@ -35,7 +34,7 @@ export const dynamic = 'force-dynamic';
 const sectionOf = (body: string, heading: string) => new RegExp(`^## ${heading}\\s*\\n([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm').exec(body)?.[1]?.trim() ?? '';
 
 export default async function SpecPage({ searchParams }: StageProps) {
-  const { error, notice, tab, edit, add, change } = await (searchParams as Promise<{ error?: string; notice?: string; tab?: string; edit?: string; add?: string; change?: string }>);
+  const { error, notice, tab, edit, add, change, view } = await (searchParams as Promise<{ error?: string; notice?: string; tab?: string; edit?: string; add?: string; change?: string; view?: string }>);
   const page = await loadStage('spec');
   const { store, reviewer, gates } = page;
   const spec = readDocument(store, 'docs/spec.md');
@@ -88,10 +87,11 @@ export default async function SpecPage({ searchParams }: StageProps) {
   const groups = coverage(dir);
   const design = readDesign(dir);
   const undecided = design.topics.filter((t) => !chosenOption(t)).length;
-  const current = tab === 'design' ? 'design' : tab === 'scenarios' || tab === 'gherkin' ? 'scenarios' : tab === 'markdown' ? 'markdown' : 'requirements';
+  const current = tab === 'design' ? 'design' : tab === 'scenarios' || tab === 'gherkin' ? 'scenarios' : tab === 'markdown' ? 'markdown' : tab === 'mock' ? 'mock' : 'requirements';
   const feasibility = sectionOf(spec.value.body, 'Feasibility review');
   const panel = current === 'design' ? <DesignPanel root={dir} change={change} approved={approved} />
     : current === 'scenarios' ? <ScenariosPanel root={dir} tab={tab === 'gherkin' ? 'gherkin' : 'scenarios'} edit={edit} add={add} approved={approved} />
+    : current === 'mock' ? <MockPanel store={store} view={view} />
     : current === 'markdown' ? <CodeBlock label="Markdown of docs/spec.md">{readFileSync(join(dir, 'docs', 'spec.md'), 'utf8')}</CodeBlock>
     : undefined;
 
@@ -105,6 +105,7 @@ export default async function SpecPage({ searchParams }: StageProps) {
           { href: '/spec', label: 'Requirements', count: requirementIds(dir).length, current: current === 'requirements' },
           ...(design.topics.length ? [{ href: '/spec?tab=design#design', label: 'Design', ...(undecided ? { count: undecided } : {}), current: current === 'design' }] : []),
           { href: '/spec?tab=scenarios#scenarios', label: 'Acceptance scenarios', count: groups.reduce((n, g) => n + g.accepted.length, 0), current: current === 'scenarios' },
+          { href: '/spec?tab=mock#mock', label: 'Clickable mock', current: current === 'mock' },
           { href: '/spec?tab=markdown', label: 'Markdown', current: current === 'markdown' },
         ]}
         before={<Conflicts document="spec" conflicts={conflictsOf(spec.value)} />}
@@ -114,7 +115,6 @@ export default async function SpecPage({ searchParams }: StageProps) {
             {feasibility ? <Markdown text={feasibility} /> : <p className={css.muted}>Not written yet.</p>}
           </Card>
           {decision}
-          <MockReferences document="spec" references={listMocks(dir)} requirements={requirementIds(dir)} />
         </>} />
     </StageLayout>
   );

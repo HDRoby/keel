@@ -10,6 +10,7 @@ import { githubToken } from '../github/auth';
 import { projectState } from '../gates/approvals';
 import { gateFor } from '../gates/rules';
 import { listMocks } from '../mocks/references';
+import { currentSet, readSets, type MockSet } from '../mocks/sets';
 import { readSkillFile } from '../skill-files';
 import { PROVIDER_IDS } from '../providers/types';
 import { fail, ok, type Result } from '../result';
@@ -117,6 +118,12 @@ export async function buildHandoff(store: Store): Promise<Result<PackageFile[], 
   ['docs/intent.md', 'docs/spec.md', 'docs/plan.md'].forEach(copy);
   filesUnder(dir, 'docs/decisions', (f) => f.endsWith('.md')).forEach(copy);
   if (listMocks(dir).length > 0) filesUnder(dir, '.keel/mocks', () => true).forEach(copy);
+  const mockSet = currentSet(dir);
+  if (mockSet) {
+    // README and every set folder; sets hold only files.
+    copy('docs/mocks/README.md');
+    readSets(dir).forEach((set) => filesUnder(dir, `docs/mocks/set-${set.set}`, () => true).forEach(copy));
+  }
   filesUnder(dir, 'tasks', (f) => f.endsWith('.md')).forEach(copy);
   const features: FeatureFile[] = filesUnder(dir, 'features', (f) => f.endsWith('.feature'))
     .map((path) => ({ path, content: readFileSync(join(dir, path), 'utf8') }));
@@ -150,7 +157,7 @@ export async function buildHandoff(store: Store): Promise<Result<PackageFile[], 
     'How to work': ['1. Take the next task in `tasks/` in order. Each task lists its requirements and the scenarios that prove it.', '2. The scenarios in `features/` already exist and fail. Implement the step definitions in `features/steps/` and the code until they pass.', '3. **Never edit `.feature` files to make a scenario pass.** If a scenario looks wrong, write it under "Questions for the owner" in the task file and stop.', '4. If your work departs from `docs/plan.md`, update `docs/plan.md` in the same commit and say why. Keel reads these changes back.'].join('\n'),
     'Done means': ['- Every scenario tagged with the task\'s requirements passes in CI.', `- \`${commands.verify}\` passes.`, '- `docs/plan.md` matches what was built.'].join('\n'),
   });
-  if (agents) files.push(text('AGENTS.md', agents));
+  if (agents) files.push(text('AGENTS.md', mockSet ? `${agents.trimEnd()}\n\n${visualReference(mockSet)}\n` : agents));
   files.push(text('CLAUDE.md', [
     '# CLAUDE.md', '', 'Read `AGENTS.md`. It is the single source of instructions for every coding agent working on this repository.', '',
     'Claude Code also gets:', `- subagents in \`.claude/agents/\` (${kitFiles.map((k) => k.id).join(', ') || 'none'})`,
@@ -246,4 +253,16 @@ export function minimalSetup(title: string, commands: Commands): { path: string;
     ].join('\n') },
     { path: '.gitignore', content: ['node_modules/', '.features-gen/', 'test-results/', 'playwright-report/', '.env', '.env.local', ''].join('\n') },
   ];
+}
+
+/** The AGENTS.md section that points to the current mock set (CR-0009): HTML sources first, then the PNGs. */
+function visualReference(set: MockSet): string {
+  const html = set.files.filter((f) => f.kind === 'html');
+  return [
+    '## Visual reference', '',
+    `The current mock set is \`docs/mocks/set-${set.set}/\`, made from spec v${set.specVersion} (see \`docs/mocks/README.md\`). The spec decides; the mocks show intent.`,
+    html.length ? 'Read the HTML sources first for exact structure, sizes and copy, then compare with the PNGs:' : 'Compare UI work with the screens:',
+    ...[...html, ...set.files.filter((f) => f.kind === 'png')].map((f) => `- \`docs/mocks/set-${set.set}/${f.path}\`: ${f.number ? `${f.number} · ` : ''}${f.screen ?? f.source}${f.reqs.length ? ` (${f.reqs.join(', ')})` : ''}`),
+    ...(set.link ? [`- Live prototype: ${set.link}`] : []),
+  ].join('\n');
 }

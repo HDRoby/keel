@@ -32,7 +32,10 @@ export interface Project {
   standards: string[]; // e.g. ['security-baseline@2']
   paths: ProjectPaths;
   commit: 'auto' | 'off';
+  mockGate: MockGate; // Clickable mock before the plan (REQ-005, CR-0009)
 }
+
+export type MockGate = 'recommended' | 'required' | 'off';
 
 export type ProjectError = 'not-initialised' | 'already-initialised' | 'invalid-config' | 'unknown-standard' | 'seed-failed' | 'repo-busy';
 
@@ -59,6 +62,7 @@ const configSchema = z.looseObject({
     features: z.string().regex(FOLDER).default('features'),
   }).default(DEFAULT_PATHS),
   commit: z.enum(['auto', 'off']).default('auto'),
+  mock_gate: z.enum(['recommended', 'required', 'off']).default('recommended'),
 });
 
 /** gray-matter and js-yaml read unquoted YAML dates as Date; this turns them back into ISO dates. */
@@ -126,8 +130,8 @@ export function readProject(root: string): Result<Project, ProjectError> {
   if (!data) return fail('invalid-config', `${CONFIG_FILE} is not valid YAML`);
   const parsed = configSchema.safeParse(data);
   if (!parsed.success) return fail('invalid-config', z.prettifyError(parsed.error));
-  const { id, title, description, author, created, templates, style, standards, paths, commit } = parsed.data;
-  return ok({ id, title, description, author, created, templates, style, standards, paths, commit });
+  const { id, title, description, author, created, templates, style, standards, paths, commit, mock_gate: mockGate } = parsed.data;
+  return ok({ id, title, description, author, created, templates, style, standards, paths, commit, mockGate });
 }
 
 export interface InitialiseInput {

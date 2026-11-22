@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { fillSections, parseSections } from '../brainstorm/sections';
 import { gateFor } from '../gates/rules';
 import { projectState } from '../gates/approvals';
+import { currentSet } from '../mocks/sets';
 import { fail, ok, type Result } from '../result';
 import { standardsFor } from '../standards/library';
 import type { Store } from '../store/db';
@@ -112,6 +113,7 @@ async function composePlan(store: Store, write: Writer): Promise<Result<Composed
       'Scenarios that prove it': [scenariosOf(task, scenarios).map((s) => `- \`${scenarioLabel(s).replace(' › ', '` › ')}`).join('\n') || 'None yet.'],
       'Files that are likely to change': ['To be decided by the coding agent.'],
       'Questions for the owner': ['(none yet)'],
+      ...(screensFor(store.root, task.requirements) ? { Notes: [screensFor(store.root, task.requirements) ?? ''] } : {}),
     }),
   }));
   return ok({
@@ -207,4 +209,14 @@ function taskIds(dir: string): string[] {
   const folder = join(dir, 'tasks');
   if (!existsSync(folder)) return [];
   return readdirSync(folder).flatMap((f) => (/^T\d+\.md$/.test(f) ? [f.slice(0, -3)] : [])).sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)));
+}
+
+/** The screens of the current mock set that show a task's requirements (CR-0009), as a note in the task file. */
+function screensFor(root: string, requirements: string[]): string | undefined {
+  const set = currentSet(root);
+  const files = set?.files.filter((f) => f.kind !== 'link' && f.reqs.some((r) => requirements.includes(r))) ?? [];
+  if (!set || files.length === 0) return undefined;
+  const docs = readProject(root);
+  const folder = `${docs.ok ? docs.value.paths.docs : 'docs'}/mocks/set-${set.set}`;
+  return ['Screens in the current mock set (HTML sources first):', ...files.sort((a, b) => Number(b.kind === 'html') - Number(a.kind === 'html')).map((f) => `- \`${folder}/${f.path}\`: ${f.number ? `${f.number} · ` : ''}${f.screen ?? f.source} (${f.reqs.join(', ')})`)].join('\n');
 }
