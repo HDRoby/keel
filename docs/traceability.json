@@ -3,8 +3,8 @@
   "generated": "2026-11-20",
   "from": {
     "intent": "INT-0001@4",
-    "spec": "SPC-0001@10",
-    "plan": "PLN-0001@10"
+    "spec": "SPC-0001@11",
+    "plan": "PLN-0001@11"
   },
   "requirements": {
     "REQ-001": {
@@ -59,6 +59,7 @@
     "REQ-005": {
       "tasks": [
         "R11",
+        "R12",
         "R18",
         "T6"
       ],
@@ -67,6 +68,7 @@
         "features/brainstorm.feature › Editing an approved intent creates a change request",
         "features/change-requests.feature › Changing an approved intent raises a change request",
         "features/change-requests.feature › Approved changes mark later documents out of date",
+        "features/design-decisions.feature › The plan needs every topic decided",
         "features/scenarios.feature › The plan needs a scenario for every requirement",
         "features/stage-gating.feature › Spec is locked until the intent is approved",
         "features/stage-gating.feature › Approving the intent unlocks the spec"
@@ -160,6 +162,18 @@
       "scenarios": [
         "features/brainstorm-styles.feature › The chosen style is recorded with the intent"
       ]
+    },
+    "REQ-013": {
+      "tasks": [
+        "R12"
+      ],
+      "scenarios": [
+        "features/design-decisions.feature › Each design topic offers options with one recommended",
+        "features/design-decisions.feature › Existing code is offered as \"Keep current\"",
+        "features/design-decisions.feature › Deciding writes a decision record",
+        "features/design-decisions.feature › Changing a decision in a draft spec rewrites its record",
+        "features/design-decisions.feature › The plan needs every topic decided"
+      ]
     }
   },
   "tasks": {
@@ -191,6 +205,16 @@
       ],
       "features": [
         "features/scenarios.feature"
+      ]
+    },
+    "R12": {
+      "title": "Design as decisions",
+      "requirements": [
+        "REQ-013",
+        "REQ-005"
+      ],
+      "features": [
+        "features/design-decisions.feature"
       ]
     },
     "R18": {
@@ -470,6 +494,36 @@
       "feature": "features/change-requests.feature",
       "scenario": "Approved changes mark later documents out of date",
       "requirement": "REQ-014"
+    },
+    {
+      "feature": "features/design-decisions.feature",
+      "scenario": "Each design topic offers options with one recommended",
+      "requirement": "REQ-013"
+    },
+    {
+      "feature": "features/design-decisions.feature",
+      "scenario": "Existing code is offered as \"Keep current\"",
+      "requirement": "REQ-013"
+    },
+    {
+      "feature": "features/design-decisions.feature",
+      "scenario": "Deciding writes a decision record",
+      "requirement": "REQ-013"
+    },
+    {
+      "feature": "features/design-decisions.feature",
+      "scenario": "Changing a decision in a draft spec rewrites its record",
+      "requirement": "REQ-013"
+    },
+    {
+      "feature": "features/design-decisions.feature",
+      "scenario": "The plan needs every topic decided",
+      "requirement": "REQ-013"
+    },
+    {
+      "feature": "features/design-decisions.feature",
+      "scenario": "The plan needs every topic decided",
+      "requirement": "REQ-005"
     },
     {
       "feature": "features/handoff.feature",

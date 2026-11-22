@@ -14,11 +14,12 @@ import { templateOptions } from '@/lib/templates/library';
 import { requirementIds } from '@/lib/trace/index';
 import { loadStage, type StageProps } from '../stage';
 import { ScenariosPanel } from './scenarios-panel';
+import { DesignPanel } from './design-panel';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SpecPage({ searchParams }: StageProps) {
-  const { error, notice, tab, edit, add } = await (searchParams as Promise<{ error?: string; notice?: string; tab?: string; edit?: string; add?: string }>);
+  const { error, notice, tab, edit, add, change } = await (searchParams as Promise<{ error?: string; notice?: string; tab?: string; edit?: string; add?: string; change?: string }>);
   const page = await loadStage('spec');
   const { store, reviewer } = page;
   const spec = readDocument(store, 'docs/spec.md');
@@ -55,6 +56,7 @@ export default async function SpecPage({ searchParams }: StageProps) {
             ? <RegenerateForm document="spec">Regenerating writes the spec again from the current intent and standards.</RegenerateForm>
             : undefined}
           aside={<>{decision}<MockReferences document="spec" references={listMocks(dir)} requirements={requirementIds(dir)} /></>} />
+        <DesignPanel root={dir} change={change} approved={spec.value.header.status === 'approved'} />
         <ScenariosPanel root={dir} tab={tab === 'gherkin' ? 'gherkin' : 'scenarios'} edit={edit} add={add} approved={spec.value.header.status === 'approved'} />
         </>
       ) : (

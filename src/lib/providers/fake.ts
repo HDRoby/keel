@@ -7,12 +7,15 @@ import { PROVIDERS, type ChatMessage, type ChatProvider, type RealProviderId } f
 
 const REVIEW_MARKER = 'Answer with one JSON object and nothing else.';
 const SCENARIO_MARKER = 'Answer with one scenario as JSON and nothing else.';
+const DESIGN_MARKER = 'Answer with the design topics as JSON and nothing else.';
 
 export function fakeReply(standsFor: RealProviderId, messages: ChatMessage[]): string {
   const label = PROVIDERS.find((p) => p.id === standsFor)?.label ?? standsFor;
   const last = [...messages].reverse().find((m) => m.role === 'user')?.content ?? '';
   if (messages[0]?.role === 'system' && messages[0].content.includes(REVIEW_MARKER)) return JSON.stringify(fakeReview(label, last));
   if (messages[0]?.role === 'system' && messages[0].content.includes(SCENARIO_MARKER)) return JSON.stringify(fakeFailureCase(last));
+  if (messages[0]?.role === 'system' && messages[0].content.includes(DESIGN_MARKER)) return JSON.stringify(fakeDesign(last));
+  if (messages[0]?.role === 'system' && messages[0].content.includes('Answer with a fit line as JSON and nothing else.')) return JSON.stringify({ kind: 'follows', text: 'Fits the requirements; no standard is broken' });
   return `Reply from ${label}: I read "${last}".`;
 }
 
@@ -94,12 +97,36 @@ export function fakeFailureCase(userMessage: string): Record<string, unknown> {
   };
 }
 
+/** Design options per topic, from a fixed catalogue; fit lines follow the standards in the message. */
+export function fakeDesign(userMessage: string): Record<string, unknown> {
+  let input: { topics?: { title: string }[]; standards?: { ref: string; name: string }[]; code?: { stack?: string } } = {};
+  try {
+    input = JSON.parse(userMessage) as typeof input;
+  } catch {
+    return { topics: [] };
+  }
+  const ts = input.standards?.find((s) => s.ref.startsWith('typescript-conventions@'));
+  const option = (name: string, summary: string, pro: string, con: string, recommended = false, fit?: { kind: string; text: string }) => ({ name, summary, pro, con, serves: [], recommended, ...(recommended ? { reason: 'Fits the requirements and the standards best.' } : {}), ...(fit ? { fit } : {}) });
+  const catalogue: Record<string, unknown[]> = {
+    Form: [option('Local web app', 'A server on 127.0.0.1 opened in the browser.', 'Works on any computer with a browser.', 'Needs a running process.', true), option('Desktop app (Electron)', 'A packaged desktop application.', 'Feels native.', 'Large download.'), option('Command-line tool', 'A terminal program.', 'Simple to ship.', 'Hard for non-engineers.')],
+    'Language and framework': [
+      option('TypeScript with Next.js', 'One language for the UI and the server.', 'Typed end to end.', 'A framework to keep up with.', true, ts ? { kind: 'follows', text: `Follows ${ts.name} v${ts.ref.split('@')[1]}` } : undefined),
+      option('Plain JavaScript with Express', 'A small server and hand-written pages.', 'Few dependencies.', 'No types.', false, ts ? { kind: 'breaks', text: `Breaks ${ts.name} v${ts.ref.split('@')[1]}: the code must be TypeScript` } : undefined),
+      option('Python with FastAPI', 'A Python server with a separate front end.', 'Strong data libraries.', 'Two languages.'),
+    ],
+    Storage: [option('Markdown in git with a SQLite index', 'Documents as files; an index for search.', 'Readable without the tool.', 'Two places to keep in step.', true), option('SQLite only', 'Everything in one database file.', 'Simple queries.', 'Not readable in git.'), option('Postgres', 'A database server.', 'Scales to many users.', 'A server to run.', false, { kind: 'adds-concern', text: 'Needs a database server and its credentials' })],
+    'Model access': [option('One provider interface (Anthropic, OpenAI, Ollama)', 'Adapters behind one interface.', 'Any model per task.', 'More code to test.', true), option('Anthropic only', 'One SDK.', 'Least code.', 'Locked to one vendor.'), option('Local models only (Ollama)', 'No keys, no network.', 'Private and free.', 'Weaker models.')],
+    Testing: [option('Vitest, Playwright and playwright-bdd', 'Unit tests and Gherkin scenarios in the browser.', 'Scenarios run as written.', 'Browser tests are slower.', true), option('Jest and Cypress', 'Common pair.', 'Familiar.', 'Gherkin needs a plugin.'), option('Manual testing', 'A checklist.', 'No setup.', 'Nothing runs in CI.')],
+  };
+  return { topics: (input.topics ?? []).map((t) => ({ title: t.title, options: catalogue[t.title] ?? [option(`Option for ${t.title}`, 'A sensible default.', 'Simple.', 'Generic.', true)] })) };
+}
+
 export function createFakeProvider(standsFor: RealProviderId, env: Record<string, string | undefined> = process.env): ChatProvider {
   return {
     id: 'fake',
     async *stream(messages) {
       const log = env.KEEL_FAKE_LOG?.trim();
-      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : messages[0]?.content.includes(SCENARIO_MARKER) ? 'scenario' : 'chat'}\n`);
+      if (log) appendFileSync(log, `${new Date().toISOString()} ${standsFor} ${messages[0]?.content.includes(REVIEW_MARKER) ? 'review' : messages[0]?.content.includes(SCENARIO_MARKER) ? 'scenario' : messages[0]?.content.includes(DESIGN_MARKER) ? 'design' : 'chat'}\n`);
       for (const word of fakeReply(standsFor, messages).split(/(?<= )/)) yield word;
     },
   };

@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { readExplore } from '../brainstorm/session';
 import { settlePending } from '../scenarios/store';
+import { settleDesignChange } from '../decisions/records';
 import { applyIntentChange, revertIntentChange } from '../generate/intent';
 import { regeneratePlan } from '../generate/plan';
 import { regenerateSpec } from '../generate/spec';
@@ -67,6 +68,7 @@ export async function approveChange(store: Store, id: string, by: string): Promi
     if (!applied.ok) return failed(applied);
   }
   await settlePending(store, id, true);   // scenario edits held for this request (CR-0006)
+  await settleDesignChange(store, id, true);   // a design decision changed after approval (CR-0007)
   const extra = { approved_by: by.trim() || 'owner', approved_on: today(store), ...(cr.value.origin === 'keel' && cr.value.size === 'minor' ? { impact: [] } : {}) };
   const saved = await setChangeStatus(store, cr.value, 'approved', cr.value.origin === 'keel' ? extra : {});
   return saved.ok ? saved : failed(saved);
@@ -82,6 +84,7 @@ export async function rejectChange(store: Store, id: string): Promise<Result<Cha
     if (!reverted.ok && reverted.error !== 'not-found') return failed(reverted);
   }
   await settlePending(store, id, false);
+  await settleDesignChange(store, id, false);
   const saved = await setChangeStatus(store, cr.value, 'rejected');
   return saved.ok ? saved : failed(saved);
 }

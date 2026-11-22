@@ -7,6 +7,7 @@ import { loadContext, requiredFilled } from '../brainstorm/session';
 import { progress } from '../brainstorm/review';
 import { outOfDate } from '../changes/stale';
 import { uncovered } from '../scenarios/store';
+import { undecided } from '../decisions/design';
 import type { DocumentStatus, Stage } from '../documents/types';
 import { fail, type Result } from '../result';
 import type { Store } from '../store/db';
@@ -131,6 +132,7 @@ export function projectState(store: Store): ProjectState {
     plan: status(APPROVABLE.plan),
     decisions: decisionsOf(store.root),
     uncovered: uncovered(store.root),
+    undecided: undecided(store.root),
   };
 }
 

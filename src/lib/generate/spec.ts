@@ -12,6 +12,10 @@ import { commitFiles } from '../store/git';
 import { readProject } from '../store/workspace';
 import { parseFeatureDoc, type Step } from '../scenarios/gherkin';
 import { acceptedScenarios, addSuggestions, SCENARIOS_FILE, suggestions } from '../scenarios/store';
+import { chosenOption, DESIGN_FILE, readDesign, templateTopics, writeDesign, type Topic } from '../decisions/design';
+import { approachSection, designSection, specWithDesign } from '../decisions/records';
+import { repoFacts } from '../repo/facts';
+import { mergeTopics, proposeDecisions } from './design';
 import { parseTemplateRef, readTemplate } from '../templates/library';
 import { renderTemplate } from '../templates/render';
 import { requirementStatements } from '../trace/parse';
@@ -19,6 +23,11 @@ import { conflictNote, mergeSections, readBaseline, writeBaseline, type Conflict
 import { writeSection, type Writer } from './writer';
 
 export type GenerateError = 'locked' | 'already-exists' | 'not-found' | 'unknown-template' | 'invalid-input' | 'not-draft';
+
+/** The text under a "## " heading of a markdown body, or '' when there is none. */
+function sectionOf(body: string, heading: string): string {
+  return new RegExp(`^## ${heading}\\s*\\n([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm').exec(body)?.[1]?.trim() ?? '';
+}
 
 /** The spec's Requirements section: every REQ from the intent, with its source. */
 export function requirementsTable(statements: Record<string, string>, source = 'Intent'): string {
@@ -57,6 +66,7 @@ interface ComposedSpec {
   title: string;
   body: string;
   proposals: { req: string; name: string; steps: Step[] }[];   // one scenario per requirement, as suggestions
+  topics: Topic[];                                                // design topics with options (CR-0007), when the template has them
   feature?: string;      // only when the template has an Acceptance scenarios section
   extra: Record<string, unknown>;
 }
@@ -67,7 +77,7 @@ export function proposalFor(id: string, statement: string, written?: string): { 
   return { req: id, name: parsed?.name ?? statement, steps: parsed?.steps ?? [] };
 }
 
-async function composeSpec(store: Store, templateRef: string, write: Writer, only?: string[]): Promise<Result<ComposedSpec, GenerateError>> {
+async function composeSpec(store: Store, templateRef: string, write: Writer, only?: string[], keep: Topic[] = []): Promise<Result<ComposedSpec, GenerateError>> {
   const intent = readDocument(store, 'docs/intent.md');
   if (!intent.ok) return fail('not-found', intent.message);
   const ref = parseTemplateRef(templateRef);
@@ -82,6 +92,14 @@ async function composeSpec(store: Store, templateRef: string, write: Writer, onl
     .filter(Boolean).join('\n\n');
   const sections: Record<string, string[]> = {};
   const proposals: ComposedSpec['proposals'] = [];
+  // Design as decision topics (CR-0007): options from the requirements, constraints, standards and the code.
+  const declared = templateTopics(template.value.content);
+  const proposed = declared.length ? await proposeDecisions({
+    requirements: statements, constraints: sectionOf(intent.value.body, 'Constraints'), standards: standardsFor(store.root, chosen),
+    facts: repoFacts(store.root), topics: declared.filter((t) => !keep.some((k) => k.title === t.title && chosenOption(k))),
+  }, write) : [];
+  const order = (t: Topic) => { const i = declared.findIndex((d) => d.title === t.title); return i < 0 ? declared.length : i; };
+  const topics = declared.length ? mergeTopics(keep, proposed).sort((a, b) => order(a) - order(b)) : [];
 
   for (const { heading, guidance } of parseSections(template.value.content)) {
     if (heading === 'Requirements') {
@@ -97,6 +115,10 @@ async function composeSpec(store: Store, templateRef: string, write: Writer, onl
         proposals.push(proposalFor(id, statement, written));
       }
       sections[heading] = ['Edited in the Acceptance scenarios tab: at least one per requirement, tagged `@REQ-xxx`. Accepted scenarios are saved in `features/`.'];
+    } else if (heading === 'Design' && declared.length) {
+      sections[heading] = [designSection(topics)];
+    } else if (heading === 'Approach' && declared.length) {
+      sections[heading] = [approachSection(topics)];
     } else if (heading === 'Standards applied') {
       sections[heading] = [standardsApplied(standardsFor(store.root, chosen))];
     } else {
@@ -105,7 +127,7 @@ async function composeSpec(store: Store, templateRef: string, write: Writer, onl
     }
   }
   return ok({
-    title, proposals,
+    title, proposals, topics,
     body: fillSections(renderTemplate(template.value.content, { title }).body, sections),
     extra: { from_intent: `${intent.value.header.id}@${intent.value.header.version}`, standards: chosen },
   });
@@ -122,7 +144,8 @@ export async function generateSpec(store: Store, templateRef: string, write: Wri
   const created = await createDocument(store, { kind: 'spec', title, body, template: templateRef, extra: { ...extra, conflicts: [] } });
   if (!created.ok) return fail('invalid-input', created.message);
   await addSuggestions(store, proposals);
-  await commitFiles(store.root, [...specBaselines(store.root, composed.value), ...(proposals.length ? [SCENARIOS_FILE] : [])], `Generation baseline for ${created.value.header.id} v1`);
+  if (composed.value.topics.length) writeDesign(store.root, { topics: composed.value.topics });
+  await commitFiles(store.root, [...specBaselines(store.root, composed.value), ...(proposals.length ? [SCENARIOS_FILE] : []), ...(composed.value.topics.length ? [DESIGN_FILE] : [])], `Generation baseline for ${created.value.header.id} v1`);
   return created;
 }
 
@@ -140,11 +163,14 @@ export async function regenerateSpec(store: Store, write: Writer): Promise<Resul
   const intent = readDocument(store, 'docs/intent.md');
   const covered = new Set([...acceptedScenarios(store.root).flatMap((s) => s.requirements), ...suggestions(store.root).map((s) => s.req)]);
   const missing = Object.keys(intent.ok ? requirementStatements(intent.value.body) : {}).filter((id) => !covered.has(id));
-  const composed = await composeSpec(store, spec.value.header.template, write, missing);
+  const design = readDesign(store.root);
+  const composed = await composeSpec(store, spec.value.header.template, write, missing, design.topics);
   if (!composed.ok) return composed;
   const { body, proposals, extra } = composed.value;
   const dir = store.root;
-  const merged = mergeSections(readBaseline(dir, 'docs/spec.md') ?? '', spec.value.body, body);
+  const mergedSections = mergeSections(readBaseline(dir, 'docs/spec.md') ?? '', spec.value.body, body);
+  // Design and Approach always follow the decisions (CR-0007).
+  const merged = composed.value.topics.length ? { ...mergedSections, body: specWithDesign(mergedSections.body, composed.value.topics) } : mergedSections;
   const conflicts: Conflict[] = [...merged.conflicts];
 
   const saved = await saveDocument(store, 'docs/spec.md', {
@@ -154,7 +180,8 @@ export async function regenerateSpec(store: Store, write: Writer): Promise<Resul
   });
   if (!saved.ok) return fail('invalid-input', saved.message);
   await addSuggestions(store, proposals);
-  await commitFiles(dir, [...specBaselines(dir, composed.value), ...(proposals.length ? [SCENARIOS_FILE] : [])], `Regeneration baseline for ${saved.value.header.id} v${saved.value.header.version}`);
+  if (composed.value.topics.length) writeDesign(dir, { ...design, topics: composed.value.topics });
+  await commitFiles(dir, [...specBaselines(dir, composed.value), ...(proposals.length ? [SCENARIOS_FILE] : []), ...(composed.value.topics.length ? [DESIGN_FILE] : [])], `Regeneration baseline for ${saved.value.header.id} v${saved.value.header.version}`);
   return saved;
 }
 
