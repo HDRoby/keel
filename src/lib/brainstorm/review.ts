@@ -54,7 +54,8 @@ export function reviewMessages(context: Context, reply?: { key: string; text: st
     ...(reply ? [`The user replied in the thread of "${reply.key}". Answer them in "reply" (with an optional "rewrite"), then comment on every section again.`] : []),
     '',
     REVIEW_MARKER,
-    'Format: {"comments": {"<section>": {"kind": "...", "text": "...", "linkTo"?: "...", "rewrite"?: "...", "addRow"?: "..."}}, "suggestions": {"<section>": "..." | ["..."]}, "reply"?: {"text": "...", "rewrite"?: "..."}}',
+    'Format (valid JSON; leave out the fields you do not use): {"comments": {"<section>": {"kind": "challenge", "text": "...", "linkTo": "<another section>", "rewrite": "...", "addRow": "..."}}, "suggestions": {"<section>": "text, or a list of rows for Requirements"}, "reply": {"text": "...", "rewrite": "..."}}',
+    'Only kind and text are needed in a comment. Put "reply" only when the user replied in a thread. Escape double quotes inside text as \\".',
   ].join('\n');
   const user = JSON.stringify({ title: context.state.title, idea: context.state.idea, sections, ...(reply ? { replyTo: reply } : {}) }, null, 1);
   return [{ role: 'system', content: system }, { role: 'user', content: user }];
@@ -108,7 +109,8 @@ export function normaliseAnswer(raw: unknown): unknown {
 
 /** Reads the model's answer: the first JSON object in it, put right where the model was loose, then validated. */
 export function parseAnswer(text: string): Result<ReviewAnswer, 'invalid-answer'> {
-  const cleaned = text.replace(/<think>[\s\S]*?<\/think>/g, '');
+  // A <think> block, and the "field"?: notation some models copy from a format description.
+  const cleaned = text.replace(/<think>[\s\S]*?<\/think>/g, '').replace(/"([A-Za-z]+)"\?\s*:/g, '"$1":');
   const start = cleaned.indexOf('{');
   const end = cleaned.lastIndexOf('}');
   if (start < 0 || end <= start) return fail('invalid-answer', 'The assistant did not answer with a review');
@@ -206,7 +208,7 @@ export async function reviewAll(context: Context, provider: ChatProvider, option
   const messages = reviewMessages(context, reply);
   let text = '';
   try {
-    for await (const chunk of provider.stream(messages, { model: options.model, maxTokens: 4_000, ...(options.signal ? { signal: options.signal } : {}) })) {
+    for await (const chunk of provider.stream(messages, { model: options.model, maxTokens: 4_000, json: true, ...(options.signal ? { signal: options.signal } : {}) })) {
       if (options.signal?.aborted) return fail('aborted', 'The review was cancelled');
       text += chunk;
     }
