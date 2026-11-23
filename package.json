@@ -1,6 +1,6 @@
 {
   "name": "keel-sdlc",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "From idea to agent-ready project: brainstorm, intent, spec, plan and handoff for any coding agent.",
   "license": "MIT",
   "type": "module",
