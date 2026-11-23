@@ -58,6 +58,8 @@ describe('reviewMessages and parseAnswer', () => {
     const mistral = parseAnswer('{"comments": {"Problem": {"kind": "ok"}, "Requirements": {"kind": "suggest", "rows": ["x"]}, "Desired outcome": {"kind": "Challenge", "text": "Measurable?"}}, "suggestions": {"Desired outcome": ["Cut the time to plan in half"], "Scope": null}}');
     expect(mistral).toMatchObject({ ok: true, value: { comments: { Problem: { kind: 'ok' }, 'Desired outcome': { kind: 'challenge' } }, suggestions: { 'Desired outcome': ['Cut the time to plan in half'] } } });
     expect(mistral.ok && Object.keys(mistral.value.comments)).not.toContain('Requirements');   // a suggest with nothing to say is dropped
+    // As qwen2.5vl:7b answered a reply: the "field"?: notation copied from a format description.
+    expect(parseAnswer('{"comments": {"Problem": {"kind": "ok", "text": "Fine."}},\n "reply"?: {"text": "Done."}}')).toMatchObject({ ok: true, value: { reply: { text: 'Done.' } } });
     // Other spellings, comments as a list, and a reasoning model's <think> block.
     expect(parseAnswer('<think>{maybe}</think>{"comments": [{"section": "Scope", "kind": "question", "text": "Who?"}, {"section": "Problem", "kind": "suggestion", "text": "Add numbers."}]}')).toMatchObject({
       ok: true, value: { comments: { Scope: { kind: 'ask' }, Problem: { kind: 'suggest' } } },

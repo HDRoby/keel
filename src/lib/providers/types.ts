@@ -27,6 +27,8 @@ export interface ChatOptions {
   model: string;
   maxTokens?: number;
   signal?: AbortSignal;
+  /** Ask for a JSON object (JSON mode) where the provider supports it; the prompt must still describe the format. */
+  json?: boolean;
 }
 
 export interface ChatProvider {

@@ -10,5 +10,5 @@ export function createOpenAICompatibleProvider(config: ProviderConfig): ChatProv
   return chatCompletionsProvider('openai-compatible', new OpenAI({
     apiKey: config.apiKey || 'not-needed',
     baseURL: config.baseUrl || DEFAULT_COMPATIBLE_BASE_URL,
-  }));
+  }), false);
 }

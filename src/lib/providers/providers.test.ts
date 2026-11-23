@@ -90,6 +90,12 @@ describe('chat completions adapters', () => {
     expect(await collect(streamChatCompletions(client, messages, { model: 'm', maxTokens: 10 }))).toBe('AB');
     expect(calls[0]).toMatchObject({ model: 'm', stream: true, max_completion_tokens: 10, messages });
     expect(chatCompletionsProvider('openai', client).id).toBe('openai');
+    expect(calls[0]).not.toHaveProperty('response_format');
+    await collect(streamChatCompletions(client, messages, { model: 'm', json: true }));
+    expect(calls[1]).toMatchObject({ response_format: { type: 'json_object' } });
+    // Generic OpenAI-compatible servers may not know response_format: it is not sent to them.
+    await collect(chatCompletionsProvider('openai-compatible', client, false).stream(messages, { model: 'm', json: true }));
+    expect(calls[2]).not.toHaveProperty('response_format');
   });
 
   it('builds each adapter with its own id', () => {
